@@ -128,17 +128,21 @@ export default defineConfig({
 	},
 });
 
-function rawFonts(ext) {
+function rawFonts(ext: string[]) {
 	return {
 		name: "vite-plugin-raw-fonts",
-		transform(_, id) {
-			if (ext.some((e) => id.endsWith(e))) {
+		// `code` can be any type here, we don't use it.
+		transform(_: unknown, id: string): { code: string; map: null } | null {
+			if (ext.some((e: string) => id.endsWith(e))) {
 				const buffer = fs.readFileSync(id);
 				return {
 					code: `export default ${JSON.stringify(buffer)}`,
 					map: null,
 				};
 			}
+			// Explicit return for the "no match" case so TS is happy
+			return null;
 		},
 	};
 }
+
