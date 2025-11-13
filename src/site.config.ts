@@ -16,16 +16,16 @@ export const siteConfig: SiteConfig = {
 	description: "",
 	lang: "en-GB",
 	ogLocale: "en_GB",
-	title: "AAAI 2026 Lab: Learning to Large Language Models",
+	title: "AAAI 2026 Lab: Learning to Steer Large Language Models",
 
 	url: "https://steerability.github.io/lab",
 };
 
 export const menuLinks = [
-	{ path: "/", title: "Home" },
-	{ path: "/about/", title: "About" },
-	{ path: "/posts/", title: "Blog" },
-	{ path: "/notes/", title: "Notes" },
+	// { path: "/", title: "Home" },
+	// { path: "/about/", title: "About" },
+	// { path: "/posts/", title: "Blog" },
+	// { path: "/notes/", title: "Notes" },
 ];
 
 export const expressiveCodeOptions: AstroExpressiveCodeOptions = {
