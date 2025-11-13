@@ -13,12 +13,11 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 
-	description: "The Steerability lab site.",
+	description: "",
 	lang: "en-GB",
 	ogLocale: "en_GB",
-	title: "Steerability Lab",
+	title: "AAAI 2026 Lab: Learning to Large Language Models",
 
-	// Full public URL of THIS site
 	url: "https://steerability.github.io/lab",
 };
 
