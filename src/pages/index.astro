@@ -26,7 +26,7 @@ import PageLayout from "@/layouts/Base.astro";
 	<section class="mt-16">
 		<h2 class="title mb-6 text-xl">Resources</h2>
 		<p class="mb-2">
-			Coding exercises will be facilitated through <a class="underline hover:no-underline" href="https://colab.research.google.com/" target="_blank" rel="noreferrer noopener">Google Colab</a>; see the introductory notebook <a class="underline hover:no-underline" href="https://colab.research.google.com/notebooks/intro.ipynb" target="_blank" rel="noreferrer noopener">here</a>). Participants are expected to have a good working knowledge of Python and to be familiar with the <a class="underline hover:no-underline" href="https://huggingface.co/docs/transformers/index" target="_blank" rel="noreferrer noopener">Hugging Face Transformers</a> library; newcomers may wish to review the official Transformers tutorial <a class="underline hover:no-underline" href="https://huggingface.co/docs/transformers/en/quicktour" target="_blank" rel="noreferrer noopener">quick tour</a> beforehand.
+			Coding exercises will be facilitated through <a class="underline hover:no-underline" href="https://colab.research.google.com/" target="_blank" rel="noreferrer noopener">Google Colab</a>; if you have not previously used Colab, please see the introductory notebook <a class="underline hover:no-underline" href="https://colab.research.google.com/notebooks/intro.ipynb" target="_blank" rel="noreferrer noopener">here</a>). Participants are expected to have a good working knowledge of Python and to be familiar with the <a class="underline hover:no-underline" href="https://huggingface.co/docs/transformers/index" target="_blank" rel="noreferrer noopener">Hugging Face Transformers</a> library; we recommend that newcomers review the official Transformers tutorial <a class="underline hover:no-underline" href="https://huggingface.co/docs/transformers/en/quicktour" target="_blank" rel="noreferrer noopener">quick tour</a> beforehand.
 		</p>
 
 		<p class="mb-4">
@@ -35,7 +35,11 @@ import PageLayout from "@/layouts/Base.astro";
 
 	    <div class="space-y-2">
 	    	<div class="flex items-center gap-2">
-	      		<img src="/darkmode_ais.svg" alt="AI Steerability 360 logo" class="h-6 w-auto" />
+	      		<img
+				  src={import.meta.env.BASE_URL + "darkmode_ais.svg"}
+				  alt="AI Steerability 360 logo"
+				  class="h-6 w-auto"
+				/>
 	      		<span>AI Steerability 360 toolkit</span>
 	      		<div class="text-sm text-gray-400 space-x-3">
 			        <a
@@ -57,7 +61,11 @@ import PageLayout from "@/layouts/Base.astro";
 		      </div>
 	      		
 	    	<div class="flex items-center gap-2">
-	      		<img src="/darkmode_icx.svg" alt="In-Context Explainability 360 logo" class="h-6 w-auto" />
+	      		<img
+				  src={import.meta.env.BASE_URL + "darkmode_icx.svg"}
+				  alt="ICX360 logo"
+				  class="h-6 w-auto"
+				/>
 	      		<span>In-Context Explainability 360 toolkit</span>
 	      		<div class="text-sm text-gray-400 space-x-3">
 			        <a
