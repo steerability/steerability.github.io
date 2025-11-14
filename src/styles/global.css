@@ -16,6 +16,11 @@
 	--color-quote: oklch(55.27% 0.195 19.06);
 }
 
+button[aria-label="Open Menu"],
+button[aria-expanded] {
+  display: none !important;
+}
+
 @layer base {
 	html {
 		color-scheme: light dark;
