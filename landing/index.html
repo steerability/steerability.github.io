@@ -71,7 +71,7 @@
 			}
 			body {
 				margin: 0 auto;
-				max-width: 48rem; /* max-w-3xl */
+				max-width: 56rem; /* max-w-4xl */
 				min-height: 100vh;
 				padding: 4rem 1rem; /* pt-16 px-4 */
 				background: var(--color-global-bg);
@@ -100,28 +100,6 @@
 			:focus-visible {
 				outline: 2px dashed var(--color-accent);
 				outline-offset: 2px;
-			}
-
-			header {
-				margin-bottom: 7rem; /* mb-28 */
-			}
-			header h1 {
-				margin: 0;
-				font-size: 1.25rem;
-				line-height: 1.25;
-				font-weight: 700;
-			}
-			@media (min-width: 640px) {
-				header h1 {
-					font-size: 1.5rem;
-				}
-			}
-			.meta {
-				margin-top: 0.25rem;
-				color: var(--color-muted);
-			}
-			.meta a {
-				color: var(--color-muted);
 			}
 
 			p {
@@ -210,37 +188,19 @@
 		</style>
 	</head>
 	<body>
-		<header>
-			<h1>Steerability</h1>
-			<div class="meta">Measuring and controlling the behavior of large language models</div>
-			<div class="meta">
-				<a href="https://github.com/IBM/AISteer360" target="_blank" rel="noreferrer noopener"
-					>github.com/IBM/AISteer360</a
-				>
-			</div>
-		</header>
-
 		<main id="main">
-			<p>
-				This is the home of activities around
-				<a href="https://github.com/IBM/AISteer360" target="_blank" rel="noreferrer noopener"
-					>AI Steerability 360</a
-				>
-				(AISteer360), an open-source toolkit for steering large language models &mdash; the
-				deliberate, lightweight control of a model's behavior via interventions on its prompts,
-				weights, internal states, and decoding. Below is a timeline of labs, demos, and
-				competitions built on the toolkit.
-			</p>
-
 			<div class="toolkit">
 				<img src="/darkmode_ais.svg" alt="AI Steerability 360 logo" />
 				<span>AI Steerability 360</span>
 				<span class="links">
+					<a href="https://github.com/IBM/AISteer360" target="_blank" rel="noreferrer noopener"
+						>Repo</a
+					>
 					<a href="https://ibm.github.io/AISteer360/" target="_blank" rel="noreferrer noopener"
 						>Docs</a
 					>
-					<a href="https://github.com/IBM/AISteer360" target="_blank" rel="noreferrer noopener"
-						>Repo</a
+					<a href="https://arxiv.org/abs/2603.07837" target="_blank" rel="noreferrer noopener"
+						>Paper</a
 					>
 				</span>
 			</div>
@@ -262,7 +222,7 @@
 					</li>
 					<li>
 						<div class="marker" aria-hidden="true"></div>
-						<div class="when">Jul 2&ndash;7, 2026 &middot; ACL 2026 &middot; San Diego</div>
+						<div class="when">Jul 7, 2026 &middot; ACL 2026 &middot; San Diego</div>
 						<div class="what"><span class="kind">Systems demo</span> &mdash; AI Steerability 360</div>
 						<p>
 							A system demonstration of the toolkit: building, composing, and benchmarking
@@ -278,7 +238,7 @@
 						</div>
 						<p>
 							Design steering policies that reduce sycophancy while preserving general
-							capabilities. Competition window mid-July &ndash; mid-October 2026; workshop at
+							capabilities. Competition window late July &ndash; mid-October 2026; workshop at
 							NeurIPS on Dec 11&ndash;12.
 						</p>
 					</li>
