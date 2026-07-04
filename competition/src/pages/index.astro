@@ -1,0 +1,292 @@
+---
+import PageLayout from "@/layouts/Base.astro";
+---
+
+<PageLayout meta={{ title: "Home" }}>
+	<section>
+		<h1 class="title mb-12">Welcome!</h1>
+
+		<div class="mb-8 border border-dashed border-gray-400 px-4 py-3 text-sm">
+			The competition has not yet launched. Registration, the submission portal, the designated base
+			model, and the prize breakdown will be announced on this page when the competition opens
+			(expected mid-July 2026).
+		</div>
+
+		<p class="mb-4">
+			The Steerability Challenge is a NeurIPS 2026 competition on steering large language models:
+			making a targeted, deliberate change to a model's behavior while leaving everything else
+			intact. Participants design <em>steering policies</em> &mdash; compositions of interventions
+			spanning prompting, weight modification (e.g., LoRA adapters), activation steering, and
+			decoding-time controls &mdash; that are evaluated against a common base model.
+		</p>
+
+		<p class="mb-4">
+			This year's target behavior is sycophancy: the tendency of a model to respond with what the
+			user appears to want to hear rather than what is accurate. Sycophancy remains a persistent
+			failure mode even in state-of-the-art systems and can cause real harm in advisory settings
+			(e.g., medicine, law, finance). Your goal is to reduce it as much as possible &mdash; without
+			degrading the model's general capabilities.
+		</p>
+
+		<p class="mb-4">
+			That second clause is the heart of the challenge. Steering a model toward a target behavior is
+			well known to cause degradation along other dimensions, and the side-effects of
+			<em>composed</em> interventions &mdash; how steering is typically deployed in practice &mdash;
+			remain largely unstudied. By scoring submissions on both steering effectiveness and capability
+			retention, the competition aims to surface which interventions, and which combinations of
+			interventions, control model behavior reliably.
+		</p>
+
+		<p class="mb-4">
+			All submissions are built with <a
+				class="underline hover:no-underline"
+				href="https://github.com/IBM/AISteer360"
+				target="_blank"
+				rel="noreferrer noopener">AI Steerability 360</a
+			>, an open-source toolkit that organizes steering methods across four control surfaces (input,
+			structural, state, and output) and supports their composition into steering policies. A
+			starter kit &mdash; including baseline policies, workbench interfaces for constructing
+			steering artifacts, and a local evaluation harness &mdash; will be released ahead of launch.
+		</p>
+
+		<div class="mt-6 mb-6 flex items-center gap-2">
+			<img src="/competition/darkmode_ais.svg" alt="AI Steerability 360 logo" class="h-10 w-auto" />
+			<span>AI Steerability 360</span>
+			<div class="text-sm text-gray-400 space-x-3">
+				<a
+					class="underline hover:no-underline"
+					href="https://ibm.github.io/AISteer360/"
+					target="_blank"
+					rel="noreferrer noopener"
+				>
+					Docs
+				</a>
+				<a
+					class="underline hover:no-underline"
+					href="https://github.com/IBM/AISteer360"
+					target="_blank"
+					rel="noreferrer noopener"
+				>
+					Repo
+				</a>
+				<a
+					class="underline hover:no-underline"
+					href="https://arxiv.org/abs/2603.07837"
+					target="_blank"
+					rel="noreferrer noopener"
+				>
+					Paper
+				</a>
+			</div>
+		</div>
+
+		<p class="mb-4">
+			The competition will be hosted on <a
+				class="underline hover:no-underline"
+				href="https://www.codabench.org/"
+				target="_blank"
+				rel="noreferrer noopener">CodaBench</a
+			> and will offer both monetary incentives (compute credits and financial awards, subject to sponsorship)
+			and non-monetary incentives (co-authorship on the competition summary paper for top-performing
+			teams). Questions can be raised on the competition forum, or via the Discord channel and contact
+			email announced at launch; bug reports and feature requests for the toolkit go through <a
+				class="underline hover:no-underline"
+				href="https://github.com/IBM/AISteer360/issues"
+				target="_blank"
+				rel="noreferrer noopener">GitHub issues</a
+			>.
+		</p>
+	</section>
+
+	<section class="mt-16">
+		<h2 class="title mb-6 text-xl">Task and evaluation</h2>
+
+		<p class="mb-4">
+			<span class="font-semibold">What you submit.</span> A submission consists of a steering policy
+			and documentation describing its design. In the toolkit, a steering policy is a structured piece
+			of code that references steering artifacts across the four control categories, applied to the
+			model in the order they appear: <em>input controls</em> (e.g., system prompts, few-shot
+			examples), <em>structural controls</em> (e.g., LoRA adapters, weight editing), <em
+				>state controls</em
+			> (e.g., activation steering vectors, attention manipulation), and <em>output controls</em>
+			(e.g., logit manipulation, constrained decoding, custom sampling). A policy may use a single control
+			or compose several. Organizers execute all submitted policies against the designated base model
+			on identical infrastructure.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">How submissions are scored.</span> Each policy receives a composite
+			score balancing two criteria: <em>steering effectiveness</em> &mdash; the reduction in
+			sycophantic behavior relative to the unsteered base model &mdash; and <em
+				>capability retention</em
+			> &mdash; the degree to which general capabilities are preserved, measured as performance change
+			across a suite of side-effect benchmarks. Only regressions on side-effect benchmarks are penalized;
+			incidental improvements are permitted but not rewarded, which incentivizes targeted steering rather
+			than general capability boosting. To prevent overfitting, the precise scoring formula and aggregation
+			weights will remain private.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">What is evaluated.</span> Submissions are assessed on sycophancy reduction
+			(the target behavior) and on capability retention across five dimensions: general knowledge and
+			reasoning, instruction following, multilingual understanding, tool calling, and safety. Public
+			steering tasks and development datasets are provided for local iteration; final evaluation additionally
+			includes held-out private tasks, benchmarks, and configurations that are not disclosed until the
+			competition concludes. Competitive solutions therefore need to generalize rather than overfit to
+			any particular benchmark.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">Leaderboard and ranking.</span> A public leaderboard, computed on a
+			subset of the evaluation, will be updated periodically throughout the competition. Final rankings
+			are determined by performance on the full private evaluation. Ties are broken first by lower intervention
+			complexity (fewer composed controls), then by lower computational overhead at inference time; cost&ndash;capability
+			trade-offs may additionally be taken into account (e.g., via a separate "efficient steering" leaderboard).
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">Baselines and starter kit.</span> The starter kit contains the toolkit
+			with documentation and installation scripts, workbench interfaces for constructing steering artifacts,
+			a set of baseline steering policies, and a development evaluation harness that runs locally against
+			public sycophancy datasets. Baselines span each control surface plus a composition: (1) a system
+			prompt instructing the model to maintain its position under user pressure; (2) a LoRA adapter fine-tuned
+			on non-sycophantic response pairs; (3) an activation steering vector extracted from contrastive
+			sycophantic/non-sycophantic completions; (4) a logit penalty on agreement tokens following user
+			disagreement; and (5) the system prompt combined with the activation steering vector. Each baseline
+			ships with its composite score on a public development split, giving a concrete target to improve
+			upon.
+		</p>
+	</section>
+
+	<section class="mt-16">
+		<h2 class="title mb-6 text-xl">Rules</h2>
+
+		<p class="mb-4">
+			The complete rules will be provided upon registration and maintained on this website;
+			submitting an entry indicates acceptance of the rules in full. A summary of the main points:
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">Eligibility.</span> Participation is open to individuals and teams
+			of up to five members, with no institutional or geographic restrictions beyond standard export-control
+			requirements. Each person may belong to at most one team and must register with a single account;
+			registering multiple accounts or assuming multiple identities results in disqualification. Teams
+			may merge prior to the team-merger deadline, after which the combined team inherits a single submission
+			quota. Prize eligibility additionally requires that every team member is 18 or older (and has reached
+			the legal age of majority where they reside) and has no role in organizing the competition, nor
+			is a close family member of an organizer.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">Submissions.</span> All entries must be implemented as steering policies
+			using the AI Steerability 360 toolkit; submissions that bypass or modify the toolkit's evaluation
+			harness will be disqualified. A single base model, common to all participants, will be announced
+			on this website before the competition opens &mdash; it may not be substituted, replaced, or ensembled
+			with other models. Policies may combine any interventions across the four control surfaces, provided
+			they are implemented through the toolkit's control interfaces. Any fine-tuning or weight modification
+			must use only publicly available or participant-created datasets, with provenance documented and
+			disclosed upon request. Teams may make at most 5 submissions in any rolling 24-hour window (submissions
+			are evaluated with the periodic leaderboard updates rather than immediately), and each team selects
+			exactly one submission as its entry for final evaluation.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">Originality.</span> Entries that merely replicate or make superficial
+			changes to the provided baselines are not eligible for prizes. Prize-qualifying entries should
+			introduce novel steering strategies, substantive methodological improvements, or independently
+			developed implementations that go beyond simple parameter adjustments; the organizing committee
+			may request additional documentation or code access to assess this. Exploring and building on the
+			baselines for learning purposes is, of course, encouraged.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">External data and tools.</span> External datasets, pretrained steering
+			artifacts (e.g., steering vectors, LoRA adapters), and open-source libraries may be used as long
+			as they are freely or cheaply accessible to all participants and are fully documented in the submission.
+			Resources that are proprietary or access-restricted in a way that confers an unfair advantage are
+			not permitted.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">Winner obligations and licensing.</span> Within 14 days of notification,
+			prize recipients must provide all materials needed to reproduce their results (code, trained adapters
+			or learned steering vectors, configuration files, and written documentation). All submissions, including
+			source code and documentation, are licensed under the Apache License 2.0, consistent with the toolkit
+			from which they derive; public release of policies is strongly encouraged. Receiving a prize is
+			contingent on presenting the winning approach at the NeurIPS competition workshop (in person or
+			virtually) and contributing to the post-competition retrospective publication, on which winning
+			teams receive authorship.
+		</p>
+
+		<p class="mb-4">
+			<span class="font-semibold">Conduct and organizer authority.</span> All participants must adhere
+			to the NeurIPS Code of Conduct and Code of Ethics. The organizers may revise the rules, timeline,
+			evaluation protocol, or prize structure during the competition, with material changes communicated
+			through this website and by email to registered participants. Participants may be removed at any
+			stage for cheating, plagiarism, collusion, or other misconduct, and organizer decisions on rule
+			interpretation, scoring, and eligibility are final.
+		</p>
+	</section>
+
+	<section class="mt-16">
+		<h2 class="title mb-6 text-xl">Schedule</h2>
+		<ul class="space-y-3">
+			<li class="sm:flex sm:gap-x-6">
+				<span class="block shrink-0 text-gray-400 sm:w-44">Mid-July 2026</span>
+				<span
+					>Competition launches. The starter kit (toolkit, workbenches, baselines, local evaluation
+					harness) is released roughly four weeks beforehand.</span
+				>
+			</li>
+			<li class="sm:flex sm:gap-x-6">
+				<span class="block shrink-0 text-gray-400 sm:w-44">Mid-July – mid-Oct 2026</span>
+				<span
+					>Open competition (~90 days). Teams develop and submit steering policies against the
+					public development leaderboard; organizers host office hours.</span
+				>
+			</li>
+			<li class="sm:flex sm:gap-x-6">
+				<span class="block shrink-0 text-gray-400 sm:w-44">Late Oct 2026</span>
+				<span
+					>Submissions close. Final entries are evaluated on the private benchmarks and winners are
+					notified.</span
+				>
+			</li>
+			<li class="sm:flex sm:gap-x-6">
+				<span class="block shrink-0 text-gray-400 sm:w-44">Dec 11–12, 2026</span>
+				<span
+					>Competition track workshop at <a
+						class="underline hover:no-underline"
+						href="https://neurips.cc/Conferences/2026"
+						target="_blank"
+						rel="noreferrer noopener">NeurIPS 2026</a
+					> (Sydney, Australia). Winning teams and organizers present methods and results.</span
+				>
+			</li>
+		</ul>
+	</section>
+
+	<section class="mt-16">
+		<h2 class="title mb-6 text-xl">Organizers</h2>
+		<ul class="grid list-inside list-disc gap-x-8 gap-y-1 sm:grid-cols-2">
+			<li>Erik Miehling (IBM Research) — lead organizer</li>
+			<li>Ching-Yun Ko (IBM Research)</li>
+			<li>Matthew Riemer (IBM Research / Mila, University of Montreal)</li>
+			<li>Maria Chang (IBM Research)</li>
+			<li>Pierre Dognin (IBM Research)</li>
+			<li>Inge Vejsbjerg (IBM Research)</li>
+			<li>Moninder Singh (IBM Research)</li>
+			<li>Dennis Wei (IBM Research)</li>
+			<li>Karthikeyan Natesan Ramamurthy (IBM Research)</li>
+			<li>Pin-Yu Chen (IBM Research)</li>
+			<li>Bharadwaj Ravichandran (Kitware)</li>
+			<li>Arslan Basharat (Kitware)</li>
+			<li>David Chan (UC Berkeley)</li>
+			<li>Chen Xiong (The Chinese University of Hong Kong)</li>
+			<li>Zhiyuan He (The Chinese University of Hong Kong)</li>
+			<li>Tsung-Yi Ho (The Chinese University of Hong Kong)</li>
+			<li>Tommaso Tosato (Mila, University of Montreal)</li>
+			<li>Michael Clark (Woodside Energy)</li>
+		</ul>
+	</section>
+</PageLayout>

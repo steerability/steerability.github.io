@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en-GB">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>404 &bull; Steerability</title>
+		<meta name="robots" content="noindex" />
+		<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+		<script>
+			(function () {
+				const lightModePref = window.matchMedia("(prefers-color-scheme: light)");
+				const storedTheme =
+					typeof localStorage !== "undefined" && localStorage.getItem("theme");
+				document.documentElement.setAttribute(
+					"data-theme",
+					storedTheme || (lightModePref.matches ? "light" : "dark"),
+				);
+			})();
+		</script>
+		<style>
+			:root {
+				--color-global-bg: oklch(98.48% 0 0);
+				--color-global-text: oklch(26.99% 0.0096 235.05);
+				--color-accent-2: oklch(18.15% 0 0);
+			}
+			html {
+				color-scheme: light dark;
+			}
+			html[data-theme="light"] {
+				color-scheme: light;
+			}
+			html[data-theme="dark"] {
+				color-scheme: dark;
+				--color-global-bg: oklch(23.64% 0.0045 248);
+				--color-global-text: oklch(83.54% 0 264);
+				--color-accent-2: oklch(94.66% 0 0);
+			}
+			body {
+				margin: 0 auto;
+				max-width: 48rem;
+				padding: 4rem 1rem;
+				background: var(--color-global-bg);
+				color: var(--color-global-text);
+				font-family:
+					ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+					"Courier New", monospace;
+				font-size: 0.875rem;
+				line-height: 1.25rem;
+			}
+			h1 {
+				color: var(--color-accent-2);
+				font-size: 1.5rem;
+				font-weight: 600;
+				margin: 0 0 3rem;
+			}
+			a {
+				color: inherit;
+				text-decoration: underline;
+				text-underline-offset: 2px;
+			}
+			a:hover {
+				text-decoration: none;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>404 | Oops something went wrong</h1>
+		<p><a href="/">Back to steerability.github.io</a></p>
+	</body>
+</html>

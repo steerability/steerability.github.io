@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en-GB">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Steerability</title>
+		<meta
+			name="description"
+			content="Labs, demos, and competitions around AI Steerability 360 — an open-source toolkit for steering large language models."
+		/>
+		<link rel="canonical" href="https://steerability.github.io/" />
+		<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="Steerability" />
+		<meta
+			property="og:description"
+			content="Labs, demos, and competitions around AI Steerability 360 — an open-source toolkit for steering large language models."
+		/>
+		<meta property="og:url" content="https://steerability.github.io/" />
+
+		<!-- Theme: mirrors the lab/competition sites (shared localStorage key across the origin). -->
+		<script>
+			(function () {
+				const lightModePref = window.matchMedia("(prefers-color-scheme: light)");
+				function getUserPref() {
+					const storedTheme =
+						typeof localStorage !== "undefined" && localStorage.getItem("theme");
+					return storedTheme || (lightModePref.matches ? "light" : "dark");
+				}
+				function setTheme(newTheme) {
+					if (newTheme !== "light" && newTheme !== "dark") return;
+					document.documentElement.setAttribute("data-theme", newTheme);
+					if (typeof localStorage !== "undefined") localStorage.setItem("theme", newTheme);
+				}
+				setTheme(getUserPref());
+				lightModePref.addEventListener("change", (e) => setTheme(e.matches ? "light" : "dark"));
+			})();
+		</script>
+
+		<style>
+			/* Tokens copied from the lab/competition theme (src/styles/global.css). */
+			:root {
+				--color-global-bg: oklch(98.48% 0 0);
+				--color-global-text: oklch(26.99% 0.0096 235.05);
+				--color-link: oklch(55.44% 0.0431 185.69);
+				--color-accent: oklch(55.27% 0.195 19.06);
+				--color-accent-2: oklch(18.15% 0 0);
+				--color-muted: oklch(70.7% 0.022 261.325); /* tailwind gray-400 */
+			}
+			html {
+				color-scheme: light dark;
+				accent-color: var(--color-accent);
+				scrollbar-gutter: stable;
+				scroll-behavior: smooth;
+			}
+			html[data-theme="light"] {
+				color-scheme: light;
+			}
+			html[data-theme="dark"] {
+				color-scheme: dark;
+				--color-global-bg: oklch(23.64% 0.0045 248);
+				--color-global-text: oklch(83.54% 0 264);
+				--color-link: oklch(70.44% 0.1133 349);
+				--color-accent: oklch(70.91% 0.1415 163.7);
+				--color-accent-2: oklch(94.66% 0 0);
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0 auto;
+				max-width: 48rem; /* max-w-3xl */
+				min-height: 100vh;
+				padding: 4rem 1rem; /* pt-16 px-4 */
+				background: var(--color-global-bg);
+				color: var(--color-global-text);
+				font-family:
+					ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+					"Courier New", monospace;
+				font-size: 0.875rem; /* text-sm */
+				line-height: 1.25rem;
+				-webkit-font-smoothing: antialiased;
+			}
+			@media (min-width: 640px) {
+				body {
+					padding-inline: 2rem; /* sm:px-8 */
+				}
+			}
+
+			a {
+				color: inherit;
+				text-decoration: underline;
+				text-underline-offset: 2px;
+			}
+			a:hover {
+				text-decoration: none;
+			}
+			:focus-visible {
+				outline: 2px dashed var(--color-accent);
+				outline-offset: 2px;
+			}
+
+			header {
+				margin-bottom: 7rem; /* mb-28 */
+			}
+			header h1 {
+				margin: 0;
+				font-size: 1.25rem;
+				line-height: 1.25;
+				font-weight: 700;
+			}
+			@media (min-width: 640px) {
+				header h1 {
+					font-size: 1.5rem;
+				}
+			}
+			.meta {
+				margin-top: 0.25rem;
+				color: var(--color-muted);
+			}
+			.meta a {
+				color: var(--color-muted);
+			}
+
+			p {
+				margin: 0 0 1rem;
+			}
+
+			.toolkit {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				margin: 1.5rem 0;
+			}
+			.toolkit img {
+				height: 2.5rem;
+				width: auto;
+			}
+			.toolkit .links {
+				color: var(--color-muted);
+			}
+			.toolkit .links a + a {
+				margin-inline-start: 0.75rem;
+			}
+
+			section {
+				margin-top: 4rem; /* mt-16 */
+			}
+			h2 {
+				margin: 0 0 1.5rem;
+				color: var(--color-accent-2);
+				font-size: 1.25rem; /* .title text-xl */
+				line-height: 1.75rem;
+				font-weight: 600;
+			}
+
+			/* Events timeline: dashed rail echoing the theme's dashed rules. */
+			ol.timeline {
+				list-style: none;
+				margin: 0;
+				padding: 0 0 0 1.5rem;
+				border-inline-start: 1px dashed var(--color-muted);
+			}
+			ol.timeline li {
+				position: relative;
+				padding-bottom: 2.5rem;
+			}
+			ol.timeline li:last-child {
+				padding-bottom: 0.25rem;
+			}
+			ol.timeline .marker {
+				position: absolute;
+				top: 0.3rem;
+				inset-inline-start: calc(-1.5rem - 4.5px);
+				width: 8px;
+				height: 8px;
+				background: var(--color-accent);
+				outline: 3px solid var(--color-global-bg);
+			}
+			ol.timeline li.upcoming .marker {
+				background: var(--color-global-bg);
+				border: 1.5px solid var(--color-accent);
+			}
+			.when {
+				color: var(--color-muted);
+			}
+			.kind {
+				color: var(--color-accent);
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				font-size: 0.75rem;
+			}
+			.what {
+				margin: 0.25rem 0;
+				font-weight: 600;
+				color: var(--color-accent-2);
+			}
+			ol.timeline p {
+				margin: 0.25rem 0 0;
+			}
+
+			footer {
+				margin-top: 6rem;
+				padding-bottom: 1rem;
+				color: var(--color-muted);
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>Steerability</h1>
+			<div class="meta">Measuring and controlling the behavior of large language models</div>
+			<div class="meta">
+				<a href="https://github.com/IBM/AISteer360" target="_blank" rel="noreferrer noopener"
+					>github.com/IBM/AISteer360</a
+				>
+			</div>
+		</header>
+
+		<main id="main">
+			<p>
+				This is the home of activities around
+				<a href="https://github.com/IBM/AISteer360" target="_blank" rel="noreferrer noopener"
+					>AI Steerability 360</a
+				>
+				(AISteer360), an open-source toolkit for steering large language models &mdash; the
+				deliberate, lightweight control of a model's behavior via interventions on its prompts,
+				weights, internal states, and decoding. Below is a timeline of labs, demos, and
+				competitions built on the toolkit.
+			</p>
+
+			<div class="toolkit">
+				<img src="/darkmode_ais.svg" alt="AI Steerability 360 logo" />
+				<span>AI Steerability 360</span>
+				<span class="links">
+					<a href="https://ibm.github.io/AISteer360/" target="_blank" rel="noreferrer noopener"
+						>Docs</a
+					>
+					<a href="https://github.com/IBM/AISteer360" target="_blank" rel="noreferrer noopener"
+						>Repo</a
+					>
+				</span>
+			</div>
+
+			<section>
+				<h2>Events</h2>
+				<ol class="timeline">
+					<li>
+						<div class="marker" aria-hidden="true"></div>
+						<div class="when">Jan 21, 2026 &middot; AAAI 2026 &middot; Singapore</div>
+						<div class="what">
+							<span class="kind">Lab</span> &mdash;
+							<a href="/lab/">Learning to Steer Large Language Models</a>
+						</div>
+						<p>
+							A hands-on lab on inspecting model behavior (via ICX360), designing steering
+							controls (via AISteer360), and validating the steered behavior.
+						</p>
+					</li>
+					<li>
+						<div class="marker" aria-hidden="true"></div>
+						<div class="when">Jul 2&ndash;7, 2026 &middot; ACL 2026 &middot; San Diego</div>
+						<div class="what"><span class="kind">Systems demo</span> &mdash; AI Steerability 360</div>
+						<p>
+							A system demonstration of the toolkit: building, composing, and benchmarking
+							steering methods across the four control surfaces.
+						</p>
+					</li>
+					<li class="upcoming">
+						<div class="marker" aria-hidden="true"></div>
+						<div class="when">Dec 6&ndash;12, 2026 &middot; NeurIPS 2026 &middot; Sydney</div>
+						<div class="what">
+							<span class="kind">Competition</span> &mdash;
+							<a href="/competition/">The Steerability Challenge</a>
+						</div>
+						<p>
+							Design steering policies that reduce sycophancy while preserving general
+							capabilities. Competition window mid-July &ndash; mid-October 2026; workshop at
+							NeurIPS on Dec 11&ndash;12.
+						</p>
+					</li>
+				</ol>
+			</section>
+		</main>
+
+		<footer></footer>
+	</body>
+</html>
