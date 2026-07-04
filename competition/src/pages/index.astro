@@ -15,23 +15,23 @@ import PageLayout from "@/layouts/Base.astro";
 		<p class="mb-4">
 			The Steerability Challenge is a NeurIPS 2026 competition on steering large language models:
 			making a targeted, deliberate change to a model's behavior while leaving everything else
-			intact. Participants design <em>steering policies</em> &mdash; compositions of interventions
+			intact. Participants design <em>steering policies</em>, compositions of interventions
 			spanning prompting, weight modification (e.g., LoRA adapters), activation steering, and
-			decoding-time controls &mdash; that are evaluated against a common base model.
+			decoding-time controls, that are evaluated against a common base model.
 		</p>
 
 		<p class="mb-4">
 			This year's target behavior is sycophancy: the tendency of a model to respond with what the
 			user appears to want to hear rather than what is accurate. Sycophancy remains a persistent
 			failure mode even in state-of-the-art systems and can cause real harm in advisory settings
-			(e.g., medicine, law, finance). Your goal is to reduce it as much as possible &mdash; without
+			(e.g., medicine, law, finance). Your goal is to reduce it as much as possible, without
 			degrading the model's general capabilities.
 		</p>
 
 		<p class="mb-4">
 			That second clause is the heart of the challenge. Steering a model toward a target behavior is
 			well known to cause degradation along other dimensions, and the side-effects of
-			<em>composed</em> interventions &mdash; how steering is typically deployed in practice &mdash;
+			<em>composed</em> interventions (how steering is typically deployed in practice)
 			remain largely unstudied. By scoring submissions on both steering effectiveness and capability
 			retention, the competition aims to surface which interventions, and which combinations of
 			interventions, control model behavior reliably.
@@ -45,8 +45,8 @@ import PageLayout from "@/layouts/Base.astro";
 				rel="noreferrer noopener">AI Steerability 360</a
 			>, an open-source toolkit that organizes steering methods across four control surfaces (input,
 			structural, state, and output) and supports their composition into steering policies. A
-			starter kit &mdash; including baseline policies, workbench interfaces for constructing
-			steering artifacts, and a local evaluation harness &mdash; will be released ahead of launch.
+			starter kit, including baseline policies, workbench interfaces for constructing
+			steering artifacts, and a local evaluation harness, will be released ahead of launch.
 		</p>
 
 		<div class="mt-6 mb-6 flex items-center gap-2">
@@ -116,10 +116,10 @@ import PageLayout from "@/layouts/Base.astro";
 
 		<p class="mb-4">
 			<span class="font-semibold">How submissions are scored.</span> Each policy receives a composite
-			score balancing two criteria: <em>steering effectiveness</em> &mdash; the reduction in
-			sycophantic behavior relative to the unsteered base model &mdash; and <em
+			score balancing two criteria: <em>steering effectiveness</em>, the reduction in
+			sycophantic behavior relative to the unsteered base model, and <em
 				>capability retention</em
-			> &mdash; the degree to which general capabilities are preserved, measured as performance change
+			>, the degree to which general capabilities are preserved, measured as performance change
 			across a suite of side-effect benchmarks. Only regressions on side-effect benchmarks are penalized;
 			incidental improvements are permitted but not rewarded, which incentivizes targeted steering rather
 			than general capability boosting. To prevent overfitting, the precise scoring formula and aggregation
@@ -181,7 +181,7 @@ import PageLayout from "@/layouts/Base.astro";
 			<span class="font-semibold">Submissions.</span> All entries must be implemented as steering policies
 			using the AI Steerability 360 toolkit; submissions that bypass or modify the toolkit's evaluation
 			harness will be disqualified. A single base model, common to all participants, will be announced
-			on this website before the competition opens &mdash; it may not be substituted, replaced, or ensembled
+			on this website before the competition opens; it may not be substituted, replaced, or ensembled
 			with other models. Policies may combine any interventions across the four control surfaces, provided
 			they are implemented through the toolkit's control interfaces. Any fine-tuning or weight modification
 			must use only publicly available or participant-created datasets, with provenance documented and
@@ -268,8 +268,8 @@ import PageLayout from "@/layouts/Base.astro";
 
 	<section class="mt-16">
 		<h2 class="title mb-6 text-xl">Organizers</h2>
-		<ul class="grid list-inside list-disc gap-x-8 gap-y-1 sm:grid-cols-2">
-			<li>Erik Miehling (IBM Research) — lead organizer</li>
+		<ul class="list-inside list-disc space-y-1">
+			<li>Erik Miehling (IBM Research), lead organizer</li>
 			<li>Ching-Yun Ko (IBM Research)</li>
 			<li>Matthew Riemer (IBM Research / Mila, University of Montreal)</li>
 			<li>Maria Chang (IBM Research)</li>
