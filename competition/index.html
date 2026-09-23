@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260923">
+<link rel="stylesheet" href="styles.css?v=20260923b">
 
 <!-- MailerLite Universal -->
 <script>
@@ -93,28 +93,44 @@
   <script>
   (function() {
     // Turn a logo strip into a slow, looping marquee only when its logos don't
-    // fit the available width. Uses the Web Animations API so hovering pauses
-    // the strip in place (a CSS play-state toggle restarts in some browsers).
+    // fit the available width. Position is driven by requestAnimationFrame
+    // rather than a CSS/WAAPI animation: pausing is then just "stop advancing",
+    // which is exact in every browser (Safari restarts accelerated animations
+    // when their play state or rate changes).
     var SPEED = 35; // px per second
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     document.querySelectorAll('.logo-strip[data-marquee]').forEach(function(strip) {
       var track = strip.querySelector('.logo-track');
-      var clone = null, anims = [], lastWidth = -1;
+      var clone = null, width = 0, offset = 0, held = false, lastTs = null, raf = null;
 
+      function render() {
+        var t = 'translate3d(' + (-offset).toFixed(2) + 'px,0,0)';
+        track.style.transform = t;
+        if (clone) clone.style.transform = t;
+      }
+      function tick(ts) {
+        if (lastTs !== null && !held) {
+          offset += SPEED * (ts - lastTs) / 1000;
+          if (offset >= width) offset -= width;
+          render();
+        }
+        lastTs = ts;
+        raf = requestAnimationFrame(tick);
+      }
       function stop() {
-        anims.forEach(function(a) { a.cancel(); });
-        anims = [];
+        if (raf) cancelAnimationFrame(raf);
+        raf = null; lastTs = null; offset = 0;
+        track.style.transform = '';
+        if (clone) clone.style.transform = '';
       }
 
       function update() {
         var overflow = track.scrollWidth > strip.clientWidth + 1;
         strip.classList.toggle('is-marquee', overflow);
-
         if (!overflow) {
           stop();
           if (clone) { clone.remove(); clone = null; }
-          lastWidth = -1;
           return;
         }
         if (!clone) {
@@ -124,37 +140,23 @@
           clone.querySelectorAll('a').forEach(function(a) { a.tabIndex = -1; });
           strip.appendChild(clone);
         }
-        var width = track.scrollWidth;
-        if (width === lastWidth) return;   // nothing changed; leave animation running
-        lastWidth = width;
-        stop();
-        if (reduceMotion.matches) return;
-        [track, clone].forEach(function(el) {
-          anims.push(el.animate(
-            [{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }],
-            { duration: (width / SPEED) * 1000, iterations: Infinity, easing: 'linear' }
-          ));
-        });
+        width = track.scrollWidth;           // includes the seam padding
+        if (offset >= width) offset = 0;
+        render();
+        if (reduceMotion.matches) { stop(); return; }
+        if (!raf) raf = requestAnimationFrame(tick);
       }
 
-      // Hold/resume by changing playback rate rather than pause()/play():
-      // updatePlaybackRate() is synchronised with the compositor, so the
-      // strip stops exactly where it is instead of snapping by a frame.
-      function setRate(rate) {
-        anims.forEach(function(a) {
-          if (a.updatePlaybackRate) a.updatePlaybackRate(rate); else a.playbackRate = rate;
-        });
-      }
-      strip.addEventListener('mouseenter', function() { setRate(0); });
-      strip.addEventListener('mouseleave', function() { setRate(1); });
+      strip.addEventListener('mouseenter', function() { held = true; });
+      strip.addEventListener('mouseleave', function() { held = false; });
       // Keyboard users tabbing through the logos also get a held strip
-      strip.addEventListener('focusin',  function() { setRate(0); });
-      strip.addEventListener('focusout', function() { setRate(1); });
+      strip.addEventListener('focusin',  function() { held = true; });
+      strip.addEventListener('focusout', function() { held = false; });
 
       update();
       window.addEventListener('load', update);
       window.addEventListener('resize', update);
-      reduceMotion.addEventListener('change', function() { lastWidth = -1; update(); });
+      reduceMotion.addEventListener('change', update);
     });
   })();
   </script>

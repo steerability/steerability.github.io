@@ -229,7 +229,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .partner-label{ font-size:1.25rem; font-weight:600; line-height:1.35; margin:0 0 1.35rem; }
 
 .logo-strip{ display:flex; overflow:hidden; }
-.logo-track{ display:flex; align-items:center; gap:var(--logo-gap); flex:0 0 auto; }
+.logo-track{ display:flex; align-items:center; gap:var(--logo-gap); flex:0 0 auto; will-change:transform; }
 .logo-track a{ display:block; padding:0; margin:0; line-height:0; }
 .logo-track a:hover{ background:none; }
 .logo-track img{ display:block; width:auto; height:2.6rem; }
