@@ -61,104 +61,6 @@
     </dl>
   </div>
 
-  <!-- ================= PARTNERS ================= -->
-  <section class="partners" aria-label="Supporters and organizers">
-    <div class="partner-group supporters">
-      <p class="partner-label">Supported by</p>
-      <div class="logo-strip">
-        <div class="logo-track">
-          <a href="https://www.schmidtsciences.org/" target="_blank" rel="noopener"><img class="schmidt" src="logos/schmidt-sciences.png" alt="Schmidt Sciences" width="2000" height="800"></a>
-        </div>
-      </div>
-    </div>
-    <div class="partner-divider" role="presentation"></div>
-    <div class="partner-group organizers">
-      <p class="partner-label">Organized by</p>
-      <div class="logo-strip" data-marquee>
-        <div class="logo-track">
-          <span class="logo-sep" role="presentation"></span>
-          <a href="https://research.ibm.com/" target="_blank" rel="noopener"><img class="ibm" src="logos/ibm.png" alt="IBM Research" width="1500" height="326"></a>
-          <a href="https://tararesearch.org/" target="_blank" rel="noopener"><img class="tara" src="logos/tara.png" alt="Tara Research" width="1024" height="1024"></a>
-          <a href="https://ndif.us/" target="_blank" rel="noopener"><img class="ndif" src="logos/ndif.svg" alt="NDIF"></a>
-          <a href="https://cadenzalabs.org/" target="_blank" rel="noopener"><img class="cadenza" src="logos/cadenza.svg" alt="Cadenza Labs"></a>
-          <a href="https://www.cuhk.edu.hk/" target="_blank" rel="noopener"><img class="cuhk" src="logos/cu.png" alt="The Chinese University of Hong Kong" width="1280" height="1013"></a>
-          <a href="https://www.berkeley.edu/" target="_blank" rel="noopener"><img class="berkeley" src="logos/berkeley.png" alt="UC Berkeley" width="738" height="228"></a>
-          <a href="https://www.kitware.com/" target="_blank" rel="noopener"><img class="kitware" src="logos/kitware.png" alt="Kitware" width="2738" height="601"></a>
-          <a href="https://www.aisafetyanz.com.au/" target="_blank" rel="noopener"><img class="aisanz" src="logos/aisanz.svg" alt="AI Safety Australia &amp; New Zealand"></a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <script>
-  (function() {
-    // Turn a logo strip into a slow, looping marquee only when its logos don't
-    // fit the available width. Uses the Web Animations API so hovering pauses
-    // the strip in place (a CSS play-state toggle restarts in some browsers).
-    var SPEED = 35; // px per second
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    document.querySelectorAll('.logo-strip[data-marquee]').forEach(function(strip) {
-      var track = strip.querySelector('.logo-track');
-      var clone = null, anims = [], lastWidth = -1;
-
-      function stop() {
-        anims.forEach(function(a) { a.cancel(); });
-        anims = [];
-      }
-
-      function update() {
-        var overflow = track.scrollWidth > strip.clientWidth + 1;
-        strip.classList.toggle('is-marquee', overflow);
-
-        if (!overflow) {
-          stop();
-          if (clone) { clone.remove(); clone = null; }
-          lastWidth = -1;
-          return;
-        }
-        if (!clone) {
-          clone = track.cloneNode(true);
-          clone.classList.add('clone');
-          clone.setAttribute('aria-hidden', 'true');
-          clone.querySelectorAll('a').forEach(function(a) { a.tabIndex = -1; });
-          strip.appendChild(clone);
-        }
-        var width = track.scrollWidth;
-        if (width === lastWidth) return;   // nothing changed; leave animation running
-        lastWidth = width;
-        stop();
-        if (reduceMotion.matches) return;
-        [track, clone].forEach(function(el) {
-          anims.push(el.animate(
-            [{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }],
-            { duration: (width / SPEED) * 1000, iterations: Infinity, easing: 'linear' }
-          ));
-        });
-      }
-
-      // Hold/resume by changing playback rate rather than pause()/play():
-      // updatePlaybackRate() is synchronised with the compositor, so the
-      // strip stops exactly where it is instead of snapping by a frame.
-      function setRate(rate) {
-        anims.forEach(function(a) {
-          if (a.updatePlaybackRate) a.updatePlaybackRate(rate); else a.playbackRate = rate;
-        });
-      }
-      strip.addEventListener('mouseenter', function() { setRate(0); });
-      strip.addEventListener('mouseleave', function() { setRate(1); });
-      // Keyboard users tabbing through the logos also get a held strip
-      strip.addEventListener('focusin',  function() { setRate(0); });
-      strip.addEventListener('focusout', function() { setRate(1); });
-
-      update();
-      window.addEventListener('load', update);
-      window.addEventListener('resize', update);
-      reduceMotion.addEventListener('change', function() { lastWidth = -1; update(); });
-    });
-  })();
-  </script>
-
   <!-- ================= TASK ================= -->
   <h2 id="task">The task</h2>
   <p>Dishonesty, i.e., a model's tendency to make assertions that diverge from what it internally represents as true, persists even in state-of-the-art models. Steering a model to be more honest is challenging due to the tight coupling of dishonesty with other (desirable) behavioral traits. The task of the competition is to design a <em>steering pipeline</em> (an ordered composition of steering interventions) to maximally suppress a model's dishonest behavior while maintaining its general capabilities.</p>
@@ -265,10 +167,10 @@
     <li>Chen Xiong <span class="soft">· The Chinese University of Hong Kong</span></li>
     <li>Zhiyuan He <span class="soft">· The Chinese University of Hong Kong</span></li>
     <li>Tsung-Yi Ho <span class="soft">· The Chinese University of Hong Kong</span></li>
-    <li>Gabriele Sarti <span class="soft">· Parallax & NDIF</span></li>
-    <li>Adam Belfki <span class="soft">· NDIF</span></li>
-    <li>Emma Bortz <span class="soft">· NDIF</span></li>
-    <li>Jaden Fiotto-Kaufman <span class="soft">· NDIF</span></li>
+    <li>Gabriele Sarti <span class="soft">· Parallax & Northeastern University</span></li>
+    <li>Adam Belfki <span class="soft">· Northeastern University</span></li>
+    <li>Emma Bortz <span class="soft">· Northeastern University</span></li>
+    <li>Jaden Fiotto-Kaufman <span class="soft">· Northeastern University</span></li>
     <li>Walter Laurito <span class="soft">· Cadenza Labs</span></li>
     <li>Kieron Kretschmar <span class="soft">· Cadenza Labs</span></li>
     <li>Sharan Maiya <span class="soft">· Cadenza Labs</span></li>

@@ -214,57 +214,6 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .people li{ break-inside:avoid; padding:.05rem 0; }
 .people .soft{ font-size:.95rem; }
 
-/* ================= PARTNERS (organizers + supporters) ================= */
-.partners{
-  display:flex; align-items:stretch; gap:2.25rem;
-  margin:2.5rem 0 0;
-  --logo-gap:3.25rem;
-}
-.partner-group{ min-width:0; }
-.partner-group.organizers{ flex:1 1 auto; }
-.partner-group.supporters{ flex:0 0 auto; }
-.partner-divider{ flex:0 0 1px; background:var(--line); }
-
-/* Labels match h2 type (see "The task") but carry no accent square */
-.partner-label{ font-size:1.25rem; font-weight:600; line-height:1.35; margin:0 0 1.35rem; }
-
-.logo-strip{ display:flex; overflow:hidden; }
-.logo-track{ display:flex; align-items:center; gap:var(--logo-gap); flex:0 0 auto; }
-.logo-track a{ display:block; padding:0; margin:0; line-height:0; }
-.logo-track a:hover{ background:none; }
-.logo-track img{ display:block; width:auto; height:2.6rem; }
-/* Per-logo heights so the wordmarks read at a similar optical size; IBM PNG has side whitespace to trim */
-.logo-track img.ibm{ height:3.1rem; margin:0 -1.25rem 0 -.7rem; }
-.logo-track img.ndif{ height:3.55rem; }
-.logo-track img.cadenza{ height:1.75rem; }
-.logo-track img.kitware{ height:2.05rem; position:relative; top:-.17rem; }
-.logo-track img.cuhk{ height:3.35rem; }
-.logo-track img.berkeley{ height:2.4rem; }
-.logo-track img.aisanz{ height:2.4rem; margin:0 -.35rem; }
-/* The Schmidt PNG has generous baked-in whitespace; negative margins pull the artwork to the edges */
-.logo-track img.schmidt{ height:5.3rem; margin:-1.05rem 0 -1.05rem -1.3rem; }
-
-/* Thin rule marking the start of the organizer list (and the seam of the marquee loop) */
-.logo-sep{ display:block; width:1px; height:2.6rem; background:var(--line); }
-
-/* Tara PNG has ~15% padding to trim */
-.logo-track img.tara{ height:4rem; margin:-.6rem -.55rem; }
-
-/* Marquee mode (added by script when logos overflow): duplicate track, scroll, fade edges */
-.logo-strip.is-marquee{
-  -webkit-mask-image:linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-          mask-image:linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-}
-.logo-strip.is-marquee .logo-track{ padding-right:var(--logo-gap); }  /* keeps the gap even across the seam; motion is driven by script */
-@media (prefers-reduced-motion: reduce){
-  .logo-strip.is-marquee{ overflow-x:auto; -webkit-mask-image:none; mask-image:none; }
-}
-
-@media (max-width: 44rem){
-  .partners{ flex-direction:column; gap:1.75rem; }
-  .partner-divider{ flex-basis:auto; height:1px; }
-}
-
 /* ================= FOOTER ================= */
 .site-footer{
   margin-top:4.5rem; border-top:1px solid var(--ink);
