@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260923b">
+<link rel="stylesheet" href="styles.css?v=20261001">
 
 <!-- MailerLite Universal -->
 <script>
@@ -33,6 +33,7 @@
     </a>
     <nav class="site-nav" aria-label="Site">
       <a href="#task">The task</a>
+      <a href="#leaderboard">Leaderboard</a>
       <a href="#rules">Rules</a>
       <a href="#questions">Questions</a>
       <a href="#updates">Updates</a>
@@ -168,6 +169,81 @@
   <p>Submissions will be scored based on a composite score of dishonesty reduction relative to the unsteered model minus the mean regression across side-effects (as measured by general capability benchmarks). Only regressions are penalized; incidental capability gains are permitted but will not be rewarded. The specific measures of dishonesty and general capabilities will be kept private to prevent gaming.</p>
 
   <p>A collection of baseline steering pipelines will be provided at competition launch. A starter kit to help participants familiarize themselves with the code will also be made available. Winning teams will be awarded with a cash prize and will be invited to present at the competition workshop at NeurIPS 2026. Select teams will also be given the opportunity for their pipelines to be incorporated into the toolkit as community-contributed examples for dishonesty reduction.</p>
+
+  <!-- ================= LEADERBOARD ================= -->
+  <h2 id="leaderboard">Leaderboard</h2>
+  <div class="intake">
+    <div>
+      <p>Next intake:</p>
+      <p class="intake-when" id="intake-when">Oct 4, 2026 AoE</p>
+    </div>
+    <div class="countdown" id="intake-countdown" role="timer">
+      <span class="cd-unit"><span class="cd-num" data-unit="days">--</span><span class="cd-lbl">days</span></span>
+      <span class="cd-sep" aria-hidden="true">:</span>
+      <span class="cd-unit"><span class="cd-num" data-unit="hours">--</span><span class="cd-lbl">hours</span></span>
+      <span class="cd-sep" aria-hidden="true">:</span>
+      <span class="cd-unit"><span class="cd-num" data-unit="minutes">--</span><span class="cd-lbl">minutes</span></span>
+      <span class="cd-sep" aria-hidden="true">:</span>
+      <span class="cd-unit"><span class="cd-num" data-unit="seconds">--</span><span class="cd-lbl">seconds</span></span>
+    </div>
+  </div>
+
+  <div class="leaderboard">
+    <table>
+      <thead>
+        <tr><th class="lb-rank" scope="col">Rank</th><th class="lb-team" scope="col">Team</th><th class="lb-score" scope="col">Score</th></tr>
+      </thead>
+      <tbody aria-hidden="true">
+        <tr><td class="lb-rank">01</td><td class="lb-team"><span class="bar" style="width:38%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
+        <tr><td class="lb-rank">02</td><td class="lb-team"><span class="bar" style="width:52%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
+        <tr><td class="lb-rank">03</td><td class="lb-team"><span class="bar" style="width:27%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
+        <tr><td class="lb-rank">04</td><td class="lb-team"><span class="bar" style="width:44%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
+        <tr><td class="lb-rank">05</td><td class="lb-team"><span class="bar" style="width:33%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
+      </tbody>
+    </table>
+    <div class="lb-overlay" role="status"><p>Evaluation running, please check back shortly!</p></div>
+  </div>
+
+  <p>Please note that scores in the above leaderboard are for the previous intake. Submissions are pulled from participants' Hugging Face repos (described in the <a href="steerability-challenge-guide.pdf">competition guide</a>) every week according to the intake counter. </p>
+
+  <script>
+  (function() {
+    // Intakes close at the end of each Sunday AoE (UTC-12), starting Oct 4:
+    // the first is Oct 5 12:00 UTC, then every 7 days after that.
+    var FIRST = Date.UTC(2026, 9, 5, 12);
+    var WEEK = 7 * 24 * 60 * 60 * 1000;
+    var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    var nums = {};
+    document.querySelectorAll('#intake-countdown [data-unit]').forEach(function(n) { nums[n.dataset.unit] = n; });
+    var when = document.getElementById('intake-when');
+
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+    function render() {
+      var now = Date.now();
+      var next = FIRST + Math.max(0, Math.floor((now - FIRST) / WEEK) + 1) * WEEK;
+      // Round up, so the final second reads 00:00:00:01 and the counter resets
+      // to 07:00:00:00 at the intake itself rather than lingering on zero
+      var secs = Math.ceil((next - now) / 1000);
+      nums.days.textContent    = pad(Math.floor(secs / 86400));
+      nums.hours.textContent   = pad(Math.floor(secs / 3600) % 24);
+      nums.minutes.textContent = pad(Math.floor(secs / 60) % 60);
+      nums.seconds.textContent = pad(secs % 60);
+      // Step back into the AoE calendar day the intake closes on
+      var d = new Date(next - 12 * 60 * 60 * 1000 - 1);
+      when.textContent = MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear() + ' AoE';
+    }
+
+    // Intakes fall on whole seconds, so re-render just after each second boundary
+    function tick() {
+      render();
+      setTimeout(tick, 1000 - Date.now() % 1000 + 20);
+    }
+    tick();
+  })();
+  </script>
+
   <!-- ================= RULES ================= -->
   <h2 id="rules">Rules</h2>
   <ol class="rules">
