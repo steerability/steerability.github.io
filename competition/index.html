@@ -175,7 +175,7 @@
   <div class="intake">
     <div>
       <p>Next intake:</p>
-      <p class="intake-when" id="intake-when">Oct 4, 2026 AoE</p>
+      <p class="intake-when" id="intake-when">Oct 5, 2026 AoE</p>
     </div>
     <div class="countdown" id="intake-countdown" role="timer">
       <span class="cd-unit"><span class="cd-num" data-unit="days">--</span><span class="cd-lbl">days</span></span>
@@ -211,6 +211,9 @@
     // Intakes close at the end of each Sunday AoE (UTC-12), starting Oct 4:
     // the first is Oct 5 12:00 UTC, then every 7 days after that.
     var FIRST = Date.UTC(2026, 9, 5, 12);
+    // The Oct 4 intake was extended by 24 hours to Oct 5 AoE (Oct 6 12:00 UTC);
+    // the weekly Sunday schedule resumes after it.
+    var EXTENDED = Date.UTC(2026, 9, 6, 12);
     var WEEK = 7 * 24 * 60 * 60 * 1000;
     var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -222,7 +225,8 @@
 
     function render() {
       var now = Date.now();
-      var next = FIRST + Math.max(0, Math.floor((now - FIRST) / WEEK) + 1) * WEEK;
+      var next = now < EXTENDED ? EXTENDED
+        : FIRST + (Math.floor((now - FIRST) / WEEK) + 1) * WEEK;
       // Round up, so the final second reads 00:00:00:01 and the counter resets
       // to 07:00:00:00 at the intake itself rather than lingering on zero
       var secs = Math.ceil((next - now) / 1000);
