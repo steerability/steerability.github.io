@@ -11,6 +11,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=20261001">
+<style>
+  .leaderboard .lb-baseline td { font-style: italic; opacity: 0.75; }
+  .leaderboard .lb-tag { font-size: 0.8em; margin-left: 0.4em; }
+</style>
 
 <!-- MailerLite Universal -->
 <script>
@@ -191,17 +195,28 @@
   <div class="leaderboard">
     <table>
       <thead>
-        <tr><th class="lb-rank" scope="col">Rank</th><th class="lb-team" scope="col">Team</th><th class="lb-score" scope="col">Score</th></tr>
+        <tr><th class="lb-rank" scope="col">Rank</th><th class="lb-team" scope="col">Team</th><th class="lb-score" scope="col">Overall score</th><th class="lb-score" scope="col">delta</th><th class="lb-score" scope="col">r_side</th><th class="lb-score" scope="col">r_guard</th></tr>
       </thead>
-      <tbody aria-hidden="true">
-        <tr><td class="lb-rank">01</td><td class="lb-team"><span class="bar" style="width:38%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
-        <tr><td class="lb-rank">02</td><td class="lb-team"><span class="bar" style="width:52%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
-        <tr><td class="lb-rank">03</td><td class="lb-team"><span class="bar" style="width:27%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
-        <tr><td class="lb-rank">04</td><td class="lb-team"><span class="bar" style="width:44%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
-        <tr><td class="lb-rank">05</td><td class="lb-team"><span class="bar" style="width:33%"></span></td><td class="lb-score"><span class="bar" style="width:3.4rem"></span></td></tr>
+      <tbody>
+        <tr><td class="lb-rank">01</td><td class="lb-team">reg0x00</td><td class="lb-score">+0.714</td><td class="lb-score">+0.801</td><td class="lb-score">0.017</td><td class="lb-score">0.012</td></tr>
+        <tr><td class="lb-rank">02</td><td class="lb-team">ParisBound</td><td class="lb-score">+0.696</td><td class="lb-score">+0.778</td><td class="lb-score">0.020</td><td class="lb-score">0.008</td></tr>
+        <tr><td class="lb-rank">03</td><td class="lb-team">sLab</td><td class="lb-score">+0.484</td><td class="lb-score">+0.593</td><td class="lb-score">0.012</td><td class="lb-score">0.024</td></tr>
+        <tr><td class="lb-rank">04</td><td class="lb-team">chenli-steerability</td><td class="lb-score">+0.438</td><td class="lb-score">+0.563</td><td class="lb-score">0.020</td><td class="lb-score">0.022</td></tr>
+        <tr><td class="lb-rank">05</td><td class="lb-team">runtime-steering</td><td class="lb-score">+0.393</td><td class="lb-score">+0.464</td><td class="lb-score">0.013</td><td class="lb-score">0.011</td></tr>
+        <tr><td class="lb-rank">06</td><td class="lb-team">Coxswains</td><td class="lb-score">+0.334</td><td class="lb-score">+0.393</td><td class="lb-score">0.018</td><td class="lb-score">0.001</td></tr>
+        <tr><td class="lb-rank">07</td><td class="lb-team">Team Trust-Issues</td><td class="lb-score">+0.319</td><td class="lb-score">+0.891</td><td class="lb-score">0.036</td><td class="lb-score">0.155</td></tr>
+        <tr><td class="lb-rank">08</td><td class="lb-team">S2WISH</td><td class="lb-score">+0.170</td><td class="lb-score">+0.378</td><td class="lb-score">0.011</td><td class="lb-score">0.059</td></tr>
+        <tr><td class="lb-rank">09</td><td class="lb-team">Paris, Here Oui Come!</td><td class="lb-score">+0.166</td><td class="lb-score">+0.378</td><td class="lb-score">0.014</td><td class="lb-score">0.057</td></tr>
+        <tr class="lb-baseline"><td class="lb-rank">&ndash;</td><td class="lb-team">honesty_few_shot <span class="lb-tag">baseline</span></td><td class="lb-score">+0.138</td><td class="lb-score">+0.365</td><td class="lb-score">0.012</td><td class="lb-score">0.064</td></tr>
+        <tr><td class="lb-rank">10</td><td class="lb-team">SDNB</td><td class="lb-score">+0.087</td><td class="lb-score">+0.125</td><td class="lb-score">0.007</td><td class="lb-score">0.006</td></tr>
+        <tr class="lb-baseline"><td class="lb-rank">&ndash;</td><td class="lb-team">honesty_sft <span class="lb-tag">baseline</span></td><td class="lb-score">+0.046</td><td class="lb-score">+0.211</td><td class="lb-score">0.006</td><td class="lb-score">0.049</td></tr>
+        <tr><td class="lb-rank">11</td><td class="lb-team">NikallaudeAIns</td><td class="lb-score">-0.291</td><td class="lb-score">+0.055</td><td class="lb-score">0.044</td><td class="lb-score">0.071</td></tr>
+        <tr><td class="lb-rank">12</td><td class="lb-team">FreeStyle Blue</td><td class="lb-score">-0.797</td><td class="lb-score">+0.740</td><td class="lb-score">0.167</td><td class="lb-score">0.346</td></tr>
+        <tr><td class="lb-rank">13</td><td class="lb-team">Yeh's Lab @ IIS, AS</td><td class="lb-score">-1.358</td><td class="lb-score">+0.167</td><td class="lb-score">0.292</td><td class="lb-score">0.216</td></tr>
+        <tr class="lb-baseline"><td class="lb-rank">&ndash;</td><td class="lb-team">honest_persona <span class="lb-tag">baseline</span></td><td class="lb-score">-1.456</td><td class="lb-score">+0.692</td><td class="lb-score">0.318</td><td class="lb-score">0.398</td></tr>
+        <tr><td class="lb-rank">14</td><td class="lb-team">hayheap</td><td class="lb-score">-1.466</td><td class="lb-score">+0.699</td><td class="lb-score">0.318</td><td class="lb-score">0.403</td></tr>
       </tbody>
     </table>
-    <div class="lb-overlay" role="status"><p>Evaluation running, please check back shortly!</p></div>
   </div>
 
   <p>Please note that scores in the above leaderboard are for the previous intake. Submissions are pulled from participants' Hugging Face repos (described in the <a href="steerability-challenge-guide.pdf">competition guide</a>) every week according to the intake counter. </p>
