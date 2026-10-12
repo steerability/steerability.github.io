@@ -22,7 +22,9 @@
                           the code for a token (POST /oauth/token), fetch
                           /oauth/userinfo, keep a small session, clean the URL
      3. renderWindow()    the "who" line (handle, tags, sign out) and the
-                          private view's placeholder
+                          private view (leaderboard/private-view.js, which
+                          reads the results API at CONFIG.api; without it,
+                          or without CONFIG.api, a placeholder)
 
    Storage
      The session and the pending verifier live in localStorage. huggingface.co
@@ -45,7 +47,11 @@
    Local development
      - ?mock=participant | organizer | noteam | none fakes a session
        (localhost only, on either page), so the private view can be
-       built without signing in each time
+       built without signing in each time; in the pop-up the private
+       view then reads leaderboard/mock/<kind>.json instead of the API,
+       and every kind that starts with "participant" (participant-late,
+       participant-unscored, …) is the participant session with its own
+       fixture
      - CONFIG.enabled=false ships the code dark: the competition page's
        button stays hidden unless the URL has ?preview, or ?mock on
        localhost (either one sets localStorage sc:preview=1, so the button
@@ -59,6 +65,7 @@
     enabled: false,                // false: hide the button unless ?preview is in the URL
     clientId: '959e50bd-c96f-4a34-8384-f69cd9ae779c',   // from https://huggingface.co/settings/applications
     hub: 'https://huggingface.co',
+    api: 'https://steerability-challenge-evals-leaderboard-api.hf.space',   // the results API; null keeps the placeholders
     scopes: 'openid profile read-memberships',
     organizerUsers: ['steerability-challenge-evaluator'],
     organizerOrg: 'steerability-challenge-evals',
@@ -112,9 +119,16 @@
     crypto.getRandomValues(bytes);
     return base64url(bytes);
   }
-  function sha256(text) {
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) {
-      return base64url(new Uint8Array(buf));
+  function digest(text) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) { return new Uint8Array(buf); });
+  }
+  function sha256(text) { return digest(text).then(base64url); }
+  // Lowercase hex: the public table's data-org is the first 12 characters of this for the team's org handle
+  function sha256hex(text) {
+    return digest(text).then(function (bytes) {
+      var s = '';
+      for (var i = 0; i < bytes.length; i++) s += (bytes[i] < 16 ? '0' : '') + bytes[i].toString(16);
+      return s;
     });
   }
 
@@ -180,6 +194,13 @@
 
   /* ---------- OAuth (in the pop-up) ---------- */
 
+  // A sleeping results server takes up to a minute to wake: wake it while the person is on huggingface.co.
+  // keepalive lets the request outlive the page; nothing reads the answer.
+  function wakeApi() {
+    if (!CONFIG.api) return;
+    try { fetch(CONFIG.api + '/healthz', { cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) { /* ignore */ }
+  }
+
   function login() {
     clearError();
     if (!CONFIG.clientId || /^REPLACE/.test(CONFIG.clientId)) {
@@ -188,6 +209,7 @@
     }
     var verifier = randomToken(48);   // 64 url-safe chars: within PKCE's 43–128
     var state = randomToken(24);
+    wakeApi();
     return sha256(verifier).then(function (challenge) {
       storageSet(PENDING_KEY, JSON.stringify({ state: state, verifier: verifier, redirectUri: redirectUri(), createdAt: Date.now() }));
       var url = new URL(CONFIG.hub + '/oauth/authorize');
@@ -253,27 +275,32 @@
       });
   }
 
-  function logout() {
+  // "Sign out", and the private view's way out when the results API no longer accepts the token (with a message
+  // for the error line under the sign-in row)
+  function logout(message) {
     dropSession();   // the competition page's button hears this through the 'storage' event
     clearError();
     renderWindow();
+    if (message) showError(message);
   }
 
   /* ---------- mock sessions (localhost only) ---------- */
 
+  // `mock` names the fixture the private view reads (leaderboard/mock/<kind>.json), since ?mock is gone from the
+  // URL by the time it renders
   function mockSession(kind) {
-    var base = { accessToken: 'mock', scope: CONFIG.scopes, expiresAt: Date.now() + 3600 * 1000 };
+    var base = { accessToken: 'mock', scope: CONFIG.scopes, expiresAt: Date.now() + 3600 * 1000, mock: kind };
     var ada = { username: 'ada', name: 'Ada Lovelace', picture: '', profile: CONFIG.hub + '/ada' };
     if (kind === 'organizer') {
       base.user = { username: 'steerability-challenge-evaluator', name: 'steerability-challenge-evaluator', picture: '',
                     profile: CONFIG.hub + '/steerability-challenge-evaluator' };
       base.orgs = [{ handle: 'steerability-challenge-evals', name: 'Steerability Challenge Evals', role: 'admin' },
-                   { handle: 'saddle-point', name: 'Saddle Point', role: 'read' }];
+                   { handle: 'example-team', name: 'Example Team', role: 'read' }];
       return base;
     }
-    if (kind === 'participant') {
+    if (/^participant/.test(kind)) {   // participant, participant-late, …: one session, a fixture each
       base.user = ada;
-      base.orgs = [{ handle: 'saddle-point', name: 'Saddle Point', role: 'write' }];
+      base.orgs = [{ handle: 'example-team', name: 'Example Team', role: 'write' }];
       return base;
     }
     if (kind === 'noteam') { base.user = ada; base.orgs = []; return base; }
@@ -346,8 +373,15 @@
     els.who.appendChild(signout);
   }
 
-  // The private view itself is the next piece of work; these are its placeholders.
+  // The private view (private-view.js) renders the results. These placeholders stand in without it, or without
+  // CONFIG.api; an account with no team organization gets the guidance either way.
   function renderContent(s, roles) {
+    var view = window.SCPrivateView;   // looked up now, not when this script loads, so the scripts' order can't break it
+    if (view && (CONFIG.api || s.mock) && (roles.organizer || roles.teams.length)) {
+      view.render(s, roles, boardReady);
+      return;
+    }
+    if (view) view.clear();
     els.content.textContent = '';
     if (roles.organizer) {
       els.content.appendChild(text('p', 'soft',
@@ -368,6 +402,7 @@
   function renderWindow() {
     var s = loadSession();
     if (!s) {
+      if (window.SCPrivateView) window.SCPrivateView.clear();   // its rows, blocks and caption go with the session
       els.signedOut.hidden = false;
       els.signedIn.hidden = true;
       return;
@@ -380,6 +415,8 @@
   }
 
   // The public table is the competition page's own (fetched from ../), so it is edited in one place only.
+  // boardReady resolves once it is in (or has failed to load); the private view decorates it after that.
+  var boardReady = Promise.resolve();
   function loadPublicBoard() {
     if (!els.board) return Promise.resolve();
     return fetch('../', { cache: 'no-cache' })
@@ -434,7 +471,7 @@
     window.addEventListener('storage', function (e) {
       if (e.key === SESSION_KEY || e.key === null) renderWindow();   // signed in or out in another window
     });
-    var board = loadPublicBoard();
+    var board = boardReady = loadPublicBoard();
 
     var ready;
     if (params.has('code') || params.has('error')) {
@@ -458,6 +495,10 @@
   }
 
   /* ---------- boot ---------- */
+
+  // For private-view.js: CONFIG (its api), the window fit (after a row opens), sign-out with a message (when the
+  // API rejects the token), and the hash that names a team's row in the public table
+  window.SCLogin = { config: CONFIG, fitWindow: fitWindow, signOut: logout, sha256hex: sha256hex };
 
   function init() {
     var params = new URLSearchParams(location.search);

@@ -30,7 +30,10 @@ The competition page's "Sign in with Hugging Face" button opens `competition/lea
 in a pop-up window, where sign-in (`competition/hf-login.js`) and the private view live.
 It works on the local preview too — the Hugging Face app accepts
 `http://localhost/competition/leaderboard/` on any port — and `?mock=participant` /
-`?mock=organizer` (on either page) fake a signed-in session without leaving the page.
+`?mock=organizer` (on either page) fake a signed-in session without leaving the page; the
+pop-up's private view then renders the fixture `competition/leaderboard/mock/<kind>.json`
+(also `participant-unscored`, `participant-late` and `participant-noentry`) instead of
+calling the results API.
 While `CONFIG.enabled` is `false` the button is hidden; add `?preview` to the competition
 page's URL to show it (on the live site too).
 

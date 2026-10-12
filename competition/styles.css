@@ -277,6 +277,68 @@ pre .c{ color:#8A8C96; font-style:italic; }
 }
 .link-btn:hover{ background:var(--accent); color:#fff; text-decoration:none; }
 
+/* The private view in the pop-up (leaderboard/private-view.js): the "your entry" line(s) above the board, a detail
+   row that opens under the team's own row (or the same detail as a block under the table), the board caption, and
+   the organizer's status block. Hairlines, the mono face for labels, dates and ids, the accent only for links */
+.lb-mono{ font-family:var(--font-mono); font-size:.8em; }
+.lb-entry, .lb-warn{ margin:0 0 .5rem; }
+.lb-warn{ color:#B3261E; }   /* like .lb-error */
+.lb-entry-block{ margin-bottom:.75rem; }
+.lb-caption{ font-size:.92rem; }
+
+/* The team's name in its row, as a button that opens the detail; the caret turns when it is open */
+.lb-expand{ font:inherit; color:inherit; text-align:left; background:none; border:0; padding:0; margin:0; cursor:pointer; }
+.lb-expand::before{
+  content:""; display:inline-block; margin-right:.5em; vertical-align:.08em;
+  border-style:solid; border-width:.32em 0 .32em .5em; border-color:transparent transparent transparent currentColor;
+  transition:transform .12s ease;
+}
+.lb-expand[aria-expanded="true"]::before{ transform:rotate(90deg); }
+.lb-expand:hover{ text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+
+/* The detail, in its table row or as a block under the table. Its own width never widens the table
+   (contain: inline-size), so the per-model table scrolls inside its wrapper instead */
+.leaderboard tr.lb-detail > td{ height:auto; padding:.75rem 1.25rem 1rem; }   /* keeps the row's hairline top rule */
+.lb-detail-standalone{ border:1px solid var(--line); padding:.75rem 1.25rem 1rem; margin:0 0 1.5rem; }
+.lb-standalone-name{ font-weight:600; margin:0 0 .35rem; }
+.lb-detail-body{ font-size:.95rem; line-height:1.55; contain:inline-size; overflow-wrap:anywhere; }
+.lb-kv{ display:flex; flex-wrap:wrap; column-gap:1.1rem; padding:.12rem 0; }
+.lb-k{ flex:0 0 6.5rem; font-family:var(--font-mono); font-size:.75rem; color:var(--soft); padding-top:.2rem; }
+.lb-v{ flex:1 1 18rem; min-width:0; }
+.lb-note{ color:var(--soft); }
+.lb-families{ display:grid; grid-template-columns:auto auto minmax(0, 1fr); gap:.05rem 1.1rem; margin-top:.1rem; }
+.lb-families .lb-num{ text-align:right; }
+.lb-dim{ display:inline-block; margin-right:1.1rem; }
+.lb-arrows{ letter-spacing:.1em; }
+
+.lb-grid-wrap{ overflow-x:auto; margin:.6rem 0 .8rem; }
+.lb-grid{ width:100%; min-width:50rem; table-layout:fixed; border-collapse:collapse; }
+.lb-grid th{
+  font-family:var(--font-mono); font-size:.72rem; font-weight:400; color:var(--soft);
+  text-align:right; padding:.25rem .55rem; white-space:nowrap;
+}
+.lb-grid td{ height:auto; padding:.3rem .55rem; border-top:1px solid var(--line); text-align:right; white-space:nowrap; }
+.lb-grid th:first-child, .lb-grid td:first-child{ text-align:left; padding-left:0; }
+.lb-grid th:nth-child(1){ width:9.5rem; }
+.lb-grid th:nth-child(2), .lb-grid th:nth-child(4), .lb-grid th:nth-child(5), .lb-grid th:nth-child(6){ width:4rem; }
+.lb-grid th:nth-child(3){ width:7.5rem; }
+.lb-grid th:nth-child(7), .lb-grid th:nth-child(8){ width:6.75rem; }
+.lb-grid .lb-notes{ text-align:left; white-space:normal; color:var(--soft); }
+.lb-grid .lb-overall td{ font-weight:600; }
+.lb-grid td.lb-rank-of{ text-align:left; font-weight:400; }
+
+/* Organizer: what needs attention, above the board; the run's progress and failures behind "Run status" */
+.lb-status{ border:1px solid var(--line); padding:.65rem 1.25rem .75rem; margin:0 0 .5rem; font-size:.95rem; }
+.lb-status-head{ font-family:var(--font-mono); font-size:.78rem; color:var(--soft); margin:0 0 .3rem; }
+.lb-status ul{ margin:0 0 .5rem; padding-left:1.1rem; }
+.lb-status p{ margin:0 0 .5rem; }
+.lb-run-status summary{ font-family:var(--font-mono); font-size:.78rem; color:var(--soft); cursor:pointer; }
+.lb-run-status pre{ box-shadow:none; border-color:var(--line); margin:.5rem 0 0; max-height:18rem; white-space:pre-wrap; }
+
+@media (max-width: 44rem){
+  .leaderboard tr.lb-detail > td, .lb-detail-standalone, .lb-status{ padding-inline:.9rem; }
+}
+
 /* ================= RULES ================= */
 .rules{ list-style:none; margin:0 0 1.1rem; padding:0; counter-reset:rule; }
 .rules li{ counter-increment:rule; display:flex; gap:.9rem; margin-bottom:.6rem; }

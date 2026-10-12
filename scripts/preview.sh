@@ -35,6 +35,7 @@ echo "Serving the assembled site from _site/"
 echo "  competition:  http://localhost:${PORT}/competition/"
 echo "  landing:      http://localhost:${PORT}/"
 echo "  sign-in:      http://localhost:${PORT}/competition/?preview   (the button is hidden while CONFIG.enabled is false)"
-echo "  mock session: http://localhost:${PORT}/competition/leaderboard/?mock=participant   (also: organizer | noteam | none)"
+echo "  mock session: http://localhost:${PORT}/competition/leaderboard/?mock=participant   (also: participant-unscored |"
+echo "                participant-late | participant-noentry | organizer | noteam | none; fixtures in leaderboard/mock/)"
 echo "Ctrl-C to stop."
 exec python3 -m http.server "${PORT}" --directory _site

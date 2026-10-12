@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=20261012">
+<link rel="stylesheet" href="../styles.css?v=20261012b">
 </head>
 <body class="lb-window">
 
@@ -28,7 +28,7 @@
     </div>
     <div data-auth-state="signed-in" hidden>
       <p class="lb-who" id="lb-who"></p>
-      <!-- The detailed view for participants (and the organizer view) goes here -->
+      <!-- Filled in by private-view.js: the "your entry" line(s), or the organizer's status block -->
       <div id="lb-private-content"></div>
     </div>
     <p class="lb-error" id="hf-login-error" hidden aria-live="polite"></p>
@@ -40,7 +40,8 @@
   <div id="lb-public">
     <p>The public leaderboard is on the <a href="../#leaderboard">competition page</a>.</p>
   </div>
-  <p class="soft">Scores are for the previous intake.</p>
+  <!-- Becomes the board caption (which intake, rendered when, how many ranked) once private-view.js has the results -->
+  <p class="soft" id="lb-caption">Scores are for the previous intake.</p>
 
 </main>
 
@@ -54,6 +55,8 @@
   </div>
 </dialog>
 
-<script src="../hf-login.js?v=20261012"></script>
+<!-- private-view.js first: hf-login.js renders as soon as it loads, and hands the private view to SCPrivateView -->
+<script src="private-view.js?v=20261012b"></script>
+<script src="../hf-login.js?v=20261012b"></script>
 </body>
 </html>
