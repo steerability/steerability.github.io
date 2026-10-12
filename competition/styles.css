@@ -211,6 +211,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .leaderboard .lb-score{ width:9rem; text-align:right; }
 .leaderboard td.lb-rank{ font-family:var(--font-mono); font-size:.8rem; color:#B4B5BC; }
 .leaderboard .bar{ display:inline-block; height:.6rem; background:var(--line); vertical-align:middle; }
+.leaderboard .lb-baseline td{ background:rgba(128, 128, 128, 0.18); }   /* baseline pipelines, unranked */
 
 /* "Evaluation running" message: always on, but hover-only where hover exists */
 .lb-overlay{
@@ -240,6 +241,26 @@ pre .c{ color:#8A8C96; font-style:italic; }
   .leaderboard .lb-rank{ width:4.5rem; }
   .leaderboard .lb-score{ width:5.5rem; }
 }
+
+/* Private view (see hf-login.js): on the competition page, one button in a .cta-row like the Register row;
+   in the leaderboard/ pop-up, the same sign-in row, then a plain "who" line and the private view */
+.lb-private [hidden]{ display:none !important; }   /* .cta-row is display:flex; keep [hidden] winning */
+.lb-who{ display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .7rem; margin:1.6rem 0 .9rem; }
+.lb-avatar{ width:1.75rem; height:1.75rem; border:1px solid var(--ink); }   /* square, like every other corner */
+.lb-tag{
+  font-family:var(--font-mono); font-size:.75rem; line-height:1.4; color:var(--soft);
+  border:1px solid var(--line); padding:.1em .5em;
+}
+.lb-signout{ white-space:nowrap; }
+.lb-error{ color:#B3261E; margin:0 0 1.1rem; }
+
+/* The leaderboard/ pop-up: the who line across the top (sign out at its right end), then the board at full
+   window width. Spacing at the edges is padding, not margin, so the window can measure itself (fitWindow) */
+.lb-window .container{ max-width:none; padding-block:1rem 1.25rem; }
+.lb-window .lb-who, .lb-window .cta-row{ margin-top:0; }
+.lb-window .lb-signout{ margin-left:auto; }
+.lb-window h2{ margin-top:2.25rem; }
+.lb-window h2::before{ content:none; }   /* no accent square in the pop-up */
 
 /* ================= RULES ================= */
 .rules{ list-style:none; margin:0 0 1.1rem; padding:0; counter-reset:rule; }

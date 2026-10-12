@@ -10,10 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261001">
-<style>
-  .leaderboard .lb-baseline td { background: rgba(128, 128, 128, 0.18); }
-</style>
+<link rel="stylesheet" href="styles.css?v=20261012">
 
 <!-- MailerLite Universal -->
 <script>
@@ -219,6 +216,17 @@
   </div>
 
   <p>Please note that scores in the above leaderboard are for the previous intake. Submissions are pulled from participants' Hugging Face repos (described in the <a href="steerability-challenge-guide.pdf">competition guide</a>) every week according to the intake counter. </p>
+
+  <!-- ================= PRIVATE VIEW (sign in with Hugging Face) ================= -->
+  <!-- One button that opens leaderboard/ in a pop-up window, where sign-in and the private view live.
+       Hidden until hf-login.js decides to show it (CONFIG.enabled, or ?preview). -->
+  <div class="lb-private" id="lb-private" data-mode="launcher" hidden>
+    <div class="cta-row">
+      <a class="btn" id="hf-open" href="leaderboard/?signin" target="sc-leaderboard">Sign in with Hugging Face</a>
+      <span class="soft" id="hf-open-note">to see your team's private results</span>
+    </div>
+  </div>
+  <script src="hf-login.js?v=20261012"></script>
 
   <script>
   (function() {

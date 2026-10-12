@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaderboard · The Steerability Challenge</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.png" type="image/png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=20261012">
+</head>
+<body class="lb-window">
+
+<!-- The pop-up opened by the competition page's "Sign in with Hugging Face" button (see ../hf-login.js).
+     It is also the OAuth redirect URI, so the whole sign-in round trip happens in this window. -->
+<main class="container">
+
+  <h1 class="visually-hidden">Leaderboard</h1>
+
+  <!-- ================= SIGN-IN + PRIVATE VIEW ================= -->
+  <div class="lb-private" id="lb-private" data-mode="window">
+    <div class="cta-row" data-auth-state="signed-out" hidden>
+      <button class="btn" type="button" id="hf-login">Sign in with Hugging Face</button>
+      <span class="soft">to see your team's private results</span>
+    </div>
+    <div data-auth-state="signed-in" hidden>
+      <p class="lb-who" id="lb-who"></p>
+      <!-- The detailed view for participants (and the organizer view) goes here -->
+      <div id="lb-private-content"></div>
+    </div>
+    <p class="lb-error" id="hf-login-error" hidden aria-live="polite"></p>
+  </div>
+
+  <!-- ================= PUBLIC BOARD ================= -->
+  <!-- Filled in from the competition page's own table, so it is only ever edited there -->
+  <h2 id="public">Public leaderboard</h2>
+  <div id="lb-public">
+    <p>The public leaderboard is on the <a href="../#leaderboard">competition page</a>.</p>
+  </div>
+  <p class="soft">Scores are for the previous intake.</p>
+
+</main>
+
+<script src="../hf-login.js?v=20261012"></script>
+</body>
+</html>
