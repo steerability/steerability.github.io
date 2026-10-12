@@ -44,6 +44,16 @@
 
 </main>
 
+<!-- ================= STAR THE TOOLKIT ================= -->
+<!-- Shown over the page to signed-in participants by hf-login.js (maybeAskForStar), until they go to the repo -->
+<dialog class="box star-ask" id="star-ask" aria-labelledby="star-ask-text" tabindex="-1">
+  <p id="star-ask-text">If you're finding the challenge engaging so far, please consider starring our toolkit repo!</p>
+  <div class="cta-row">
+    <a class="btn" id="star-go" href="https://github.com/generative-computing/steerability/" target="_blank" rel="noopener">Take me to the repo</a>
+    <button class="link-btn" type="button" id="star-dismiss">Go away</button>
+  </div>
+</dialog>
+
 <script src="../hf-login.js?v=20261012"></script>
 </body>
 </html>

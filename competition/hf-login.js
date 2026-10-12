@@ -7,7 +7,8 @@
      launcher  the competition page: one button under the public table
                that opens leaderboard/ in a pop-up window
      window    leaderboard/ (the pop-up): sign-in, the "who" line, the
-               private view, and a copy of the public table
+               private view, a copy of the public table, and (for
+               participants) an ask to star the toolkit repo
 
    OAuth 2.0 authorization-code flow with PKCE, run entirely in the
    browser: the Hugging Face app is a *public* client (no secret), so
@@ -65,12 +66,14 @@
     windowName: 'sc-leaderboard',  // window.open reuses the pop-up while it is open
     windowSize: [1040, 860],       // pop-up width, height (px)
     returnHash: '#leaderboard',    // where the competition page lands after ?mock
+    starSnoozeDays: 14,            // "Go away" on the star-the-repo ask hides it this long
     defaultTokenSeconds: 8 * 3600  // used only when the token reply has no expires_in
   };
 
   var SESSION_KEY = 'sc:hf-session';   // localStorage: the signed-in session, shared by both pages
   var PENDING_KEY = 'sc:hf-pending';   // localStorage: verifier + state while on huggingface.co
   var PREVIEW_KEY = 'sc:preview';      // localStorage: show the button even when CONFIG.enabled is false
+  var STAR_KEY = 'sc:star-ask';        // localStorage: 'visited', or when "Go away" was chosen (ms)
   var PENDING_MAX_AGE = 10 * 60 * 1000;   // a sign-in left unfinished for longer is ignored
 
   var root = document.getElementById('lb-private');
@@ -402,6 +405,30 @@
     if (Math.abs(window.outerHeight - h) > 1) window.resizeTo(window.outerWidth, h);
   }
 
+  // A static page can't tell whether someone has starred the repo: they signed in with Hugging Face, and the
+  // Hub doesn't share a GitHub account. So the ask goes by what they did with it in this browser: once they
+  // have gone to the repo it never comes back; "Go away" (or Esc) rests it for CONFIG.starSnoozeDays.
+  // Participants only: not organizers, and not accounts without a team org (they see the guidance instead).
+  function maybeAskForStar() {
+    var dialog = document.getElementById('star-ask');
+    var s = loadSession();
+    if (!dialog || !dialog.showModal || !s) return;
+    var roles = rolesOf(s);
+    if (roles.organizer || !roles.teams.length) return;
+    var seen = storageGet(STAR_KEY);
+    if (seen === 'visited' || (seen && Date.now() - Number(seen) < CONFIG.starSnoozeDays * 24 * 3600 * 1000)) return;
+
+    function snooze() { storageSet(STAR_KEY, String(Date.now())); }
+    document.getElementById('star-go').addEventListener('click', function () {
+      storageSet(STAR_KEY, 'visited');
+      setTimeout(function () { dialog.close(); }, 0);   // after the link has opened the repo in a new tab
+    });
+    document.getElementById('star-dismiss').addEventListener('click', function () { snooze(); dialog.close(); });
+    dialog.addEventListener('cancel', snooze);   // Esc
+    dialog.showModal();
+    dialog.focus();   // rather than its first button, which would show a focus ring before anyone has done anything
+  }
+
   function initWindow(params) {
     if (els.login) els.login.addEventListener('click', function () { login(); });
     window.addEventListener('storage', function (e) {
@@ -422,8 +449,12 @@
       renderWindow();
       ready = Promise.resolve();
     }
-    // Fit once the table, the sign-in state and the web fonts are all in, since each changes the height.
-    Promise.all([board, ready, document.fonts && document.fonts.ready]).then(fitWindow);
+    // Fit once the table, the sign-in state and the web fonts are all in, since each changes the height;
+    // then, a moment later, the star-the-repo ask (it floats over the page, so it doesn't change the fit).
+    Promise.all([board, ready, document.fonts && document.fonts.ready]).then(function () {
+      fitWindow();
+      setTimeout(maybeAskForStar, 400);
+    });
   }
 
   /* ---------- boot ---------- */

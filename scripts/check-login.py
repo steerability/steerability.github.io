@@ -6,7 +6,7 @@ the leaderboard pop-up (competition/leaderboard/) where sign-in and the private 
 
 Huggingface.co is never contacted: the authorize, token and userinfo endpoints are mocked (the authorize stub sends
 Cross-Origin-Opener-Policy: same-origin like the real page, then approves or denies by redirecting back), and
-hf-login.js is served with a test client id and CONFIG.enabled forced on (step 10 forces it off), whatever the
+hf-login.js is served with a test client id and CONFIG.enabled forced on (step 12 forces it off), whatever the
 committed values. Screenshots land in tmp/shots/. Exit status 1 on any failed check.
 """
 import base64
@@ -118,8 +118,8 @@ with sync_playwright() as p:
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, reduced_motion="reduce")
         # A 1600px-tall screen, so the pop-up can fit the whole board (Playwright's screen emulation doesn't reach
         # pop-ups, where screen = the window); resizeTo/moveTo are recorded, since headless can't resize anyway.
-        ctx.add_init_script("Object.defineProperty(screen, 'availHeight', { get: function () { return 1600; } });"
-                            "Object.defineProperty(screen, 'availTop', { get: function () { return 0; } });"
+        ctx.add_init_script("Object.defineProperty(screen, 'availHeight', { get: function () { return 1600; }, configurable: true });"
+                            "Object.defineProperty(screen, 'availTop', { get: function () { return 0; }, configurable: true });"
                             "window.__resizes = []; window.resizeTo = function (w, h) { window.__resizes.push(h); };"
                             "window.moveTo = function () {};")
         ctx.on("page", watch)
@@ -130,6 +130,8 @@ with sync_playwright() as p:
         # Avatar image: serve a tiny svg so the <img> doesn't error.
         ctx.route("https://huggingface.co/avatars/*", lambda route, req: route.fulfill(
             status=200, content_type="image/svg+xml", body='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><rect width="28" height="28" fill="#1F3BD3"/></svg>'))
+        ctx.route("https://github.com/**", lambda route, req: route.fulfill(status=200, content_type="text/html",
+                                                                           body="<title>github stub</title>"))
         # MailerLite + fonts: block, we're offline.
         for pattern in ("https://assets.mailerlite.com/**", "https://fonts.googleapis.com/**", "https://fonts.gstatic.com/**"):
             ctx.route(pattern, lambda route, req: route.abort())
@@ -293,7 +295,65 @@ with sync_playwright() as p:
     win.wait_for_selector("#hf-login:visible")
     check(local(win, "sc:hf-session") is None, "expired session dropped")
 
-    # ---- 8. mock sessions (localhost only): in the pop-up, and on the competition page
+    # ---- 8. the star-the-repo ask: participants only, until they've gone to the repo; "Go away" rests it 14 days
+    def asked(pg):
+        pg.wait_for_timeout(900)   # the ask comes 400 ms after the window has fitted itself
+        return pg.evaluate("document.getElementById('star-ask').open")
+    def fortnight_ago(pg):
+        pg.evaluate("localStorage.setItem('sc:star-ask', String(Date.now() - 15 * 24 * 3600 * 1000))")
+    win.evaluate("localStorage.removeItem('sc:star-ask')")
+    for kind, who_ in [("organizer", "organizers"), ("noteam", "accounts without a team org")]:
+        win.goto(f"{LB}?mock={kind}")
+        win.wait_for_selector("#lb-who:not([hidden])")
+        check(not asked(win), f"star ask: not shown to {who_}")
+    win.goto(f"{LB}?mock=none")
+    win.wait_for_selector("#hf-login:visible")
+    check(not asked(win), "star ask: not shown when signed out")
+    win.goto(f"{LB}?mock=participant")
+    win.wait_for_selector("#star-ask[open]")
+    check("starring our toolkit repo" in win.inner_text("#star-ask"), "star ask: shown to a participant")
+    check(win.get_attribute("#star-go", "href") == "https://github.com/generative-computing/steerability/",
+          "star ask: 'Take me to the repo' links to the toolkit repo")
+    win.screenshot(path=f"{OUT}/05-star-ask.png")
+    win.click("#star-dismiss")
+    win.wait_for_function("!document.getElementById('star-ask').open")
+    check(abs(int(win.evaluate("localStorage.getItem('sc:star-ask')")) - win.evaluate("Date.now()")) < 60_000,
+          "star ask: 'Go away' closes it and remembers when")
+    win.reload()
+    win.wait_for_selector("#lb-who:not([hidden])")
+    check(not asked(win), "star ask: not shown again after 'Go away'")
+    fortnight_ago(win)
+    win.reload()
+    win.wait_for_selector("#star-ask[open]")
+    win.keyboard.press("Escape")
+    win.wait_for_function("!document.getElementById('star-ask').open")
+    check(abs(int(win.evaluate("localStorage.getItem('sc:star-ask')")) - win.evaluate("Date.now()")) < 60_000,
+          "star ask: back after 14 days; Esc counts as 'Go away'")
+    phone = ctx.new_page()
+    phone.set_viewport_size({"width": 390, "height": 844})
+    fortnight_ago(win)
+    phone.goto(f"{LB}?mock=participant")
+    phone.wait_for_selector("#star-ask[open]")
+    sb = phone.locator("#star-ask").bounding_box()
+    check(sb["x"] >= 0 and sb["x"] + sb["width"] <= 390, "star ask: fits a phone screen")
+    phone.screenshot(path=f"{OUT}/05-star-ask-phone.png")
+    phone.close()
+    fortnight_ago(win)
+    win.reload()
+    win.wait_for_selector("#star-ask[open]")
+    with ctx.expect_page() as gh:
+        win.click("#star-go")
+    repo = gh.value
+    repo.wait_for_load_state()
+    check(repo.url == "https://github.com/generative-computing/steerability/", f"star ask: the repo opens in a new tab ({repo.url})")
+    repo.close()
+    win.wait_for_function("!document.getElementById('star-ask').open")
+    check(win.evaluate("localStorage.getItem('sc:star-ask')") == "visited", "star ask: 'Take me to the repo' closes it for good")
+    win.reload()
+    win.wait_for_selector("#lb-who:not([hidden])")
+    check(not asked(win), "star ask: never shown again after visiting the repo")
+
+    # ---- 9. mock sessions (localhost only): in the pop-up, and on the competition page
     for kind, expect in [("participant", "team: saddle-point"), ("organizer", "organizer"), ("noteam", "not a member")]:
         win.goto(f"{LB}?mock={kind}")
         win.wait_for_selector("#lb-who:not([hidden])")
@@ -309,7 +369,7 @@ with sync_playwright() as p:
           "page mock=participant: button shows the session, URL cleaned")
     win.close()
 
-    # ---- 9. pop-ups blocked: the leaderboard opens in the same tab instead, and sign-in works there
+    # ---- 10. pop-ups blocked: the leaderboard opens in the same tab instead, and sign-in works there
     hf["authorize"] = "approve"
     page.goto(f"{BASE}?mock=none")
     launcher_says(page, "Sign in with Hugging Face")
@@ -318,7 +378,7 @@ with sync_playwright() as p:
     page.wait_for_selector("#lb-who:not([hidden])")
     check(page.url == LB, f"pop-up blocked: signed in on {page.url} in the same tab")
 
-    # ---- 10. phone width
+    # ---- 11. phone width
     mobile = ctx.new_page()
     mobile.set_viewport_size({"width": 390, "height": 844})
     mobile.goto(f"{LB}?mock=participant")
@@ -333,7 +393,7 @@ with sync_playwright() as p:
     shot(mobile, "04-phone-page-signed-out", pad=10)
     ctx.close()
 
-    # ---- 11. shipped dark: CONFIG.enabled=false hides the competition page's button unless ?preview or ?mock
+    # ---- 12. shipped dark: CONFIG.enabled=false hides the competition page's button unless ?preview or ?mock
     dark = new_context(enabled=False)
     pg = dark.new_page()
     pg.goto(BASE)

@@ -262,6 +262,21 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-window h2{ margin-top:2.25rem; }
 .lb-window h2::before{ content:none; }   /* no accent square in the pop-up */
 
+/* The star-the-repo ask in the pop-up: a .box floating over the dimmed page, the Register row's
+   [button] + link pattern inside it */
+.star-ask{ margin:auto; max-width:min(30rem, calc(100% - 2.5rem)); color:var(--ink); }
+.star-ask::backdrop{ background:rgba(23, 24, 28, .35); }
+.star-ask:focus-visible{ outline:none; }   /* it takes focus itself on opening, so no ring on a button yet */
+.star-ask p{ margin:0; }
+.star-ask .cta-row{ margin:1.1rem 0 0; }
+/* A <button> that looks like a link (the second action next to a .btn) */
+.link-btn{
+  font:inherit; color:var(--accent); background:none; border:0; cursor:pointer;
+  text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px;
+  padding:0 .12em; margin:0 -.12em;
+}
+.link-btn:hover{ background:var(--accent); color:#fff; text-decoration:none; }
+
 /* ================= RULES ================= */
 .rules{ list-style:none; margin:0 0 1.1rem; padding:0; counter-reset:rule; }
 .rules li{ counter-increment:rule; display:flex; gap:.9rem; margin-bottom:.6rem; }
