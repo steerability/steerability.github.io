@@ -21,6 +21,8 @@
   --tint:   #FAFAF8;    /* code background             */
   --accent: #1F3BD3;    /* links, squares, the CTA     */
   --accent-press: #16309F;
+  --lb-shade: #F4F5FA; /* the pop-up: a team's drawer, the row hover */
+  --lb-dim:   #A2A4AD; /* the pop-up: rows that recede        */
 
   --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
   --font-mono:  "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -259,7 +261,6 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-window .container{ max-width:none; padding-block:1rem 1.25rem; }
 .lb-window .lb-who, .lb-window .cta-row{ margin-top:0; }
 .lb-window .lb-signout{ margin-left:auto; }
-.lb-window h2{ margin-top:2.25rem; }
 .lb-window h2::before{ content:none; }   /* no accent square in the pop-up */
 
 /* The star-the-repo ask in the pop-up: a .box floating over the dimmed page, the Register row's
@@ -277,66 +278,105 @@ pre .c{ color:#8A8C96; font-style:italic; }
 }
 .link-btn:hover{ background:var(--accent); color:#fff; text-decoration:none; }
 
-/* The private view in the pop-up (leaderboard/private-view.js): the "your entry" line(s) above the board, a detail
-   row that opens under the team's own row (or the same detail as a block under the table), the board caption, and
-   the organizer's status block. Hairlines, the mono face for labels, dates and ids, the accent only for links */
-.lb-mono{ font-family:var(--font-mono); font-size:.8em; }
-.lb-entry, .lb-warn{ margin:0 0 .5rem; }
-.lb-warn{ color:#B3261E; }   /* like .lb-error */
-.lb-entry-block{ margin-bottom:.75rem; }
+/* The private view in the pop-up (leaderboard/private-view.js): the week picker on the heading line and a team's
+   drawer, which opens under its own row (or stands as a block under the table). Hairlines, the mono face for
+   labels, dates and ids, the accent only for what acts: links and the team's name in its row */
+
+/* The heading line: "Leaderboard" at the left, the week picker at the right end */
+.lb-head{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.6rem 1rem; margin:2.25rem 0 .8rem; }
+.lb-head h2{ margin:0; }
+.lb-weeks{ display:flex; align-items:center; gap:.9rem; margin-left:auto; }
+.lb-weeks[hidden]{ display:none; }
+.lb-arrow{ padding:.3em .6em; line-height:1.2; font-size:1rem; }
+.lb-arrow[disabled], .lb-arrow[disabled]:hover, .lb-arrow[disabled]:active{
+  background:var(--soft); cursor:default; transform:none; box-shadow:4px 4px 0 var(--ink);
+}
+.lb-week{ font-weight:600; min-width:4.5rem; text-align:center; }
+
+/* The expandable row: the name in the accent, the whole row the target */
+.leaderboard tr.lb-expandable{ cursor:pointer; }
+.lb-expand{ font:inherit; color:var(--accent); text-align:left; background:none; border:0; padding:0; margin:0; cursor:pointer; }
+.leaderboard tr.lb-expandable:hover > td{ background:var(--lb-shade); }
+.leaderboard tr.lb-expandable:hover .lb-expand{ text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+.leaderboard tr.lb-expandable.is-open > td{ background:#fff; }   /* after the hover rule, so the open row stays white under the pointer */
+
+/* While a drawer is open, the rest of the board recedes */
+.leaderboard.has-open > table > tbody > tr:not(.is-open):not(.lb-detail) > td{ color:var(--lb-dim); }
+.leaderboard.has-open > table > tbody > tr.lb-baseline:not(.is-open) > td{ background:rgba(128,128,128,.08); }
+
+/* The drawer: a shaded sheet under the row, with an inset shadow along its top edge */
+.leaderboard tr.lb-detail > td{
+  height:auto; padding:0; border-top:1px solid var(--line);
+  background:var(--lb-shade); box-shadow:inset 0 7px 9px -7px rgba(23,24,28,.28);
+}
+.lb-drawer{ padding:1.4rem 0 1.6rem; font-size:.95rem; line-height:1.55; contain:inline-size; overflow-wrap:anywhere; overflow-x:auto; }
+/* contain + overflow-x: the drawer is as wide as the board and never wider; where the results table needs more (phone
+   width) it scrolls inside the drawer */
+.lb-sec{ display:grid; grid-template-columns:7rem minmax(0,1fr); padding:0 1.25rem; margin-top:1.6rem; }
+.lb-drawer > .lb-sec:first-child{ margin-top:0; }   /* the record alone (nothing scored) starts at the drawer's own padding */
+.lb-sec > .lb-k{ font-family:var(--font-mono); font-size:.78rem; line-height:1.55; color:var(--soft); }   /* on the first line of the content */
+.lb-sec.lb-boxed > .lb-k{ padding-top:calc(.7rem + 1px); }                                            /* a box's top padding and border */
+
+/* Results per model: the four score columns sit under the board's own (same classes, same widths) */
+.lb-models{ width:100%; border-collapse:collapse; margin:0; }
+.lb-models th{ font-family:var(--font-mono); font-size:.78rem; font-weight:400; color:var(--soft); text-align:left; padding:0 1.25rem .35rem; white-space:nowrap; }
+.lb-models td{ height:auto; padding:.45rem 1.25rem; border-top:1px solid var(--line); vertical-align:top; }
+.lb-models th.lb-score, .lb-models td.lb-score{ text-align:right; white-space:nowrap; }
+.lb-models th.lb-ci, .lb-models td.lb-ci{ width:8rem; text-align:right; white-space:nowrap; }
+.lb-models td.lb-ci{ font-family:var(--font-mono); font-size:.8rem; color:var(--soft); }
+.lb-models td.lb-model-cell{ white-space:nowrap; }
+.lb-models .lb-model{ font-family:var(--font-mono); font-size:.8rem; }
+.lb-models .lb-unscored{ color:var(--soft); margin-left:.5rem; }
+
+/* Breakdown: three groups side by side; each row a label at the left and a mono value at the right */
+.lb-groups{ display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:1.2rem 2.25rem; }
+.lb-group h3{ font-family:var(--font-mono); font-size:.78rem; line-height:1.55; font-weight:400; color:var(--soft); margin:0 0 .4rem; }
+.lb-group dl{ margin:0; }
+.lb-group .lb-row{ display:flex; justify-content:space-between; gap:0 1rem; padding:.18rem 0; border-top:1px solid var(--line); }
+.lb-group .lb-row:first-child{ border-top:0; }
+.lb-group dt{ font-weight:400; }
+.lb-group dd{ margin:0; font-family:var(--font-mono); font-size:.85rem; white-space:nowrap; }
+.lb-group dd[title]{ cursor:help; }
+
+/* Boxes on the shade: the record (the pull and intake as the organizers' console shows them) and the method card */
+.lb-record, .lb-card{
+  font-family:var(--font-mono); font-size:.8rem; line-height:1.6; color:#33353C;
+  background:#fff; border:1px solid var(--line); padding:.7rem .9rem;
+}
+.lb-record .lb-line{ display:grid; grid-template-columns:8ch minmax(0,1fr); column-gap:1ch; }
+.lb-record .lb-text{ white-space:pre-wrap; overflow-wrap:anywhere; min-width:0; }
+.lb-card{ white-space:pre-wrap; overflow-wrap:anywhere; max-height:30rem; overflow:auto; }
+.lb-card .lb-cut{ display:block; color:var(--soft); margin-top:.6rem; }
+
+/* A team without a row: the same drawer as a block under the table; an organization without a file gets a line */
+.lb-detail-standalone{ border:1px solid var(--line); background:var(--lb-shade); margin:0 0 1.5rem; }
+.lb-standalone-name{ font-weight:600; margin:0; padding:.75rem 1.25rem 0; }
+.lb-standalone-note{ margin:0; padding:.3rem 1.25rem .9rem; font-size:.95rem; line-height:1.55; }
+
+/* The week being evaluated: the turning status wheel for a submission being evaluated (a hairline ring with one accent
+   arc; under reduced motion a still accent dot), the drawer's progress lines, and the one line under the table */
 .lb-caption{ font-size:.92rem; }
-
-/* The team's name in its row, as a button that opens the detail; the caret turns when it is open */
-.lb-expand{ font:inherit; color:inherit; text-align:left; background:none; border:0; padding:0; margin:0; cursor:pointer; }
-.lb-expand::before{
-  content:""; display:inline-block; margin-right:.5em; vertical-align:.08em;
-  border-style:solid; border-width:.32em 0 .32em .5em; border-color:transparent transparent transparent currentColor;
-  transition:transform .12s ease;
+.lb-spin{
+  display:inline-block; width:.75em; height:.75em; vertical-align:-.08em;
+  border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%;
+  animation:lb-spin 1s linear infinite;
 }
-.lb-expand[aria-expanded="true"]::before{ transform:rotate(90deg); }
-.lb-expand:hover{ text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
-
-/* The detail, in its table row or as a block under the table. Its own width never widens the table
-   (contain: inline-size), so the per-model table scrolls inside its wrapper instead */
-.leaderboard tr.lb-detail > td{ height:auto; padding:.75rem 1.25rem 1rem; }   /* keeps the row's hairline top rule */
-.lb-detail-standalone{ border:1px solid var(--line); padding:.75rem 1.25rem 1rem; margin:0 0 1.5rem; }
-.lb-standalone-name{ font-weight:600; margin:0 0 .35rem; }
-.lb-detail-body{ font-size:.95rem; line-height:1.55; contain:inline-size; overflow-wrap:anywhere; }
-.lb-kv{ display:flex; flex-wrap:wrap; column-gap:1.1rem; padding:.12rem 0; }
-.lb-k{ flex:0 0 6.5rem; font-family:var(--font-mono); font-size:.75rem; color:var(--soft); padding-top:.2rem; }
-.lb-v{ flex:1 1 18rem; min-width:0; }
-.lb-note{ color:var(--soft); }
-.lb-families{ display:grid; grid-template-columns:auto auto minmax(0, 1fr); gap:.05rem 1.1rem; margin-top:.1rem; }
-.lb-families .lb-num{ text-align:right; }
-.lb-dim{ display:inline-block; margin-right:1.1rem; }
-.lb-arrows{ letter-spacing:.1em; }
-
-.lb-grid-wrap{ overflow-x:auto; margin:.6rem 0 .8rem; }
-.lb-grid{ width:100%; min-width:50rem; table-layout:fixed; border-collapse:collapse; }
-.lb-grid th{
-  font-family:var(--font-mono); font-size:.72rem; font-weight:400; color:var(--soft);
-  text-align:right; padding:.25rem .55rem; white-space:nowrap;
+@keyframes lb-spin{ to{ transform:rotate(360deg); } }
+.lb-progress{ border-collapse:collapse; width:auto; min-width:22rem; }
+.lb-progress td{ height:auto; padding:.3rem 1.5rem .3rem 0; border-top:1px solid var(--line); font-family:var(--font-mono); font-size:.8rem; }
+.lb-progress tr:first-child td{ border-top:0; padding-top:0; }   /* so the gutter label sits on the first line */
+.lb-progress td:last-child{ padding-right:0; color:var(--soft); }
+.lb-progress .lb-spin{ margin-right:.45rem; }
+@media (prefers-reduced-motion: reduce){
+  .lb-spin{ animation:none; background:var(--accent); border-color:var(--accent); }
 }
-.lb-grid td{ height:auto; padding:.3rem .55rem; border-top:1px solid var(--line); text-align:right; white-space:nowrap; }
-.lb-grid th:first-child, .lb-grid td:first-child{ text-align:left; padding-left:0; }
-.lb-grid th:nth-child(1){ width:9.5rem; }
-.lb-grid th:nth-child(2), .lb-grid th:nth-child(4), .lb-grid th:nth-child(5), .lb-grid th:nth-child(6){ width:4rem; }
-.lb-grid th:nth-child(3){ width:7.5rem; }
-.lb-grid th:nth-child(7), .lb-grid th:nth-child(8){ width:6.75rem; }
-.lb-grid .lb-notes{ text-align:left; white-space:normal; color:var(--soft); }
-.lb-grid .lb-overall td{ font-weight:600; }
-.lb-grid td.lb-rank-of{ text-align:left; font-weight:400; }
-
-/* Organizer: what needs attention, above the board; the run's progress and failures behind "Run status" */
-.lb-status{ border:1px solid var(--line); padding:.65rem 1.25rem .75rem; margin:0 0 .5rem; font-size:.95rem; }
-.lb-status-head{ font-family:var(--font-mono); font-size:.78rem; color:var(--soft); margin:0 0 .3rem; }
-.lb-status ul{ margin:0 0 .5rem; padding-left:1.1rem; }
-.lb-status p{ margin:0 0 .5rem; }
-.lb-run-status summary{ font-family:var(--font-mono); font-size:.78rem; color:var(--soft); cursor:pointer; }
-.lb-run-status pre{ box-shadow:none; border-color:var(--line); margin:.5rem 0 0; max-height:18rem; white-space:pre-wrap; }
 
 @media (max-width: 44rem){
-  .leaderboard tr.lb-detail > td, .lb-detail-standalone, .lb-status{ padding-inline:.9rem; }
+  .lb-groups{ grid-template-columns:1fr; }
+  .lb-sec{ grid-template-columns:4.5rem minmax(0,1fr); padding-inline:.9rem; }
+  .lb-models th, .lb-models td{ padding-inline:.9rem; }
+  .lb-models th.lb-rank{ padding-right:0; }   /* "results" on one line in the narrowed rank column */
+  .lb-standalone-name, .lb-standalone-note{ padding-inline:.9rem; }
 }
 
 /* ================= RULES ================= */

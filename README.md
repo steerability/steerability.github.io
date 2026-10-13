@@ -27,13 +27,20 @@ Re-run it after editing files. For the Astro lab site on its own:
     pnpm dev          # serves at the site's base path, localhost:4321/lab
 
 The competition page's "Sign in with Hugging Face" button opens `competition/leaderboard/`
-in a pop-up window, where sign-in (`competition/hf-login.js`) and the private view live.
+in a pop-up window, where sign-in (`competition/hf-login.js`) and the board with its private
+view (`competition/leaderboard/private-view.js`) live; the board comes from the results API,
+one week at a time.
 It works on the local preview too — the Hugging Face app accepts
 `http://localhost/competition/leaderboard/` on any port — and `?mock=participant` /
-`?mock=organizer` (on either page) fake a signed-in session without leaving the page; the
-pop-up's private view then renders the fixture `competition/leaderboard/mock/<kind>.json`
-(also `participant-unscored`, `participant-late` and `participant-noentry`) instead of
-calling the results API.
+`?mock=organizer` (on either page) fake a signed-in session without leaving the page and
+put the pop-up in mock mode, where it reads the fixtures in `competition/leaderboard/mock/`
+instead of calling the results API: `runs.json` (the index of weeks), `board.<run>.json`
+(a week's public table), and `<kind>.json` for the latest week or `<kind>.<run>.json` for
+another (`participant`, `participant-unscored`, `participant-noentry`, `organizer`; the
+`.week_01` files are the earlier week and the `.week_03` files the week being evaluated,
+which the index's `pending` block adds as one more step of the picker; a week without a
+file for the kind shows as having no entry). Mock mode stays on through `?mock=none`,
+reloads and sign-out; `?mock=off` ends it.
 While `CONFIG.enabled` is `false` the button is hidden; add `?preview` to the competition
 page's URL to show it (on the live site too).
 

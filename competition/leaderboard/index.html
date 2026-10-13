@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=20261012b">
+<link rel="stylesheet" href="../styles.css?v=20261013">
 </head>
 <body class="lb-window">
 
@@ -28,20 +28,26 @@
     </div>
     <div data-auth-state="signed-in" hidden>
       <p class="lb-who" id="lb-who"></p>
-      <!-- Filled in by private-view.js: the "your entry" line(s), or the organizer's status block -->
+      <!-- Filled in by private-view.js: loading and error lines only. A team's own results open from its row of
+           the board below. -->
       <div id="lb-private-content"></div>
     </div>
     <p class="lb-error" id="hf-login-error" hidden aria-live="polite"></p>
   </div>
 
-  <!-- ================= PUBLIC BOARD ================= -->
-  <!-- Filled in from the competition page's own table, so it is only ever edited there -->
-  <h2 id="public">Public leaderboard</h2>
-  <div id="lb-public">
-    <p>The public leaderboard is on the <a href="../#leaderboard">competition page</a>.</p>
+  <!-- ================= THE BOARD ================= -->
+  <!-- Rendered by private-view.js from the results API, one week at a time; the picker steps through the weeks -->
+  <div class="lb-head">
+    <h2 id="public">Leaderboard</h2>
+    <div class="lb-weeks" id="lb-weeks" role="group" aria-label="Week" hidden>
+      <button class="btn lb-arrow" type="button" id="lb-earlier" aria-label="Earlier week" disabled>&larr;</button>
+      <span class="lb-week" id="lb-week" aria-live="polite"></span>
+      <button class="btn lb-arrow" type="button" id="lb-later" aria-label="Later week" disabled>&rarr;</button>
+    </div>
   </div>
-  <!-- Becomes the board caption (which intake, rendered when, how many ranked) once private-view.js has the results -->
-  <p class="soft" id="lb-caption">Scores are for the previous intake.</p>
+  <div id="lb-public"><p class="soft" id="lb-board-note">Loading the leaderboard…</p></div>
+  <!-- The week being evaluated: one line under its table (hidden on a published week) -->
+  <p class="soft lb-caption" id="lb-caption" hidden></p>
 
 </main>
 
@@ -55,8 +61,9 @@
   </div>
 </dialog>
 
-<!-- private-view.js first: hf-login.js renders as soon as it loads, and hands the private view to SCPrivateView -->
-<script src="private-view.js?v=20261012b"></script>
-<script src="../hf-login.js?v=20261012b"></script>
+<!-- private-view.js first: it owns the board and the private view; hf-login.js renders the sign-in state as soon
+     as it loads and hands the session to SCPrivateView -->
+<script src="private-view.js?v=20261013"></script>
+<script src="../hf-login.js?v=20261013"></script>
 </body>
 </html>

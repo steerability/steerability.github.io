@@ -6,9 +6,9 @@
    Two pages load this script; data-mode on #lb-private says which:
      launcher  the competition page: one button under the public table
                that opens leaderboard/ in a pop-up window
-     window    leaderboard/ (the pop-up): sign-in, the "who" line, the
-               private view, a copy of the public table, and (for
-               participants) an ask to star the toolkit repo
+     window    leaderboard/ (the pop-up): sign-in, the "who" line, and
+               (for participants) an ask to star the toolkit repo; the
+               board and the private view are leaderboard/private-view.js's
 
    OAuth 2.0 authorization-code flow with PKCE, run entirely in the
    browser: the Hugging Face app is a *public* client (no secret), so
@@ -23,8 +23,9 @@
                           /oauth/userinfo, keep a small session, clean the URL
      3. renderWindow()    the "who" line (handle, tags, sign out) and the
                           private view (leaderboard/private-view.js, which
-                          reads the results API at CONFIG.api; without it,
-                          or without CONFIG.api, a placeholder)
+                          reads the results API at CONFIG.api and opens a
+                          team's results in its row of the board; without
+                          it, or without CONFIG.api, a placeholder)
 
    Storage
      The session and the pending verifier live in localStorage. huggingface.co
@@ -32,7 +33,7 @@
      there comes back with no window.opener: same-origin storage is the one
      channel left between the pop-up and the competition page, whose button
      follows along through the 'storage' event. A session ends when its token
-     expires or on "Sign out".
+     expires or on "Sign out". sc:mock marks mock mode (below).
 
    Identity
      - a person is identified by their Hugging Face *handle*
@@ -46,12 +47,14 @@
 
    Local development
      - ?mock=participant | organizer | noteam | none fakes a session
-       (localhost only, on either page), so the private view can be
-       built without signing in each time; in the pop-up the private
-       view then reads leaderboard/mock/<kind>.json instead of the API,
-       and every kind that starts with "participant" (participant-late,
-       participant-unscored, …) is the participant session with its own
-       fixture
+       (localhost only, on either page) and turns mock mode on
+       (localStorage sc:mock), so the private view can be built without
+       signing in each time: in mock mode the pop-up reads the fixtures
+       in leaderboard/mock/ instead of the results API, whatever the
+       session (so ?mock=none, a reload and sign-out stay offline), and
+       every kind that starts with "participant" (participant-unscored,
+       …) is the participant session with its own fixture; ?mock=off
+       ends mock mode and the session
      - CONFIG.enabled=false ships the code dark: the competition page's
        button stays hidden unless the URL has ?preview, or ?mock on
        localhost (either one sets localStorage sc:preview=1, so the button
@@ -80,6 +83,7 @@
   var SESSION_KEY = 'sc:hf-session';   // localStorage: the signed-in session, shared by both pages
   var PENDING_KEY = 'sc:hf-pending';   // localStorage: verifier + state while on huggingface.co
   var PREVIEW_KEY = 'sc:preview';      // localStorage: show the button even when CONFIG.enabled is false
+  var MOCK_KEY = 'sc:mock';            // localStorage: '1' while the pop-up reads its fixtures instead of the results API
   var STAR_KEY = 'sc:star-ask';        // localStorage: 'visited', or when "Go away" was chosen (ms)
   var PENDING_MAX_AGE = 10 * 60 * 1000;   // a sign-in left unfinished for longer is ignored
 
@@ -95,8 +99,7 @@
     login:     document.getElementById('hf-login'),
     who:       document.getElementById('lb-who'),
     content:   document.getElementById('lb-private-content'),
-    error:     document.getElementById('hf-login-error'),
-    board:     document.getElementById('lb-public')       // window: where the public table goes
+    error:     document.getElementById('hf-login-error')
   };
 
   /* ---------- small helpers ---------- */
@@ -104,6 +107,8 @@
   function isLocal() {
     return location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '[::1]';
   }
+  // Mock mode (localhost only): the pop-up reads leaderboard/mock/ instead of the results API, whatever the session
+  function isMock() { return isLocal() && storageGet(MOCK_KEY) === '1'; }
 
   function storageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
   function storageSet(key, value) { try { localStorage.setItem(key, value); } catch (e) { /* private mode etc. */ } }
@@ -298,7 +303,7 @@
                    { handle: 'example-team', name: 'Example Team', role: 'read' }];
       return base;
     }
-    if (/^participant/.test(kind)) {   // participant, participant-late, …: one session, a fixture each
+    if (/^participant/.test(kind)) {   // participant, participant-unscored, …: one session, a fixture each
       base.user = ada;
       base.orgs = [{ handle: 'example-team', name: 'Example Team', role: 'write' }];
       return base;
@@ -378,7 +383,7 @@
   function renderContent(s, roles) {
     var view = window.SCPrivateView;   // looked up now, not when this script loads, so the scripts' order can't break it
     if (view && (CONFIG.api || s.mock) && (roles.organizer || roles.teams.length)) {
-      view.render(s, roles, boardReady);
+      view.render(s, roles);
       return;
     }
     if (view) view.clear();
@@ -402,7 +407,7 @@
   function renderWindow() {
     var s = loadSession();
     if (!s) {
-      if (window.SCPrivateView) window.SCPrivateView.clear();   // its rows, blocks and caption go with the session
+      if (window.SCPrivateView) window.SCPrivateView.clear();   // its rows and blocks go with the session; the board stays
       els.signedOut.hidden = false;
       els.signedIn.hidden = true;
       return;
@@ -412,22 +417,6 @@
     renderContent(s, roles);
     els.signedOut.hidden = true;
     els.signedIn.hidden = false;
-  }
-
-  // The public table is the competition page's own (fetched from ../), so it is edited in one place only.
-  // boardReady resolves once it is in (or has failed to load); the private view decorates it after that.
-  var boardReady = Promise.resolve();
-  function loadPublicBoard() {
-    if (!els.board) return Promise.resolve();
-    return fetch('../', { cache: 'no-cache' })
-      .then(function (res) { if (!res.ok) throw new Error('competition page returned ' + res.status); return res.text(); })
-      .then(function (html) {
-        var board = new DOMParser().parseFromString(html, 'text/html').querySelector('.leaderboard');
-        if (!board) throw new Error('no .leaderboard on the competition page');
-        els.board.textContent = '';
-        els.board.appendChild(document.importNode(board, true));
-      })
-      .catch(function (err) { console.error('Could not load the public leaderboard:', err); });   // the link stays
   }
 
   // Size the pop-up to its content so the board shows without a scroll bar, up to the screen's height
@@ -471,7 +460,8 @@
     window.addEventListener('storage', function (e) {
       if (e.key === SESSION_KEY || e.key === null) renderWindow();   // signed in or out in another window
     });
-    var board = boardReady = loadPublicBoard();
+    // The board (private-view.js renders it from the results API) is in, or has failed for good, once this resolves
+    var board = window.SCPrivateView && window.SCPrivateView.boardReady ? window.SCPrivateView.boardReady() : Promise.resolve();
 
     var ready;
     if (params.has('code') || params.has('error')) {
@@ -486,7 +476,7 @@
       renderWindow();
       ready = Promise.resolve();
     }
-    // Fit once the table, the sign-in state and the web fonts are all in, since each changes the height;
+    // Fit once the board, the sign-in state and the web fonts are all in, since each changes the height;
     // then, a moment later, the star-the-repo ask (it floats over the page, so it doesn't change the fit).
     Promise.all([board, ready, document.fonts && document.fonts.ready]).then(function () {
       fitWindow();
@@ -497,15 +487,22 @@
   /* ---------- boot ---------- */
 
   // For private-view.js: CONFIG (its api), the window fit (after a row opens), sign-out with a message (when the
-  // API rejects the token), and the hash that names a team's row in the public table
-  window.SCLogin = { config: CONFIG, fitWindow: fitWindow, signOut: logout, sha256hex: sha256hex };
+  // API rejects the token), the hash that names a team's row in the board, and whether to read the fixtures
+  window.SCLogin = { config: CONFIG, fitWindow: fitWindow, signOut: logout, sha256hex: sha256hex, isMock: isMock };
 
   function init() {
     var params = new URLSearchParams(location.search);
     var mock = params.has('mock') && isLocal();
     if (mock) {
-      var m = mockSession(params.get('mock'));
-      if (m) saveSession(m); else dropSession();
+      var kind = params.get('mock');
+      if (kind === 'off') {           // leave mock mode, signed out
+        storageDel(MOCK_KEY);
+        dropSession();
+      } else {
+        var m = mockSession(kind);
+        if (m) saveSession(m); else dropSession();
+        storageSet(MOCK_KEY, '1');    // the pop-up reads its fixtures from now on, whatever the session
+      }
       storageSet(PREVIEW_KEY, '1');   // a mock session implies previewing the button
       cleanUrl(mode === 'launcher' ? CONFIG.returnHash : '');
     }

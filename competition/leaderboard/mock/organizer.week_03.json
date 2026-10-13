@@ -1,0 +1,1178 @@
+{
+  "role": "organizer",
+  "pending": true,
+  "pulled": true,
+  "run": {
+    "name": "week_03",
+    "label": "Week 3",
+    "layer": "public",
+    "pulled": true,
+    "pull_finished": "2026-10-13T12:41:10+00:00",
+    "n_pulled": 15,
+    "models": [
+      "google/gemma-4-31B-it",
+      "ibm-granite/granite-4.2-30b",
+      "Qwen/Qwen3.8-27B"
+    ]
+  },
+  "board": null,
+  "teams": {
+    "reg0x00": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "reg0x00",
+      "team": "reg0x00",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000000369d0369b20369cd",
+        "commit_time": "2026-10-10T08:00:00+00:00",
+        "pulled_at": "2026-10-13T12:01:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "reg0x00/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-10 08:00 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:01 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "completed",
+        "Qwen/Qwen3.8-27B": "completed"
+      }
+    },
+    "parisbound": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "parisbound",
+      "team": "ParisBound",
+      "entry": {
+        "status": "pulled",
+        "commit": "00000000000000000000000048d159e242af37bc",
+        "commit_time": "2026-10-11T09:07:00+00:00",
+        "pulled_at": "2026-10-13T12:02:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "parisbound/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-11 09:07 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:02 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "in_progress",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "slab": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "slab",
+      "team": "sLab",
+      "entry": {
+        "status": "pulled",
+        "commit": "0000000000000000000000005b05b05ad35b05ab",
+        "commit_time": "2026-10-12T10:14:00+00:00",
+        "pulled_at": "2026-10-13T12:03:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "slab/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-12 10:14 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:03 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "in_progress",
+        "ibm-granite/granite-4.2-30b": "not_started",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "example-team": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "example-team",
+      "team": "Example Team",
+      "entry": {
+        "status": "pulled",
+        "commit": "c0ffee5e1234567890abcdef1234567890abcdef",
+        "commit_time": "2026-10-12T09:40:21+00:00",
+        "pulled_at": "2026-10-13T12:08:02+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "files": [
+          {
+            "path": "google__gemma-4-31B-it.spipe",
+            "bytes": 1284730112
+          },
+          {
+            "path": "ibm-granite__granite-4.2-30b.spipe",
+            "bytes": 1190002688
+          },
+          {
+            "path": "Qwen__Qwen3.8-27B.spipe",
+            "bytes": 1261174784
+          },
+          {
+            "path": "method_card.md",
+            "bytes": 3120
+          }
+        ],
+        "card": {
+          "name": "CAA-honesty",
+          "version": "v4",
+          "summary": "Contrastive activation addition for honesty"
+        },
+        "label": "CAA-honesty v4",
+        "intake": {
+          "ok": true,
+          "errors": [],
+          "warnings": [],
+          "track": "white-box",
+          "track_source": "detected",
+          "needs_review": false,
+          "reviewed": false,
+          "engines": {
+            "google/gemma-4-31B-it": "vllm",
+            "ibm-granite/granite-4.2-30b": "huggingface",
+            "Qwen/Qwen3.8-27B": "vllm"
+          }
+        },
+        "record": [
+          [
+            "repo",
+            "example-team/submission"
+          ],
+          [
+            "commit",
+            "c0ffee5e1234  2026-10-12 09:40 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:08 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "method_card.md  3 KB"
+          ],
+          [
+            "card",
+            "CAA-honesty v4: Contrastive activation addition for honesty"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": {
+          "file": "method_card.md",
+          "truncated": false,
+          "text": "---\nname: CAA-honesty\nversion: v4\nsummary: Contrastive activation addition for honesty\n---\n\n# CAA-honesty\n\nContrastive activation addition (CAA) on the residual stream, steering toward honest completions.\n\n## Method\n\nA steering vector per model is the mean difference between the activations of honest and dishonest completions on a contrastive prompt set, added at one middle layer at inference time.\n\n## Models\n\nThe same recipe on all three base models; the layer and the scale are tuned per model on the public dev split.\n"
+        }
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "in_progress",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "runtime-steering": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "runtime-steering",
+      "team": "runtime-steering",
+      "entry": {
+        "status": "pulled",
+        "commit": "0000000000000000000000007f6e5d4bf4b2a189",
+        "commit_time": "2026-10-11T12:28:00+00:00",
+        "pulled_at": "2026-10-13T12:05:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "runtime-steering/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-11 12:28 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:05 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "error",
+        "Qwen/Qwen3.8-27B": "completed"
+      }
+    },
+    "coxswains": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "coxswains",
+      "team": "Coxswains",
+      "entry": {
+        "status": "pulled",
+        "commit": "00000000000000000000000091a2b3c4855e6f78",
+        "commit_time": "2026-10-12T13:35:00+00:00",
+        "pulled_at": "2026-10-13T12:06:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "coxswains/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-12 13:35 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:06 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "not_started",
+        "ibm-granite/granite-4.2-30b": "not_started",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "trust-issues": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "trust-issues",
+      "team": "Team Trust-Issues",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000000a3d70a3d160a3d67",
+        "commit_time": "2026-10-10T14:42:00+00:00",
+        "pulled_at": "2026-10-13T12:07:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "trust-issues/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-10 14:42 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:07 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "completed",
+        "Qwen/Qwen3.8-27B": "completed"
+      }
+    },
+    "s2wish": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "s2wish",
+      "team": "S2WISH",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000000b60b60b5a6b60b56",
+        "commit_time": "2026-10-11T15:49:00+00:00",
+        "pulled_at": "2026-10-13T12:08:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "s2wish/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-11 15:49 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:08 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "in_progress",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "second-example": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "second-example",
+      "team": "Second Example",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000000c83fb72e3761d945",
+        "commit_time": "2026-10-12T16:56:00+00:00",
+        "pulled_at": "2026-10-13T12:09:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "second-example/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-12 16:56 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:09 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": {
+          "file": "method_card.md",
+          "truncated": false,
+          "text": "# Second Example\n\nA short card.\n"
+        }
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "in_progress",
+        "ibm-granite/granite-4.2-30b": "not_started",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "sdnb": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "sdnb",
+      "team": "SDNB",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000000da740da6c80da734",
+        "commit_time": "2026-10-10T17:03:00+00:00",
+        "pulled_at": "2026-10-13T12:10:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "sdnb/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-10 17:03 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:10 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "completed",
+        "Qwen/Qwen3.8-27B": "in_progress"
+      }
+    },
+    "nikallaudeains": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "nikallaudeains",
+      "team": "NikallaudeAIns",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000000eca8641f58b97523",
+        "commit_time": "2026-10-11T18:10:00+00:00",
+        "pulled_at": "2026-10-13T12:11:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "nikallaudeains/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-11 18:10 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:11 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "error",
+        "Qwen/Qwen3.8-27B": "completed"
+      }
+    },
+    "freestyle-blue": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "freestyle-blue",
+      "team": "FreeStyle Blue",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000000fedcba97e9654312",
+        "commit_time": "2026-10-12T08:17:00+00:00",
+        "pulled_at": "2026-10-13T12:12:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "freestyle-blue/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-12 08:17 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:12 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "not_started",
+        "ibm-granite/granite-4.2-30b": "not_started",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "yeh-lab": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "yeh-lab",
+      "team": "Yeh's Lab @ IIS, AS",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000001111111107a111101",
+        "commit_time": "2026-10-10T09:24:00+00:00",
+        "pulled_at": "2026-10-13T12:13:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "yeh-lab/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-10 09:24 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:13 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "completed",
+        "Qwen/Qwen3.8-27B": "completed"
+      }
+    },
+    "hayheap": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "hayheap",
+      "team": "hayheap",
+      "entry": {
+        "status": "pulled",
+        "commit": "000000000000000000000001234567890abcdef0",
+        "commit_time": "2026-10-11T10:31:00+00:00",
+        "pulled_at": "2026-10-13T12:14:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "hayheap/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-11 10:31 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:14 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "in_progress",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "third-example": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "third-example",
+      "team": "Third Example",
+      "entry": {
+        "status": "pulled",
+        "commit": "0000000000000000000000013579be019b68acdf",
+        "commit_time": "2026-10-12T11:38:00+00:00",
+        "pulled_at": "2026-10-13T12:15:00+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "record": [
+          [
+            "repo",
+            "third-example/submission"
+          ],
+          [
+            "commit",
+            "000000000000  2026-10-12 11:38 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:15 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "in_progress",
+        "ibm-granite/granite-4.2-30b": "not_started",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    },
+    "example-missing": {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "example-missing",
+      "team": "Example Missing",
+      "entry": {
+        "status": "missing",
+        "repo_private": false,
+        "evaluator_role": "write",
+        "record": [
+          [
+            "repo",
+            "example-missing/submission"
+          ],
+          [
+            "status",
+            "missing: no example-missing/submission repository readable by the evaluator"
+          ],
+          [
+            "warning",
+            "example-missing/submission is public"
+          ],
+          [
+            "warning",
+            "steerability-challenge-evaluator has the write role; the guide asks for read"
+          ]
+        ],
+        "method_card": null
+      }
+    }
+  },
+  "pull": {
+    "run": "week_03",
+    "orgs": [
+      {
+        "org": "reg0x00",
+        "status": "pulled"
+      },
+      {
+        "org": "parisbound",
+        "status": "pulled"
+      },
+      {
+        "org": "slab",
+        "status": "pulled"
+      },
+      {
+        "org": "example-team",
+        "status": "pulled"
+      },
+      {
+        "org": "runtime-steering",
+        "status": "pulled"
+      },
+      {
+        "org": "coxswains",
+        "status": "pulled"
+      },
+      {
+        "org": "trust-issues",
+        "status": "pulled"
+      },
+      {
+        "org": "s2wish",
+        "status": "pulled"
+      },
+      {
+        "org": "second-example",
+        "status": "pulled"
+      },
+      {
+        "org": "sdnb",
+        "status": "pulled"
+      },
+      {
+        "org": "nikallaudeains",
+        "status": "pulled"
+      },
+      {
+        "org": "freestyle-blue",
+        "status": "pulled"
+      },
+      {
+        "org": "yeh-lab",
+        "status": "pulled"
+      },
+      {
+        "org": "hayheap",
+        "status": "pulled"
+      },
+      {
+        "org": "third-example",
+        "status": "pulled"
+      },
+      {
+        "org": "example-missing",
+        "status": "missing"
+      }
+    ]
+  },
+  "progress": "week_03: 15 of 16 organizations pulled; evaluation in progress, 7 of 15 submissions scored on every base model",
+  "failures": "# Failures\n\nNone so far.\n"
+}
