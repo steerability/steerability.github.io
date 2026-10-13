@@ -55,17 +55,19 @@
        every kind that starts with "participant" (participant-unscored,
        …) is the participant session with its own fixture; ?mock=off
        ends mock mode and the session
-     - CONFIG.enabled=false ships the code dark: the competition page's
-       button stays hidden unless the URL has ?preview, or ?mock on
+     - CONFIG.enabled is the kill switch. Set to false, it takes the
+       competition page's button away again, from everyone but browsers
+       that have previewed it: the URL had ?preview, or ?mock on
        localhost (either one sets localStorage sc:preview=1, so the button
-       stays on after that). The pop-up page works regardless; nothing
-       links to it until the button shows.
+       stays on there after that). That is also how to look at a deploy
+       made dark. The pop-up page works regardless; nothing else links to
+       it.
 ============================================================= */
 (function () {
   'use strict';
 
   var CONFIG = {
-    enabled: false,                // false: hide the button unless ?preview is in the URL
+    enabled: true,                 // the kill switch: false hides the button again, except in browsers that have visited with ?preview
     clientId: '959e50bd-c96f-4a34-8384-f69cd9ae779c',   // from https://huggingface.co/settings/applications
     hub: 'https://huggingface.co',
     api: 'https://steerability-challenge-evals-leaderboard-api.hf.space',   // the results API; null keeps the placeholders

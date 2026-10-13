@@ -12,14 +12,18 @@
 
    Data (the results API, CONFIG.api in hf-login.js)
      GET /runs           the index: the weekly runs, oldest first,
-                         and which is the latest
+                         which is the latest, and the week being
+                         evaluated (pending), whose block says how far
+                         along it is (phase, intake_done)
      GET /board/<run>    a week's public table: the ranked submissions
                          and the baselines, in descending S
      GET /me?run=<run>   with the session's bearer token: the viewer's
                          team files for that week (one per team
                          organization) or, for an organizer, every
                          team file (the run's status that comes with
-                         them is not shown here). A team file
+                         them is not shown here). On the week being
+                         evaluated its top-level run block carries the
+                         phase and intake_done as well. A team file
                          (schema 2) is made by the organizers' harness
                          and contains only what a team may see about
                          its own submission; this script renders what
@@ -53,10 +57,20 @@
      the picker gets one more step after the latest published week:
      signed in, a table of the viewer's own rows (an organizer's: every
      pulled team) with the turning status wheel where the score will
-     be, else one line saying the week is being evaluated. The drawer
-     shows the evaluation's progress per model, the record,
-     and the method card. GET /me?run=<pending> is fetched on every
-     visit, since its progress changes; in mock mode it is
+     be, else one line saying the week is being evaluated. The line
+     under the table says how many submissions were pulled and follows
+     the run's phase (being checked, running, being scored); without a
+     phase it says only the first. The drawer shows the evaluation's
+     progress per model, the record, and the method card. For a
+     participant a model reads completed, error, or else in progress
+     with the wheel: the week's evaluation is running whether or not
+     this submission's run has begun (they start one at a time, behind
+     the organizers' own), so "not started" would read as a stuck job.
+     A submission that did not pass the intake checks gets one line
+     saying it is not evaluated instead. An organizer's drawer shows
+     the raw code per model. GET /me?run=<pending> is fetched on every
+     visit, since its progress changes, and its run block is the
+     freshest for the line; in mock mode it is
      mock/<kind>.<pending run>.json. Before the pull (pending.pulled
      false) nothing is fetched: a signed-in participant sees a row per
      team organization of their session with the spinner, anyone else
@@ -75,6 +89,7 @@
   var LABEL_MAX = 80;          // participant-authored names are cut to this many characters
   var MESSAGE_MAX = 300;       // ... and the record's lines to this many
   var ORG_HASH = 12;           // hex characters of a handle's SHA-256 in the board's data-org
+  var RESIZE_SETTLE_MS = 150;  // the status wheels restart this long after the window's last resize event
 
   var FAMILY_LABELS = {
     instructed_deception: 'Instructed deception',
@@ -108,7 +123,8 @@
     no_dim_scored: 'No dishonesty dimension could be scored'
   };
   var ENGINE_LABELS = { vllm: 'vLLM', huggingface: 'Hugging Face' };   // the record names the engines itself; kept with the vocabulary
-  var EVAL_LABELS = { not_started: 'not started', in_progress: 'in progress', completed: 'completed', error: 'error' };
+  var EVAL_LABELS = { not_started: 'not started', in_progress: 'in progress', completed: 'completed', error: 'error' };   // an organizer's
+  var PARTICIPANT_EVAL_LABELS = { completed: 'completed', error: 'error' };   // a participant's; any other code reads EVAL_LABELS.in_progress
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   /* ---------- formatting ---------- */
@@ -667,13 +683,23 @@
     s.setAttribute('aria-label', 'being evaluated');
     return s;
   }
-  // "Week 3 is being evaluated: 15 submissions were pulled at the intake, Oct 13, 12:41 UTC. Results appear here …"
+  // "Week 3 is being evaluated: 15 submissions were pulled at the intake, Oct 13, 12:41 UTC, and checked; the evaluation
+  // is running. Results appear here …": the run's phase says how far along it is ("upcoming" never gets here: before the
+  // pull is renderUnpulled's). Without a phase, or with one this script doesn't know, the sentence ends after the pull.
   function pendingCaption(run) {
     var caption = $('lb-caption');
     if (!caption) return;
     var n = isNum(run.n_pulled) ? run.n_pulled : 0, when = run.pull_finished ? fmtUTC(run.pull_finished) : null;
+    var checked = run.intake_done === true ? ', and checked' : '';   // the API can report evaluating before every check is published
+    var tails = {
+      pulled: ', and ' + (n === 1 ? 'is' : 'are') + ' being checked.',
+      checked: checked + '; the evaluation is running.',
+      evaluating: checked + '; the evaluation is running.',
+      finishing: checked + '; the evaluation runs have finished and the results are being scored.'
+    };
+    var tail = typeof run.phase === 'string' && Object.prototype.hasOwnProperty.call(tails, run.phase) ? tails[run.phase] : '.';
     caption.textContent = runLabel(run.name) + ' is being evaluated: ' + plural(n, 'submission') + (n === 1 ? ' was' : ' were') +
-      ' pulled at the intake' + (when ? ', ' + when : '') + '. Results appear here when the board is published.';
+      ' pulled at the intake' + (when ? ', ' + when : '') + tail + ' Results appear here when the board is published.';
     caption.hidden = false;
   }
 
@@ -733,7 +759,8 @@
       });
       clearDecoration();   // the blocks of the table this one replaces
       if (pulled.length) showTable(shell); else note(label + ' is being evaluated.');
-      pendingCaption(run);
+      // the line from the view's run block when it has one for this week: it is fetched on every visit, the index's at page load
+      pendingCaption(view && isObj(view.run) && view.run.name === run.name ? view.run : run);
       if (view) {
         var content = $('lb-private-content');
         content.textContent = '';
@@ -755,14 +782,26 @@
     });
   }
 
-  // The drawer on the pending week: the evaluation's progress per model (for a pulled entry), the record, the card.
+  // The drawer on the pending week: the evaluation's progress per model (for a pulled entry), the record, the card. An
+  // organizer sees the raw code per model; a participant sees completed, error, or else in progress with the wheel, and
+  // for a submission that did not pass the intake checks one line instead of the table.
   function progressSection(team) {
+    var organizer = !!(state.roles && state.roles.organizer), intake = team.entry.intake;
+    if (!organizer && isObj(intake) && intake.ok === false) {
+      return section('progress', el('p', 'soft', 'Not evaluated: the submission did not pass the intake checks (see the record).'), false);
+    }
     var table = el('table', 'lb-progress'), body = el('tbody'), progress = isObj(team.evaluation) ? team.evaluation : {};
     var models = isObj(team.run) && Array.isArray(team.run.models) ? team.run.models : list(state.pending && state.pending.models);
     models.forEach(function (m) {
       var cell = el('td'), code = progress[m];
-      if (code === 'in_progress') add(cell, spinner());
-      add(cell, typeof code === 'string' ? labelOf(EVAL_LABELS, code) : '—');
+      if (organizer) {
+        if (code === 'in_progress') add(cell, spinner());
+        add(cell, typeof code === 'string' ? labelOf(EVAL_LABELS, code) : '—');
+      } else if (typeof code === 'string' && Object.prototype.hasOwnProperty.call(PARTICIPANT_EVAL_LABELS, code)) {
+        add(cell, PARTICIPANT_EVAL_LABELS[code]);
+      } else {
+        add(cell, spinner(), EVAL_LABELS.in_progress);
+      }
       add(body, add(el('tr'), el('td', null, shortModel(m)), cell));
     });
     return section('progress', add(table, body), false);
@@ -844,6 +883,7 @@
     detail.hidden = !open;
     markOpen();
     fit();   // the window grows with the drawer, up to the screen's height
+    rekickSpinners();
   }
   function closeDrawers() {
     document.querySelectorAll('#lb-public tr.lb-expandable.is-open').forEach(function (row) {
@@ -857,6 +897,23 @@
   function markOpen() {   // while any drawer is open the rest of the board recedes
     var board = document.querySelector('#lb-public .leaderboard');
     if (board) board.classList.toggle('has-open', !!board.querySelector('tr.is-open'));
+  }
+
+  // The status wheels, started afresh: a new element starts a new animation on a new layer. Called after a drawer
+  // toggle and after the window has resized (the pop-up resizes itself on every fit()); some browsers stop painting a
+  // turning wheel when the layout around it changes, while its animation still reports running. Under reduced motion
+  // the wheel has no animation and the clone is the same still dot.
+  function rekickSpinners() {
+    requestAnimationFrame(function () {
+      document.querySelectorAll('#lb-public .lb-spin').forEach(function (s) { s.replaceWith(s.cloneNode(true)); });
+    });
+  }
+  // One restart once the resizing has stopped, not one per event: dragging a window's edge fires resize continuously,
+  // and a restart on each would hold every wheel at its starting angle for the whole drag.
+  var resizeTimer = null;
+  function onResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(rekickSpinners, RESIZE_SETTLE_MS);
   }
 
   // Take the private detail off the page: the drawers, the blocks, and the rows' expandable state.
@@ -902,6 +959,7 @@
     $('lb-earlier').addEventListener('click', function () { go(-1); });
     $('lb-later').addEventListener('click', function () { go(1); });
     $('lb-public').addEventListener('click', onBoardClick);
+    window.addEventListener('resize', onResize);
     loadAll();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
