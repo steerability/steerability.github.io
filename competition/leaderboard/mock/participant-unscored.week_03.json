@@ -1,0 +1,134 @@
+{
+  "role": "participant",
+  "pending": true,
+  "pulled": true,
+  "run": {
+    "name": "week_03",
+    "label": "Week 3",
+    "layer": "public",
+    "pulled": true,
+    "pull_finished": "2026-10-13T12:41:10+00:00",
+    "n_pulled": 15,
+    "intake_done": true,
+    "models": [
+      "google/gemma-4-31B-it",
+      "ibm-granite/granite-4.2-30b",
+      "Qwen/Qwen3.8-27B"
+    ],
+    "phase": "evaluating"
+  },
+  "teams": [
+    {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "intake_done": true,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "example-team",
+      "team": "Example Team",
+      "entry": {
+        "status": "pulled",
+        "commit": "c0ffee5e1234567890abcdef1234567890abcdef",
+        "commit_time": "2026-10-12T09:40:21+00:00",
+        "pulled_at": "2026-10-13T12:08:02+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "files": [
+          {
+            "path": "google__gemma-4-31B-it.spipe",
+            "bytes": 1284730112
+          },
+          {
+            "path": "ibm-granite__granite-4.2-30b.spipe",
+            "bytes": 1190002688
+          },
+          {
+            "path": "Qwen__Qwen3.8-27B.spipe",
+            "bytes": 1261174784
+          },
+          {
+            "path": "method_card.md",
+            "bytes": 3120
+          }
+        ],
+        "card": {
+          "name": "CAA-honesty",
+          "version": "v4",
+          "summary": "Contrastive activation addition for honesty"
+        },
+        "label": "CAA-honesty v4",
+        "intake": {
+          "ok": false,
+          "errors": [
+            "google__gemma-4-31B-it.spipe: the bundle is not frozen (no lock section)"
+          ],
+          "warnings": [],
+          "track": null,
+          "track_source": null,
+          "needs_review": false,
+          "reviewed": false,
+          "engines": {}
+        },
+        "record": [
+          [
+            "repo",
+            "example-team/submission"
+          ],
+          [
+            "commit",
+            "c0ffee5e1234  2026-10-12 09:40 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:08 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "method_card.md  3 KB"
+          ],
+          [
+            "card",
+            "CAA-honesty v4: Contrastive activation addition for honesty"
+          ],
+          [
+            "intake",
+            "FAIL (1 error(s), 0 warning(s)) track unassigned"
+          ],
+          [
+            "",
+            "error: google__gemma-4-31B-it.spipe: the bundle is not frozen (no lock section)"
+          ]
+        ],
+        "method_card": null
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "not_started",
+        "ibm-granite/granite-4.2-30b": "not_started",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    }
+  ],
+  "missing": []
+}

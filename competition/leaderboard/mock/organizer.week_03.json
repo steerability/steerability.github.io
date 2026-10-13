@@ -9,11 +9,13 @@
     "pulled": true,
     "pull_finished": "2026-10-13T12:41:10+00:00",
     "n_pulled": 15,
+    "intake_done": true,
     "models": [
       "google/gemma-4-31B-it",
       "ibm-granite/granite-4.2-30b",
       "Qwen/Qwen3.8-27B"
-    ]
+    ],
+    "phase": "evaluating"
   },
   "board": null,
   "teams": {
@@ -26,6 +28,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -92,6 +95,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -158,6 +162,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -224,6 +229,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -340,6 +346,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -406,6 +413,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -472,6 +480,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -538,6 +547,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -604,6 +614,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -674,6 +685,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -740,6 +752,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -806,6 +819,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -872,6 +886,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -938,6 +953,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -1004,6 +1020,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",
@@ -1070,6 +1087,7 @@
         "pulled": true,
         "pull_finished": "2026-10-13T12:41:10+00:00",
         "n_pulled": 15,
+        "intake_done": true,
         "models": [
           "google/gemma-4-31B-it",
           "ibm-granite/granite-4.2-30b",

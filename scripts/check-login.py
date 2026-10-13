@@ -76,7 +76,9 @@ with sync_playwright() as p:
     # markup puts tags into the participant-authored strings (see api_endpoint)
     # pending: how the index names the week after the latest published one: "pulled" (the fixture as is), "unpulled" (the same
     # block before its pull: pulled false, pull_finished and n_pulled null), or None (no pending run)
-    api = {"runs": "ok", "board": "ok", "me": "organizer", "markup": False, "pending": "pulled"}
+    # phase: the pending run's phase as the index and the pending week's /me (and mock mode's fixtures) send it: None (the
+    # fixtures as they are), a phase code (intake_done false for "pulled", else true), or "absent" (an older API: neither field)
+    api = {"runs": "ok", "board": "ok", "me": "organizer", "markup": False, "pending": "pulled", "phase": None}
 
     def watch(pg):
         pg.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
@@ -143,10 +145,18 @@ with sync_playwright() as p:
         with open(path, encoding="utf-8") as f:
             return json.load(f)
     RUNS = fixture("runs")
+    PENDING = RUNS["pending"]["name"]
+    def phased(run):   # a pending run block in the phase api["phase"] asks for
+        if api["phase"] is None:
+            return run
+        if api["phase"] == "absent":
+            return {k: v for k, v in run.items() if k not in ("phase", "intake_done")}
+        return {**run, "intake_done": api["phase"] != "pulled", "phase": api["phase"]}
     def index_body():
         if api["pending"] == "unpulled":
-            return {**RUNS, "pending": {**RUNS["pending"], "pulled": False, "pull_finished": None, "n_pulled": None}}
-        return RUNS if api["pending"] == "pulled" else {**RUNS, "pending": None}
+            return {**RUNS, "pending": {**RUNS["pending"], "pulled": False, "pull_finished": None, "n_pulled": None,
+                                        "intake_done": False, "phase": "upcoming"}}
+        return {**RUNS, "pending": phased(RUNS["pending"])} if api["pending"] == "pulled" else {**RUNS, "pending": None}
 
     def api_endpoint(route, request):
         url = urlparse(request.url)
@@ -202,6 +212,8 @@ with sync_playwright() as p:
                 entry = body["teams"][0]["entry"]
                 entry["record"].append(["card", "<b>bold</b> card"])
                 entry["method_card"]["text"] = "<b>bold</b> card\n" + entry["method_card"]["text"]
+            if run == PENDING:
+                body["run"] = phased(body["run"])
             reply(200, body)
         else:
             fail("404")
@@ -216,14 +228,19 @@ with sync_playwright() as p:
         route.continue_()
 
     def mock_index(route, request):   # mock mode's index: the fixture as is, or the fake API's variant of it
-        if api["pending"] == "pulled":
+        if api["pending"] == "pulled" and api["phase"] is None:
             route.continue_()
         else:
             route.fulfill(status=200, content_type="application/json", body=json.dumps(index_body()))
 
     def mock_view_guard(route, request):   # mock mode's per-week private views, to see that the pending week's is fetched each time
-        captured["mock_views"].append(urlparse(request.url).path.split("/")[-1])
-        route.continue_()
+        name = urlparse(request.url).path.split("/")[-1]
+        captured["mock_views"].append(name)
+        body = fixture(name[:-len(".json")]) if api["phase"] is not None and name.endswith(f".{PENDING}.json") else None
+        if body is None:
+            route.continue_()
+        else:   # the pending week's fixture in the phase asked for
+            route.fulfill(status=200, content_type="application/json", body=json.dumps({**body, "run": phased(body["run"])}))
 
     def refuse_space(route, request):
         captured["space"].append(request.url)
@@ -553,6 +570,17 @@ with sync_playwright() as p:
     ROW = f'#lb-public tr[data-org="{EXAMPLE_HASH}"]'
     P = fixture("participant")["teams"][0]
     LINES = "ls => ls.map(l => [l.querySelector('.lb-key').textContent, l.querySelector('.lb-text').textContent])"
+    PROGRESS = "rs => rs.map(r => Array.from(r.cells).map(c => c.textContent))"
+    # the pending week's line under the table, by phase (the fixtures: 15 submissions pulled Oct 13, 12:41 UTC, intake_done true)
+    PULLED = "Week 3 is being evaluated: 15 submissions were pulled at the intake, Oct 13, 12:41 UTC"
+    PUBLISHED = " Results appear here when the board is published."
+    CAPTIONS = {
+        "pulled": PULLED + ", and are being checked." + PUBLISHED,
+        "evaluating": PULLED + ", and checked; the evaluation is running." + PUBLISHED,
+        "finishing": PULLED + ", and checked; the evaluation runs have finished and the results are being scored." + PUBLISHED,
+        "absent": PULLED + "." + PUBLISHED,
+    }
+    RUNNING = "; the evaluation is running." + PUBLISHED
 
     def private_view(pg, kind, wait, width=1040):
         pg.set_viewport_size({"width": width, "height": 860 if width > 600 else 844})
@@ -747,8 +775,7 @@ with sync_playwright() as p:
     check(pv.locator("#lb-public tr.lb-hidden, #lb-public .bar").count() == 0, "week 3: no placeholder rows for the other submissions")
     check(not re.search(r"\d", "".join(pv.locator("#lb-public td.lb-score").all_inner_texts())), "week 3: no digit in any score cell")
     cap3 = pv.inner_text("#lb-caption")
-    check(cap3 == "Week 3 is being evaluated: 15 submissions were pulled at the intake, Oct 13, 12:41 UTC. Results appear here when the board is published.",
-          f"week 3: the line under the table ({cap3!r})")
+    check(cap3 == CAPTIONS["evaluating"], f"week 3: the line under the table says the evaluation is running ({cap3!r})")
     own.click()
     frames(pv)
     check(spin.count() == 1 and spin.evaluate("e => getComputedStyle(e).animationName") == "none"
@@ -759,10 +786,11 @@ with sync_playwright() as p:
     check(d3.is_visible() and secs == ["progress", "record", "method card"] and d3.locator(".lb-models, .lb-groups").count() == 0
           and d3.locator(".lb-drawer > *").count() == 3,
           f"week 3 drawer: progress, record, method card and nothing else ({secs})")
-    prog = d3.locator(".lb-progress tr").evaluate_all("rs => rs.map(r => Array.from(r.cells).map(c => c.textContent))")
-    check(prog == [["gemma-4-31B-it", "completed"], ["granite-4.2-30b", "in progress"], ["Qwen3.8-27B", "not started"]]
-          and d3.locator(".lb-progress tr").nth(1).locator(".lb-spin").count() == 1 and d3.locator(".lb-progress .lb-spin").count() == 1,
-          f"week 3 drawer: the evaluation's progress per model, the spinner on the one in progress ({prog})")
+    prog = d3.locator(".lb-progress tr").evaluate_all(PROGRESS)
+    spins = d3.locator(".lb-progress tr").evaluate_all("rs => rs.map(r => r.querySelectorAll('.lb-spin').length)")
+    check(prog == [["gemma-4-31B-it", "completed"], ["granite-4.2-30b", "in progress"], ["Qwen3.8-27B", "in progress"]]
+          and spins == [0, 1, 1] and "not started" not in d3.inner_text(),
+          f"week 3 drawer: per model, completed or in progress with the spinner (not started reads in progress); never 'not started' ({prog}, {spins})")
     check(["pulled", "2026-10-13 12:08 UTC"] in d3.locator(".lb-line").evaluate_all(LINES) and "version: v4" in d3.locator(".lb-card").inner_text(),
           "week 3 drawer: the record of what was taken at the intake, the card as submitted")
     pv.screenshot(path=f"{OUT}/08-pending-participant.png", full_page=True)
@@ -847,8 +875,9 @@ with sync_playwright() as p:
     sp.wait_for_function("(document.querySelector('.lb-detail-standalone .lb-standalone-note') || {}).textContent"
                          " === \"No entry for this organization in Week 3. The next intake is on the competition page's countdown.\"")
     check(sp.locator("#lb-public table, #lb-public tr, .lb-spin").count() == 0 and sp.inner_text("#lb-board-note") == "Week 3 is being evaluated."
-          and sp.locator(".lb-detail-standalone").count() == 1 and sp.inner_text("#lb-week") == "Week 3",
-          "week 3, no entry: no table, the line, and the block saying so")
+          and sp.locator(".lb-detail-standalone").count() == 1 and sp.inner_text("#lb-week") == "Week 3"
+          and sp.inner_text("#lb-caption").startswith("Week 3 is being evaluated") and sp.inner_text("#lb-caption").endswith(RUNNING),
+          "week 3, no entry: no table, the line, the block saying so, and the phase under the table")
     sp.goto(f"{LB}?mock=none")
     sp.wait_for_selector("#hf-login:visible")
     sp.wait_for_selector("#lb-later:not([disabled])")
@@ -856,8 +885,8 @@ with sync_playwright() as p:
     sp.wait_for_function("(document.getElementById('lb-board-note') || {}).textContent === 'Week 3 is being evaluated.'")
     check(sp.locator("#lb-public table, .lb-spin, .lb-detail-standalone, .lb-expand").count() == 0 and sp.is_disabled("#lb-later")
           and sp.locator("#lb-board-note").evaluate("e => e.tagName === 'P' && e.classList.contains('soft')")
-          and sp.inner_text("#lb-caption").startswith("Week 3 is being evaluated"),
-          "week 3, signed out: the picker reaches it; the line, no table, no spinner")
+          and sp.inner_text("#lb-caption").startswith("Week 3 is being evaluated") and sp.inner_text("#lb-caption").endswith(RUNNING),
+          "week 3, signed out: the picker reaches it; the line, no table, no spinner; the phase under the table (from /runs)")
 
     # ---- 13c. the pending week before its pull: a participant's team as a row with the spinner, nothing to open, nothing fetched;
     # anyone else a line; and an index without a pending run
@@ -891,6 +920,44 @@ with sync_playwright() as p:
     check(sp.is_disabled("#lb-later") and sp.inner_text("#lb-week") == "Week 2" and "Week 3" not in sp.inner_text("main"),
           "index without a pending run: → disabled on Week 2, no Week 3")
     api["pending"] = "pulled"
+
+    # ---- 13d. the line under the pending week's table follows the run's phase; without one (an older API) it is the plain
+    # sentence. The drawer's rule does not depend on the phase: a model not started reads in progress
+    for phase in ("pulled", "finishing", "absent"):
+        api["phase"] = phase
+        private_view(sp, "participant", wait=f"{ROW} .lb-expand")   # a fresh page load: the index is read once per load
+        sp.click("#lb-later")
+        sp.wait_for_selector(f"{ROW}.lb-expandable .lb-expand")
+        cap_p = sp.inner_text("#lb-caption")
+        check(cap_p == CAPTIONS[phase], f"week 3, phase {phase}: the line under the table ({cap_p!r})")
+        if phase == "pulled":
+            sp.locator(ROW).click()
+            prog = sp.locator("#lb-detail-example-team .lb-progress tr").evaluate_all(PROGRESS)
+            check(prog[2] == ["Qwen3.8-27B", "in progress"] and sp.locator("#lb-detail-example-team .lb-progress tr").nth(2).locator(".lb-spin").count() == 1,
+                  f"week 3, phase pulled: the drawer still reads in progress, with the spinner, on the model not started ({prog})")
+    api["phase"] = None
+
+    # ---- 13e. the pending week for a submission that did not pass the intake checks: its row with the spinner, and one line
+    # in the drawer instead of the progress table
+    private_view(sp, "participant-unscored", wait=f"{ROW} .lb-expand")
+    sp.click("#lb-later")
+    sp.wait_for_selector(f"{ROW}.lb-expandable .lb-expand")
+    check(sp.locator(f"{ROW} td.lb-score").first.locator(".lb-spin").count() == 1 and sp.locator(".lb-detail-standalone").count() == 0,
+          "week 3, intake failed: the own row with the spinner, no block under the table")
+    sp.locator(ROW).click()
+    df = sp.locator("#lb-detail-example-team")
+    psec = df.locator(".lb-drawer > .lb-sec", has=sp.locator(".lb-k", has_text="progress"))
+    check(psec.count() == 1 and psec.locator("table, .lb-progress, .lb-spin").count() == 0
+          and psec.locator("p.soft").inner_text() == "Not evaluated: the submission did not pass the intake checks (see the record)."
+          and "not started" not in df.inner_text() and "in progress" not in df.inner_text(),
+          "week 3, intake failed: the drawer's progress is one line saying the submission is not evaluated, no table")
+    flines = df.locator(".lb-line").evaluate_all(LINES)
+    check(flines[-2:] == [["intake", "FAIL (1 error(s), 0 warning(s)) track unassigned"],
+                          ["", "error: google__gemma-4-31B-it.spipe: the bundle is not frozen (no lock section)"]]
+          and df.locator(".lb-card").count() == 0,
+          f"week 3, intake failed: the record ends with the verdict and the error; no method card ({flines[-2:]})")
+    check(not red(sp), f"week 3, intake failed: no red text anywhere ({red(sp)})")
+    sp.screenshot(path=f"{OUT}/08-pending-intake-failed.png", full_page=True)
 
     # ---- 14. organizer: every submission row with a team file expandable, any number open, a block for every other file,
     # nothing above the board
@@ -944,6 +1011,13 @@ with sync_playwright() as p:
     prow.nth(1).click()
     check(op.locator("#lb-public tr.lb-detail:not([hidden])").count() == 2 and op.locator("#lb-public tr.lb-detail:not([hidden]) .lb-progress").count() == 2,
           "week 3, organizer: two drawers open at once, each with the evaluation's progress")
+    op.locator("#lb-public tr.lb-expandable", has=op.locator(".lb-expand", has_text="Coxswains")).click()
+    first_prog = op.locator("#lb-detail-reg0x00 .lb-progress tr").evaluate_all(PROGRESS)
+    cox = op.locator("#lb-detail-coxswains")
+    cox_prog = cox.locator(".lb-progress tr").evaluate_all(PROGRESS)
+    check([s for _, s in first_prog] == ["completed"] * 3 and cox.is_visible() and [s for _, s in cox_prog] == ["not started"] * 3
+          and cox.locator(".lb-progress .lb-spin").count() == 0,
+          f"week 3, organizer: the drawers show the raw codes: reg0x00 completed on every model, Coxswains not started with no spinner ({first_prog}, {cox_prog})")
     op.screenshot(path=f"{OUT}/08-pending-organizer.png", full_page=True)
 
     # ---- 15. results API errors, from the fake Space. The board: 503 no_board, a refused connection (one retry, then the
@@ -1064,7 +1138,7 @@ with sync_playwright() as p:
         "commit", "commit_time", "pulled_at", "repo_private", "evaluator_role", "files", "path", "bytes",
         "card", "version", "summary", "intake", "ok", "errors", "track", "track_source", "needs_review",
         "reviewed", "engines", "record", "method_card", "file", "text", "truncated",
-        "pending", "pulled", "n_pulled", "evaluation",                                # the week being evaluated
+        "pending", "pulled", "n_pulled", "intake_done", "phase", "evaluation",       # the week being evaluated
         "rank", "S", "ci", "delta", "r_side", "r_guard", "backend", "declines", "arm", "reference", "flag",
         "judge", "failed", "refused", "flags", "unscored", "reason", "families", "g", "side_effects", "guards",
         "delta_comparable", "S_comparable"}
@@ -1076,7 +1150,8 @@ with sync_playwright() as p:
     CODES = {"flags": {"truncation", "gpu_mismatch", "no_dim_scored"},
              "reason": {"build_failed", "timeout", "suite_failed", "reference_pending", "not_run"},
              "backend": {"vllm", "huggingface"}, "kind": {"submission", "baseline"},
-             "status": {"pulled", "missing", "oversize", "failed"}}
+             "status": {"pulled", "missing", "oversize", "failed"},
+             "phase": {"upcoming", "pulled", "checked", "evaluating", "finishing"}}
     RECORD_KEYS = {"repo", "commit", "pulled", "status", "files", "card", "warning", "intake", ""}
     problems = []
     pending_file = False
@@ -1146,7 +1221,8 @@ with sync_playwright() as p:
         pending_file = data.get("pending") is True   # a pending week's files carry schema 1 (a team file's entry, no board)
         walk(data, None, model_lists(data, set()) or None, name)
     check(fixtures == ["board.week_01.json", "board.week_02.json", "organizer.json", "organizer.week_03.json", "participant-noentry.json",
-                       "participant-noentry.week_03.json", "participant-unscored.json", "participant.json", "participant.week_01.json",
+                       "participant-noentry.week_03.json", "participant-unscored.json", "participant-unscored.week_03.json",
+                       "participant.json", "participant.week_01.json",
                        "participant.week_03.json", "runs.json"] and not problems,
           f"fixtures: {len(fixtures)} files, every key in the schema's list, records and hashes well formed, no dim ids ({problems})")
 

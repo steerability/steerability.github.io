@@ -38,9 +38,10 @@ instead of calling the results API: `runs.json` (the index of weeks), `board.<ru
 (a week's public table), and `<kind>.json` for the latest week or `<kind>.<run>.json` for
 another (`participant`, `participant-unscored`, `participant-noentry`, `organizer`; the
 `.week_01` files are the earlier week and the `.week_03` files the week being evaluated,
-which the index's `pending` block adds as one more step of the picker; a week without a
-file for the kind shows as having no entry). Mock mode stays on through `?mock=none`,
-reloads and sign-out; `?mock=off` ends it.
+which the index's `pending` block adds as one more step of the picker, in the phase its
+`phase` names; `participant-unscored.week_03.json` is a submission that did not pass the
+intake checks; a week without a file for the kind shows as having no entry). Mock mode
+stays on through `?mock=none`, reloads and sign-out; `?mock=off` ends it.
 While `CONFIG.enabled` is `false` the button is hidden; add `?preview` to the competition
 page's URL to show it (on the live site too).
 
