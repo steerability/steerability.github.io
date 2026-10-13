@@ -42,8 +42,9 @@ which the index's `pending` block adds as one more step of the picker, in the ph
 `phase` names; `participant-unscored.week_03.json` is a submission that did not pass the
 intake checks; a week without a file for the kind shows as having no entry). Mock mode
 stays on through `?mock=none`, reloads and sign-out; `?mock=off` ends it.
-While `CONFIG.enabled` is `false` the button is hidden; add `?preview` to the competition
-page's URL to show it (on the live site too).
+`CONFIG.enabled` in `competition/hf-login.js` is a kill switch for the button: set to
+`false`, it hides the button for everyone but browsers that have visited the competition
+page with `?preview` (on the live site too), which is how to look at a deploy made dark.
 
 ## Updating the leaderboard on the competition page
 
