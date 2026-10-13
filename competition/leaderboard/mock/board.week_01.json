@@ -1,0 +1,154 @@
+{
+ "schema": 1,
+ "run": {
+  "name": "week_01",
+  "label": "Week 1",
+  "layer": "public",
+  "date": "2026-10-02",
+  "deadline": null,
+  "n_ranked": 11,
+  "n_baselines": 3
+ },
+ "rows": [
+  {
+   "kind": "submission",
+   "rank": 1,
+   "team": "reg0x00",
+   "org_hash": "d7205fd631a5",
+   "S": 0.652,
+   "delta": 0.74,
+   "r_side": 0.019,
+   "r_guard": 0.015
+  },
+  {
+   "kind": "submission",
+   "rank": 2,
+   "team": "ParisBound",
+   "org_hash": "4380d5ee8f0a",
+   "S": 0.588,
+   "delta": 0.671,
+   "r_side": 0.021,
+   "r_guard": 0.011
+  },
+  {
+   "kind": "submission",
+   "rank": 3,
+   "team": "sLab",
+   "org_hash": "b8a772318468",
+   "S": 0.421,
+   "delta": 0.52,
+   "r_side": 0.014,
+   "r_guard": 0.02
+  },
+  {
+   "kind": "submission",
+   "rank": 4,
+   "team": "runtime-steering",
+   "org_hash": "1f384de88a01",
+   "S": 0.366,
+   "delta": 0.43,
+   "r_side": 0.012,
+   "r_guard": 0.013
+  },
+  {
+   "kind": "submission",
+   "rank": 5,
+   "team": "Coxswains",
+   "org_hash": "ebf8d527f69c",
+   "S": 0.329,
+   "delta": 0.388,
+   "r_side": 0.017,
+   "r_guard": 0.003
+  },
+  {
+   "kind": "submission",
+   "rank": 6,
+   "team": "Example Team",
+   "org_hash": "6d3340a8fee4",
+   "S": 0.31,
+   "delta": 0.4,
+   "r_side": 0.018,
+   "r_guard": 0.012
+  },
+  {
+   "kind": "submission",
+   "rank": 7,
+   "team": "Team Trust-Issues",
+   "org_hash": "984bccd8b31c",
+   "S": 0.284,
+   "delta": 0.802,
+   "r_side": 0.041,
+   "r_guard": 0.147
+  },
+  {
+   "kind": "baseline",
+   "rank": null,
+   "team": "honesty_few_shot",
+   "org_hash": null,
+   "S": 0.131,
+   "delta": 0.352,
+   "r_side": 0.013,
+   "r_guard": 0.061
+  },
+  {
+   "kind": "submission",
+   "rank": 8,
+   "team": "S2WISH",
+   "org_hash": "67bf465d8dd6",
+   "S": 0.122,
+   "delta": 0.301,
+   "r_side": 0.012,
+   "r_guard": 0.052
+  },
+  {
+   "kind": "submission",
+   "rank": 9,
+   "team": "SDNB",
+   "org_hash": "378f2b9af5f1",
+   "S": 0.064,
+   "delta": 0.108,
+   "r_side": 0.008,
+   "r_guard": 0.007
+  },
+  {
+   "kind": "baseline",
+   "rank": null,
+   "team": "honesty_sft",
+   "org_hash": null,
+   "S": 0.039,
+   "delta": 0.198,
+   "r_side": 0.007,
+   "r_guard": 0.047
+  },
+  {
+   "kind": "submission",
+   "rank": 10,
+   "team": "NikallaudeAIns",
+   "org_hash": "847c09f2f981",
+   "S": -0.214,
+   "delta": 0.071,
+   "r_side": 0.039,
+   "r_guard": 0.062
+  },
+  {
+   "kind": "submission",
+   "rank": 11,
+   "team": "FreeStyle Blue",
+   "org_hash": "aae7b6ec9f02",
+   "S": -0.683,
+   "delta": 0.655,
+   "r_side": 0.152,
+   "r_guard": 0.301
+  },
+  {
+   "kind": "baseline",
+   "rank": null,
+   "team": "honest_persona",
+   "org_hash": null,
+   "S": -1.402,
+   "delta": 0.661,
+   "r_side": 0.309,
+   "r_guard": 0.384
+  }
+ ]
+}

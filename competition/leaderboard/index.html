@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaderboard · The Steerability Challenge</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.png" type="image/png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=20261013">
+</head>
+<body class="lb-window">
+
+<!-- The pop-up opened by the competition page's "Sign in with Hugging Face" button (see ../hf-login.js).
+     It is also the OAuth redirect URI, so the whole sign-in round trip happens in this window. -->
+<main class="container">
+
+  <h1 class="visually-hidden">Leaderboard</h1>
+
+  <!-- ================= SIGN-IN + PRIVATE VIEW ================= -->
+  <div class="lb-private" id="lb-private" data-mode="window">
+    <div class="cta-row" data-auth-state="signed-out" hidden>
+      <button class="btn" type="button" id="hf-login">Sign in with Hugging Face</button>
+      <span class="soft">to see your team's private results</span>
+    </div>
+    <div data-auth-state="signed-in" hidden>
+      <p class="lb-who" id="lb-who"></p>
+      <!-- Filled in by private-view.js: loading and error lines only. A team's own results open from its row of
+           the board below. -->
+      <div id="lb-private-content"></div>
+    </div>
+    <p class="lb-error" id="hf-login-error" hidden aria-live="polite"></p>
+  </div>
+
+  <!-- ================= THE BOARD ================= -->
+  <!-- Rendered by private-view.js from the results API, one week at a time; the picker steps through the weeks -->
+  <div class="lb-head">
+    <h2 id="public">Leaderboard</h2>
+    <div class="lb-weeks" id="lb-weeks" role="group" aria-label="Week" hidden>
+      <button class="btn lb-arrow" type="button" id="lb-earlier" aria-label="Earlier week" disabled>&larr;</button>
+      <span class="lb-week" id="lb-week" aria-live="polite"></span>
+      <button class="btn lb-arrow" type="button" id="lb-later" aria-label="Later week" disabled>&rarr;</button>
+    </div>
+  </div>
+  <div id="lb-public"><p class="soft" id="lb-board-note">Loading the leaderboard…</p></div>
+  <!-- The week being evaluated: one line under its table (hidden on a published week) -->
+  <p class="soft lb-caption" id="lb-caption" hidden></p>
+
+</main>
+
+<!-- ================= STAR THE TOOLKIT ================= -->
+<!-- Shown over the page to signed-in participants by hf-login.js (maybeAskForStar), until they go to the repo -->
+<dialog class="box star-ask" id="star-ask" aria-labelledby="star-ask-text" tabindex="-1">
+  <p id="star-ask-text">If you're finding the challenge engaging so far, please consider starring our toolkit repo!</p>
+  <div class="cta-row">
+    <a class="btn" id="star-go" href="https://github.com/generative-computing/steerability/" target="_blank" rel="noopener">Take me to the repo</a>
+    <button class="link-btn" type="button" id="star-dismiss">Go away</button>
+  </div>
+</dialog>
+
+<!-- private-view.js first: it owns the board and the private view; hf-login.js renders the sign-in state as soon
+     as it loads and hands the session to SCPrivateView -->
+<script src="private-view.js?v=20261013"></script>
+<script src="../hf-login.js?v=20261013"></script>
+</body>
+</html>

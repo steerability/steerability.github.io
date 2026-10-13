@@ -1,0 +1,16 @@
+{
+  "role": "participant",
+  "run": {
+    "name": "week_02",
+    "label": "Week 2",
+    "layer": "public",
+    "date": "2026-10-09",
+    "deadline": null,
+    "n_ranked": 14,
+    "n_baselines": 3
+  },
+  "teams": [],
+  "missing": [
+    "example-team"
+  ]
+}

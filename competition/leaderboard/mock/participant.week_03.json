@@ -1,0 +1,137 @@
+{
+  "role": "participant",
+  "pending": true,
+  "pulled": true,
+  "run": {
+    "name": "week_03",
+    "label": "Week 3",
+    "layer": "public",
+    "pulled": true,
+    "pull_finished": "2026-10-13T12:41:10+00:00",
+    "n_pulled": 15,
+    "models": [
+      "google/gemma-4-31B-it",
+      "ibm-granite/granite-4.2-30b",
+      "Qwen/Qwen3.8-27B"
+    ]
+  },
+  "teams": [
+    {
+      "schema": 1,
+      "run": {
+        "name": "week_03",
+        "label": "Week 3",
+        "layer": "public",
+        "pulled": true,
+        "pull_finished": "2026-10-13T12:41:10+00:00",
+        "n_pulled": 15,
+        "models": [
+          "google/gemma-4-31B-it",
+          "ibm-granite/granite-4.2-30b",
+          "Qwen/Qwen3.8-27B"
+        ]
+      },
+      "org": "example-team",
+      "team": "Example Team",
+      "entry": {
+        "status": "pulled",
+        "commit": "c0ffee5e1234567890abcdef1234567890abcdef",
+        "commit_time": "2026-10-12T09:40:21+00:00",
+        "pulled_at": "2026-10-13T12:08:02+00:00",
+        "repo_private": true,
+        "evaluator_role": "read",
+        "files": [
+          {
+            "path": "google__gemma-4-31B-it.spipe",
+            "bytes": 1284730112
+          },
+          {
+            "path": "ibm-granite__granite-4.2-30b.spipe",
+            "bytes": 1190002688
+          },
+          {
+            "path": "Qwen__Qwen3.8-27B.spipe",
+            "bytes": 1261174784
+          },
+          {
+            "path": "method_card.md",
+            "bytes": 3120
+          }
+        ],
+        "card": {
+          "name": "CAA-honesty",
+          "version": "v4",
+          "summary": "Contrastive activation addition for honesty"
+        },
+        "label": "CAA-honesty v4",
+        "intake": {
+          "ok": true,
+          "errors": [],
+          "warnings": [],
+          "track": "white-box",
+          "track_source": "detected",
+          "needs_review": false,
+          "reviewed": false,
+          "engines": {
+            "google/gemma-4-31B-it": "vllm",
+            "ibm-granite/granite-4.2-30b": "huggingface",
+            "Qwen/Qwen3.8-27B": "vllm"
+          }
+        },
+        "record": [
+          [
+            "repo",
+            "example-team/submission"
+          ],
+          [
+            "commit",
+            "c0ffee5e1234  2026-10-12 09:40 UTC"
+          ],
+          [
+            "pulled",
+            "2026-10-13 12:08 UTC"
+          ],
+          [
+            "files",
+            "google__gemma-4-31B-it.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "ibm-granite__granite-4.2-30b.spipe  1.1 GB"
+          ],
+          [
+            "",
+            "Qwen__Qwen3.8-27B.spipe  1.2 GB"
+          ],
+          [
+            "",
+            "method_card.md  3 KB"
+          ],
+          [
+            "card",
+            "CAA-honesty v4: Contrastive activation addition for honesty"
+          ],
+          [
+            "intake",
+            "PASS (0 error(s), 0 warning(s)) track white-box (detected)"
+          ],
+          [
+            "",
+            "backends: google/gemma-4-31B-it vllm, ibm-granite/granite-4.2-30b huggingface, Qwen/Qwen3.8-27B vllm"
+          ]
+        ],
+        "method_card": {
+          "file": "method_card.md",
+          "truncated": false,
+          "text": "---\nname: CAA-honesty\nversion: v4\nsummary: Contrastive activation addition for honesty\n---\n\n# CAA-honesty\n\nContrastive activation addition (CAA) on the residual stream, steering toward honest completions.\n\n## Method\n\nA steering vector per model is the mean difference between the activations of honest and dishonest completions on a contrastive prompt set, added at one middle layer at inference time.\n\n## Models\n\nThe same recipe on all three base models; the layer and the scale are tuned per model on the public dev split.\n"
+        }
+      },
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "in_progress",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    }
+  ],
+  "missing": []
+}

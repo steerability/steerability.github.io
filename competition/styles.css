@@ -21,6 +21,8 @@
   --tint:   #FAFAF8;    /* code background             */
   --accent: #1F3BD3;    /* links, squares, the CTA     */
   --accent-press: #16309F;
+  --lb-shade: #F4F5FA; /* the pop-up: a team's drawer, the row hover */
+  --lb-dim:   #A2A4AD; /* the pop-up: rows that recede        */
 
   --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
   --font-mono:  "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -211,6 +213,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .leaderboard .lb-score{ width:9rem; text-align:right; }
 .leaderboard td.lb-rank{ font-family:var(--font-mono); font-size:.8rem; color:#B4B5BC; }
 .leaderboard .bar{ display:inline-block; height:.6rem; background:var(--line); vertical-align:middle; }
+.leaderboard .lb-baseline td{ background:rgba(128, 128, 128, 0.18); }   /* baseline pipelines, unranked */
 
 /* "Evaluation running" message: always on, but hover-only where hover exists */
 .lb-overlay{
@@ -239,6 +242,141 @@ pre .c{ color:#8A8C96; font-style:italic; }
   .leaderboard th, .leaderboard td{ padding-inline:.9rem; }
   .leaderboard .lb-rank{ width:4.5rem; }
   .leaderboard .lb-score{ width:5.5rem; }
+}
+
+/* Private view (see hf-login.js): on the competition page, one button in a .cta-row like the Register row;
+   in the leaderboard/ pop-up, the same sign-in row, then a plain "who" line and the private view */
+.lb-private [hidden]{ display:none !important; }   /* .cta-row is display:flex; keep [hidden] winning */
+.lb-who{ display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .7rem; margin:1.6rem 0 .9rem; }
+.lb-avatar{ width:1.75rem; height:1.75rem; border:1px solid var(--ink); }   /* square, like every other corner */
+.lb-tag{
+  font-family:var(--font-mono); font-size:.75rem; line-height:1.4; color:var(--soft);
+  border:1px solid var(--line); padding:.1em .5em;
+}
+.lb-signout{ white-space:nowrap; }
+.lb-error{ color:#B3261E; margin:0 0 1.1rem; }
+
+/* The leaderboard/ pop-up: the who line across the top (sign out at its right end), then the board at full
+   window width. Spacing at the edges is padding, not margin, so the window can measure itself (fitWindow) */
+.lb-window .container{ max-width:none; padding-block:1rem 1.25rem; }
+.lb-window .lb-who, .lb-window .cta-row{ margin-top:0; }
+.lb-window .lb-signout{ margin-left:auto; }
+.lb-window h2::before{ content:none; }   /* no accent square in the pop-up */
+
+/* The star-the-repo ask in the pop-up: a .box floating over the dimmed page, the Register row's
+   [button] + link pattern inside it */
+.star-ask{ margin:auto; max-width:min(30rem, calc(100% - 2.5rem)); color:var(--ink); }
+.star-ask::backdrop{ background:rgba(23, 24, 28, .35); }
+.star-ask:focus-visible{ outline:none; }   /* it takes focus itself on opening, so no ring on a button yet */
+.star-ask p{ margin:0; }
+.star-ask .cta-row{ margin:1.1rem 0 0; }
+/* A <button> that looks like a link (the second action next to a .btn) */
+.link-btn{
+  font:inherit; color:var(--accent); background:none; border:0; cursor:pointer;
+  text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px;
+  padding:0 .12em; margin:0 -.12em;
+}
+.link-btn:hover{ background:var(--accent); color:#fff; text-decoration:none; }
+
+/* The private view in the pop-up (leaderboard/private-view.js): the week picker on the heading line and a team's
+   drawer, which opens under its own row (or stands as a block under the table). Hairlines, the mono face for
+   labels, dates and ids, the accent only for what acts: links and the team's name in its row */
+
+/* The heading line: "Leaderboard" at the left, the week picker at the right end */
+.lb-head{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.6rem 1rem; margin:2.25rem 0 .8rem; }
+.lb-head h2{ margin:0; }
+.lb-weeks{ display:flex; align-items:center; gap:.9rem; margin-left:auto; }
+.lb-weeks[hidden]{ display:none; }
+.lb-arrow{ padding:.3em .6em; line-height:1.2; font-size:1rem; }
+.lb-arrow[disabled], .lb-arrow[disabled]:hover, .lb-arrow[disabled]:active{
+  background:var(--soft); cursor:default; transform:none; box-shadow:4px 4px 0 var(--ink);
+}
+.lb-week{ font-weight:600; min-width:4.5rem; text-align:center; }
+
+/* The expandable row: the name in the accent, the whole row the target */
+.leaderboard tr.lb-expandable{ cursor:pointer; }
+.lb-expand{ font:inherit; color:var(--accent); text-align:left; background:none; border:0; padding:0; margin:0; cursor:pointer; }
+.leaderboard tr.lb-expandable:hover > td{ background:var(--lb-shade); }
+.leaderboard tr.lb-expandable:hover .lb-expand{ text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+.leaderboard tr.lb-expandable.is-open > td{ background:#fff; }   /* after the hover rule, so the open row stays white under the pointer */
+
+/* While a drawer is open, the rest of the board recedes */
+.leaderboard.has-open > table > tbody > tr:not(.is-open):not(.lb-detail) > td{ color:var(--lb-dim); }
+.leaderboard.has-open > table > tbody > tr.lb-baseline:not(.is-open) > td{ background:rgba(128,128,128,.08); }
+
+/* The drawer: a shaded sheet under the row, with an inset shadow along its top edge */
+.leaderboard tr.lb-detail > td{
+  height:auto; padding:0; border-top:1px solid var(--line);
+  background:var(--lb-shade); box-shadow:inset 0 7px 9px -7px rgba(23,24,28,.28);
+}
+.lb-drawer{ padding:1.4rem 0 1.6rem; font-size:.95rem; line-height:1.55; contain:inline-size; overflow-wrap:anywhere; overflow-x:auto; }
+/* contain + overflow-x: the drawer is as wide as the board and never wider; where the results table needs more (phone
+   width) it scrolls inside the drawer */
+.lb-sec{ display:grid; grid-template-columns:7rem minmax(0,1fr); padding:0 1.25rem; margin-top:1.6rem; }
+.lb-drawer > .lb-sec:first-child{ margin-top:0; }   /* the record alone (nothing scored) starts at the drawer's own padding */
+.lb-sec > .lb-k{ font-family:var(--font-mono); font-size:.78rem; line-height:1.55; color:var(--soft); }   /* on the first line of the content */
+.lb-sec.lb-boxed > .lb-k{ padding-top:calc(.7rem + 1px); }                                            /* a box's top padding and border */
+
+/* Results per model: the four score columns sit under the board's own (same classes, same widths) */
+.lb-models{ width:100%; border-collapse:collapse; margin:0; }
+.lb-models th{ font-family:var(--font-mono); font-size:.78rem; font-weight:400; color:var(--soft); text-align:left; padding:0 1.25rem .35rem; white-space:nowrap; }
+.lb-models td{ height:auto; padding:.45rem 1.25rem; border-top:1px solid var(--line); vertical-align:top; }
+.lb-models th.lb-score, .lb-models td.lb-score{ text-align:right; white-space:nowrap; }
+.lb-models th.lb-ci, .lb-models td.lb-ci{ width:8rem; text-align:right; white-space:nowrap; }
+.lb-models td.lb-ci{ font-family:var(--font-mono); font-size:.8rem; color:var(--soft); }
+.lb-models td.lb-model-cell{ white-space:nowrap; }
+.lb-models .lb-model{ font-family:var(--font-mono); font-size:.8rem; }
+.lb-models .lb-unscored{ color:var(--soft); margin-left:.5rem; }
+
+/* Breakdown: three groups side by side; each row a label at the left and a mono value at the right */
+.lb-groups{ display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:1.2rem 2.25rem; }
+.lb-group h3{ font-family:var(--font-mono); font-size:.78rem; line-height:1.55; font-weight:400; color:var(--soft); margin:0 0 .4rem; }
+.lb-group dl{ margin:0; }
+.lb-group .lb-row{ display:flex; justify-content:space-between; gap:0 1rem; padding:.18rem 0; border-top:1px solid var(--line); }
+.lb-group .lb-row:first-child{ border-top:0; }
+.lb-group dt{ font-weight:400; }
+.lb-group dd{ margin:0; font-family:var(--font-mono); font-size:.85rem; white-space:nowrap; }
+.lb-group dd[title]{ cursor:help; }
+
+/* Boxes on the shade: the record (the pull and intake as the organizers' console shows them) and the method card */
+.lb-record, .lb-card{
+  font-family:var(--font-mono); font-size:.8rem; line-height:1.6; color:#33353C;
+  background:#fff; border:1px solid var(--line); padding:.7rem .9rem;
+}
+.lb-record .lb-line{ display:grid; grid-template-columns:8ch minmax(0,1fr); column-gap:1ch; }
+.lb-record .lb-text{ white-space:pre-wrap; overflow-wrap:anywhere; min-width:0; }
+.lb-card{ white-space:pre-wrap; overflow-wrap:anywhere; max-height:30rem; overflow:auto; }
+.lb-card .lb-cut{ display:block; color:var(--soft); margin-top:.6rem; }
+
+/* A team without a row: the same drawer as a block under the table; an organization without a file gets a line */
+.lb-detail-standalone{ border:1px solid var(--line); background:var(--lb-shade); margin:0 0 1.5rem; }
+.lb-standalone-name{ font-weight:600; margin:0; padding:.75rem 1.25rem 0; }
+.lb-standalone-note{ margin:0; padding:.3rem 1.25rem .9rem; font-size:.95rem; line-height:1.55; }
+
+/* The week being evaluated: the turning status wheel for a submission being evaluated (a hairline ring with one accent
+   arc; under reduced motion a still accent dot), the drawer's progress lines, and the one line under the table */
+.lb-caption{ font-size:.92rem; }
+.lb-spin{
+  display:inline-block; width:.75em; height:.75em; vertical-align:-.08em;
+  border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%;
+  animation:lb-spin 1s linear infinite;
+}
+@keyframes lb-spin{ to{ transform:rotate(360deg); } }
+.lb-progress{ border-collapse:collapse; width:auto; min-width:22rem; }
+.lb-progress td{ height:auto; padding:.3rem 1.5rem .3rem 0; border-top:1px solid var(--line); font-family:var(--font-mono); font-size:.8rem; }
+.lb-progress tr:first-child td{ border-top:0; padding-top:0; }   /* so the gutter label sits on the first line */
+.lb-progress td:last-child{ padding-right:0; color:var(--soft); }
+.lb-progress .lb-spin{ margin-right:.45rem; }
+@media (prefers-reduced-motion: reduce){
+  .lb-spin{ animation:none; background:var(--accent); border-color:var(--accent); }
+}
+
+@media (max-width: 44rem){
+  .lb-groups{ grid-template-columns:1fr; }
+  .lb-sec{ grid-template-columns:4.5rem minmax(0,1fr); padding-inline:.9rem; }
+  .lb-models th, .lb-models td{ padding-inline:.9rem; }
+  .lb-models th.lb-rank{ padding-right:0; }   /* "results" on one line in the narrowed rank column */
+  .lb-standalone-name, .lb-standalone-note{ padding-inline:.9rem; }
 }
 
 /* ================= RULES ================= */

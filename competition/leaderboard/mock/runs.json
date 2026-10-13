@@ -1,0 +1,37 @@
+{
+ "schema": 1,
+ "latest": "week_02",
+ "runs": [
+  {
+   "name": "week_01",
+   "label": "Week 1",
+   "layer": "public",
+   "date": "2026-10-02",
+   "deadline": null,
+   "n_ranked": 11,
+   "n_baselines": 3
+  },
+  {
+   "name": "week_02",
+   "label": "Week 2",
+   "layer": "public",
+   "date": "2026-10-09",
+   "deadline": null,
+   "n_ranked": 14,
+   "n_baselines": 3
+  }
+ ],
+ "pending": {
+  "name": "week_03",
+  "label": "Week 3",
+  "layer": "public",
+  "pulled": true,
+  "pull_finished": "2026-10-13T12:41:10+00:00",
+  "n_pulled": 15,
+  "models": [
+   "google/gemma-4-31B-it",
+   "ibm-granite/granite-4.2-30b",
+   "Qwen/Qwen3.8-27B"
+  ]
+ }
+}
