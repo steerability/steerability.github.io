@@ -65,7 +65,7 @@
   'use strict';
 
   var CONFIG = {
-    enabled: false,                // false: hide the button unless ?preview is in the URL
+    enabled: true,                 // false: hide the button unless ?preview is in the URL
     clientId: '959e50bd-c96f-4a34-8384-f69cd9ae779c',   // from https://huggingface.co/settings/applications
     hub: 'https://huggingface.co',
     api: 'https://steerability-challenge-evals-leaderboard-api.hf.space',   // the results API; null keeps the placeholders
