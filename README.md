@@ -44,6 +44,18 @@ reloads and sign-out; `?mock=off` ends it.
 While `CONFIG.enabled` is `false` the button is hidden; add `?preview` to the competition
 page's URL to show it (on the live site too).
 
+## Updating the leaderboard on the competition page
+
+The table on the competition page is static HTML. A script writes its rows from the
+results API, in the page's own markup, and touches nothing else:
+
+    python3 scripts/update-board.py --dry-run   # show the change
+    python3 scripts/update-board.py             # write it (the latest published week; --run week_01 for another)
+
+Review the diff in `competition/index.html` and commit; pushing `main` deploys it. The
+pop-up reads the API itself and needs no update. The script writes nothing when the API
+cannot be reached or its answer looks wrong.
+
 ## Notes
 
 - The lab site's `base` in `lab/astro.config.ts` (`/lab`) must match the folder name
