@@ -584,6 +584,21 @@ with sync_playwright() as p:
     def left(loc):
         return loc.bounding_box()["x"]
 
+    def frames(pg, n=2):
+        """Wait for n animation frames (the status wheels are restarted on the frame after a drawer toggle)."""
+        pg.evaluate("n => new Promise(r => { const f = k => k ? requestAnimationFrame(() => f(k - 1)) : r(); f(n); })", n)
+
+    def turning(pg, loc):
+        """Whether a status wheel turns: its animation's clock advances and two pictures of it 250 ms apart differ. The
+        pictures are clipped page screenshots: locator.screenshot() waits for the element to hold still, which never comes."""
+        clock = "e => { const a = e.getAnimations()[0]; return a ? a.currentTime : null; }"
+        b = loc.bounding_box()
+        clip = {"x": b["x"] - 2, "y": b["y"] - 2, "width": b["width"] + 4, "height": b["height"] + 4}
+        t0, s0 = loc.evaluate(clock), pg.screenshot(clip=clip, animations="allow")
+        pg.wait_for_timeout(250)
+        t1, s1 = loc.evaluate(clock), pg.screenshot(clip=clip, animations="allow")
+        return t0 is not None and t1 is not None and t1 > t0 and s0 != s1
+
     # ---- 12. participant, in their own row; a tall screen, so the window can grow when the drawer opens
     tall = new_context(avail_height=4000, star_seen=True)
     pv = tall.new_page()
@@ -735,6 +750,10 @@ with sync_playwright() as p:
     check(cap3 == "Week 3 is being evaluated: 15 submissions were pulled at the intake, Oct 13, 12:41 UTC. Results appear here when the board is published.",
           f"week 3: the line under the table ({cap3!r})")
     own.click()
+    frames(pv)
+    check(spin.count() == 1 and spin.evaluate("e => getComputedStyle(e).animationName") == "none"
+          and spin.evaluate("e => getComputedStyle(e).backgroundColor") == "rgb(31, 59, 211)",
+          "week 3: with the drawer open, the row's wheel is still one filled dot that does not turn (reduced motion)")
     d3 = pv.locator("#lb-detail-example-team")
     secs = d3.locator(".lb-drawer > .lb-sec > .lb-k").all_inner_texts()
     check(d3.is_visible() and secs == ["progress", "record", "method card"] and d3.locator(".lb-models, .lb-groups").count() == 0
@@ -766,6 +785,26 @@ with sync_playwright() as p:
     check(mspin.evaluate("e => getComputedStyle(e).animationName") == "lb-spin" and mspin.evaluate("e => getComputedStyle(e).backgroundColor") == "rgba(0, 0, 0, 0)"
           and mspin.evaluate("e => getComputedStyle(e).borderTopColor") == "rgb(31, 59, 211)" and mspin.evaluate("e => getComputedStyle(e).borderLeftColor") == "rgb(228, 228, 232)",
           "week 3: with motion allowed the wheel turns: a hairline ring with one accent arc")
+    # ... and keeps turning when its drawer opens, closes and reopens, and when the window resizes: the wheels are
+    # restarted (new nodes), never added
+    mrow, mwheel = mp.locator(ROW), mp.locator("#lb-detail-example-team .lb-progress .lb-spin")
+    mrow.click()
+    mp.wait_for_timeout(300)
+    n_wheels = mwheel.count()
+    check(mp.is_visible("#lb-detail-example-team") and n_wheels >= 1 and turning(mp, mspin) and turning(mp, mwheel.first),
+          f"week 3, motion allowed: with the drawer open, the row's wheel and the drawer's ({n_wheels}) keep turning")
+    mrow.click()
+    mrow.click()
+    frames(mp)
+    mspin.evaluate("e => { e.__before_resize = true; }")
+    mp.set_viewport_size({"width": 1000, "height": 860})
+    mp.wait_for_timeout(300)   # the restart comes 150 ms after the last resize event
+    wheels = "ws => ws.map(w => [w.getAttribute('role'), w.getAttribute('aria-label')])"
+    check(mspin.evaluate_all(wheels) == [["img", "being evaluated"]] and mwheel.evaluate_all(wheels) == [["img", "being evaluated"]] * n_wheels
+          and mp.locator("#lb-detail-example-team .lb-progress tr").evaluate_all("rs => rs.every(r => r.querySelectorAll('.lb-spin').length <= 1)"),
+          "week 3, motion allowed: after closing, reopening and a resize, the row still holds one wheel and the drawer as many as before, each with its role and label")
+    check(not mspin.evaluate("e => !!e.__before_resize") and turning(mp, mspin) and turning(mp, mwheel.first),
+          "week 3, motion allowed: the resize restarted the wheels (new nodes), and they keep turning")
     mo.close()
 
     # ---- 13. an unscored model; a team without an entry (a block under the table); a week without a fixture

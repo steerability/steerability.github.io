@@ -360,6 +360,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
   display:inline-block; width:.75em; height:.75em; vertical-align:-.08em;
   border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%;
   animation:lb-spin 1s linear infinite;
+  will-change:transform;   /* its own layer: a layout change around it (a drawer opening, the window resizing) can't stop it being painted */
 }
 @keyframes lb-spin{ to{ transform:rotate(360deg); } }
 .lb-progress{ border-collapse:collapse; width:auto; min-width:22rem; }

@@ -75,6 +75,7 @@
   var LABEL_MAX = 80;          // participant-authored names are cut to this many characters
   var MESSAGE_MAX = 300;       // ... and the record's lines to this many
   var ORG_HASH = 12;           // hex characters of a handle's SHA-256 in the board's data-org
+  var RESIZE_SETTLE_MS = 150;  // the status wheels restart this long after the window's last resize event
 
   var FAMILY_LABELS = {
     instructed_deception: 'Instructed deception',
@@ -844,6 +845,7 @@
     detail.hidden = !open;
     markOpen();
     fit();   // the window grows with the drawer, up to the screen's height
+    rekickSpinners();
   }
   function closeDrawers() {
     document.querySelectorAll('#lb-public tr.lb-expandable.is-open').forEach(function (row) {
@@ -857,6 +859,23 @@
   function markOpen() {   // while any drawer is open the rest of the board recedes
     var board = document.querySelector('#lb-public .leaderboard');
     if (board) board.classList.toggle('has-open', !!board.querySelector('tr.is-open'));
+  }
+
+  // The status wheels, started afresh: a new element starts a new animation on a new layer. Called after a drawer
+  // toggle and after the window has resized (the pop-up resizes itself on every fit()); some browsers stop painting a
+  // turning wheel when the layout around it changes, while its animation still reports running. Under reduced motion
+  // the wheel has no animation and the clone is the same still dot.
+  function rekickSpinners() {
+    requestAnimationFrame(function () {
+      document.querySelectorAll('#lb-public .lb-spin').forEach(function (s) { s.replaceWith(s.cloneNode(true)); });
+    });
+  }
+  // One restart once the resizing has stopped, not one per event: dragging a window's edge fires resize continuously,
+  // and a restart on each would hold every wheel at its starting angle for the whole drag.
+  var resizeTimer = null;
+  function onResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(rekickSpinners, RESIZE_SETTLE_MS);
   }
 
   // Take the private detail off the page: the drawers, the blocks, and the rows' expandable state.
@@ -902,6 +921,7 @@
     $('lb-earlier').addEventListener('click', function () { go(-1); });
     $('lb-later').addEventListener('click', function () { go(1); });
     $('lb-public').addEventListener('click', onBoardClick);
+    window.addEventListener('resize', onResize);
     loadAll();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
