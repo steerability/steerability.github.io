@@ -45,6 +45,12 @@ stays on through `?mock=none`, reloads and sign-out; `?mock=off` ends it.
 `CONFIG.enabled` in `competition/hf-login.js` is a kill switch for the button: set to
 `false`, it hides the button for everyone but browsers that have visited the competition
 page with `?preview` (on the live site too), which is how to look at a deploy made dark.
+`CONFIG.pendingProgress` says how much of the week being evaluated a team's drawer shows:
+`'coarse'` (the default) reads every model of every submission as in progress until the
+board is published; `'detailed'` shows each model's own state (a participant sees completed,
+error or in progress, an organizer the raw codes). An organizer can switch their own browser
+with `?progress=detailed` or `?progress=coarse` on either page, and back to the site's
+setting with `?progress=site`; it never changes what anyone else sees.
 
 ## Updating the leaderboard on the competition page
 

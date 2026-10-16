@@ -7,7 +7,7 @@ the leaderboard pop-up (competition/leaderboard/) where sign-in and the private 
 Huggingface.co is never contacted: the authorize, token and userinfo endpoints are mocked (the authorize stub sends
 Cross-Origin-Opener-Policy: same-origin like the real page, then approves or denies by redirecting back), and
 hf-login.js is served with a test client id and CONFIG.enabled forced on (step 18 forces it off), whatever the
-committed values. Nor is the results API (a Hugging Face Space): hf-login.js is served with CONFIG.api pointing at a
+committed values, and CONFIG.pendingProgress as committed (step 13f sets it to 'detailed'). Nor is the results API (a Hugging Face Space): hf-login.js is served with CONFIG.api pointing at a
 fake origin whose /runs, /board/<run> and /me answer from the fixtures in competition/leaderboard/mock/ (or with an
 error), and any request to *.hf.space is refused and fails the check; so does a request for the competition page from
 the pop-up, which renders the board itself. Screenshots land in tmp/shots/. Exit status 1 on any failed check.
@@ -85,12 +85,16 @@ with sync_playwright() as p:
         pg.on("pageerror", lambda e: console_errors.append(str(e)))
 
     # Serve hf-login.js with a test client id and CONFIG.enabled set as asked, so the real flow can be exercised
-    # however the committed file ships (it ships dark: enabled false).
-    def serve_js(enabled):
+    # however the committed file ships (it ships dark: enabled false); CONFIG.pendingProgress as committed, or as asked.
+    def serve_js(enabled, progress=None):
         def handler(route, request):
             resp = route.fetch()
             body = re.sub(r"clientId: '[^']*'", f"clientId: '{CLIENT_ID}'", resp.text(), count=1)
             body = re.sub(r"enabled: (true|false),", f"enabled: {'true' if enabled else 'false'},", body, count=1)
+            if progress is not None:
+                body, n = re.subn(r"pendingProgress: '[^']*'", f"pendingProgress: '{progress}'", body, count=1)
+                if n != 1:
+                    failures.append("CONFIG.pendingProgress not found in hf-login.js")
             body, n = re.subn(r"api: (null|'[^']*')", f"api: '{API}'", body, count=1)
             if n != 1:   # never serve the committed CONFIG.api: the pop-up would call the real results server
                 failures.append("CONFIG.api not found in hf-login.js")
@@ -246,7 +250,7 @@ with sync_playwright() as p:
         captured["space"].append(request.url)
         route.abort()
 
-    def new_context(enabled=True, avail_height=1600, retry_ms=None, star_seen=False, motion="reduce"):
+    def new_context(enabled=True, avail_height=1600, retry_ms=None, star_seen=False, motion="reduce", progress=None):
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, reduced_motion=motion)
         # A 1600px-tall screen by default, so the pop-up can fit the whole board (Playwright's screen emulation doesn't
         # reach pop-ups, where screen = the window); resizeTo/moveTo are recorded, since headless can't resize anyway.
@@ -259,7 +263,7 @@ with sync_playwright() as p:
         if star_seen:   # the star-the-repo ask would cover the page (a modal) for participants
             ctx.add_init_script("try { localStorage.setItem('sc:star-ask', 'visited'); } catch (e) {}")
         ctx.on("page", watch)
-        ctx.route("**/competition/hf-login.js*", serve_js(enabled))
+        ctx.route("**/competition/hf-login.js*", serve_js(enabled, progress))
         ctx.route("https://huggingface.co/oauth/authorize*", authorize)
         ctx.route("https://huggingface.co/oauth/token", token_endpoint)
         ctx.route("https://huggingface.co/oauth/userinfo", userinfo_endpoint)
@@ -571,6 +575,10 @@ with sync_playwright() as p:
     P = fixture("participant")["teams"][0]
     LINES = "ls => ls.map(l => [l.querySelector('.lb-key').textContent, l.querySelector('.lb-text').textContent])"
     PROGRESS = "rs => rs.map(r => Array.from(r.cells).map(c => c.textContent))"
+    SPINS = "rs => rs.map(r => r.querySelectorAll('.lb-spin').length)"
+    # the pending week's progress table for the participant fixture's team: what each setting shows
+    COARSE = [["gemma-4-31B-it", "in progress"], ["granite-4.2-30b", "in progress"], ["Qwen3.8-27B", "in progress"]]
+    DETAILED = [["gemma-4-31B-it", "completed"], ["granite-4.2-30b", "in progress"], ["Qwen3.8-27B", "in progress"]]
     # the pending week's line under the table, by phase (the fixtures: 15 submissions pulled Oct 13, 12:41 UTC, intake_done true)
     PULLED = "Week 3 is being evaluated: 15 submissions were pulled at the intake, Oct 13, 12:41 UTC"
     PUBLISHED = " Results appear here when the board is published."
@@ -582,10 +590,18 @@ with sync_playwright() as p:
     }
     RUNNING = "; the evaluation is running." + PUBLISHED
 
-    def private_view(pg, kind, wait, width=1040):
+    def private_view(pg, kind, wait, width=1040, progress=None):
         pg.set_viewport_size({"width": width, "height": 860 if width > 600 else 844})
-        pg.goto(f"{LB}?mock={kind}")
+        pg.goto(f"{LB}?mock={kind}" + (f"&progress={progress}" if progress else ""))
         pg.wait_for_selector(wait)
+
+    def progress_of(pg, org):
+        """A team's progress table on the pending week: [model, status] per row, and the spinners per row."""
+        rows = pg.locator(f"#lb-detail-{org} .lb-progress tr")
+        return rows.evaluate_all(PROGRESS), rows.evaluate_all(SPINS)
+
+    def pinned(pg):
+        return pg.evaluate("localStorage.getItem('sc:progress')")
 
     def visible_text(loc):
         """The text as shown: without the screen-reader-only spans (and so without their copy of a title)."""
@@ -786,11 +802,13 @@ with sync_playwright() as p:
     check(d3.is_visible() and secs == ["progress", "record", "method card"] and d3.locator(".lb-models, .lb-groups").count() == 0
           and d3.locator(".lb-drawer > *").count() == 3,
           f"week 3 drawer: progress, record, method card and nothing else ({secs})")
-    prog = d3.locator(".lb-progress tr").evaluate_all(PROGRESS)
-    spins = d3.locator(".lb-progress tr").evaluate_all("rs => rs.map(r => r.querySelectorAll('.lb-spin').length)")
-    check(prog == [["gemma-4-31B-it", "completed"], ["granite-4.2-30b", "in progress"], ["Qwen3.8-27B", "in progress"]]
-          and spins == [0, 1, 1] and "not started" not in d3.inner_text(),
-          f"week 3 drawer: per model, completed or in progress with the spinner (not started reads in progress); never 'not started' ({prog}, {spins})")
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "competition", "hf-login.js"), encoding="utf-8") as f:
+        shipped = re.findall(r"pendingProgress: '([^']*)'", f.read())
+    check(shipped == ["coarse"], f"hf-login.js ships CONFIG.pendingProgress 'coarse' ({shipped})")
+    prog, spins = progress_of(pv, "example-team")
+    ptext = d3.locator(".lb-progress").inner_text()
+    check(prog == COARSE and spins == [1, 1, 1] and "completed" not in ptext and "not started" not in ptext,
+          f"week 3 drawer, coarse (the site's default): every model in progress with the spinner, the completed one too ({prog}, {spins})")
     check(["pulled", "2026-10-13 12:08 UTC"] in d3.locator(".lb-line").evaluate_all(LINES) and "version: v4" in d3.locator(".lb-card").inner_text(),
           "week 3 drawer: the record of what was taken at the intake, the card as submitted")
     pv.screenshot(path=f"{OUT}/08-pending-participant.png", full_page=True)
@@ -959,6 +977,42 @@ with sync_playwright() as p:
     check(not red(sp), f"week 3, intake failed: no red text anywhere ({red(sp)})")
     sp.screenshot(path=f"{OUT}/08-pending-intake-failed.png", full_page=True)
 
+    # ---- 13f. the progress setting. A participant's browser that pinned ?progress=detailed still gets the site's coarse
+    # view (the pin is an organizer's); under CONFIG.pendingProgress 'detailed' a participant's drawer tells the models
+    # apart, whatever the browser pinned; ?progress=site drops the pin
+    private_view(sp, "participant", wait=f"{ROW} .lb-expand", progress="detailed")
+    sp.click("#lb-later")
+    sp.wait_for_selector(f"{ROW}.lb-expandable .lb-expand")
+    sp.locator(ROW).click()
+    prog, spins = progress_of(sp, "example-team")
+    check(pinned(sp) == "detailed" and prog == COARSE and spins == [1, 1, 1],
+          f"week 3, a participant who pinned ?progress=detailed: the site's coarse view all the same ({prog}, {spins})")
+    sp.goto(f"{LB}?progress=site")
+    sp.wait_for_selector(f"{ROW} .lb-expand")
+    check(pinned(sp) is None, "?progress=site drops the browser's pin")
+    dc = new_context(star_seen=True, progress="detailed")
+    dp = dc.new_page()
+    for pin in (None, "coarse"):
+        private_view(dp, "participant", wait=f"{ROW} .lb-expand", progress=pin)
+        dp.click("#lb-later")
+        dp.wait_for_selector(f"{ROW}.lb-expandable .lb-expand")
+        dp.locator(ROW).click()
+        prog, spins = progress_of(dp, "example-team")
+        check(prog == DETAILED and spins == [0, 1, 1] and "not started" not in dp.inner_text("#lb-detail-example-team .lb-progress"),
+              f"week 3, site 'detailed', participant (pinned {pin}): completed, or in progress with the spinner; never 'not started' ({prog}, {spins})")
+    dp.screenshot(path=f"{OUT}/08-pending-participant-detailed.png", full_page=True)
+    # ... and an organizer's pin wins over the site's: coarse here, until ?progress=site gives the raw codes back
+    for pin in ("coarse", "site"):
+        private_view(dp, "organizer", wait="#lb-detail-example-missing", progress=pin)
+        dp.click("#lb-later")
+        dp.wait_for_function("document.querySelectorAll('#lb-public tr.lb-expandable').length === 15")
+        dp.locator("#lb-public tr.lb-expandable", has=dp.locator(".lb-expand", has_text="Coxswains")).click()
+        prog, spins = progress_of(dp, "coxswains")
+        want = ([["in progress"] * 3, [1, 1, 1]] if pin == "coarse" else [["not started"] * 3, [0, 0, 0]])
+        check([s for _, s in prog] == want[0] and spins == want[1],
+              f"week 3, site 'detailed', organizer pinned {pin}: Coxswains reads {want[0][0]} ({prog}, {spins})")
+    dc.close()
+
     # ---- 14. organizer: every submission row with a team file expandable, any number open, a block for every other file,
     # nothing above the board
     oc = new_context()
@@ -1012,13 +1066,25 @@ with sync_playwright() as p:
     check(op.locator("#lb-public tr.lb-detail:not([hidden])").count() == 2 and op.locator("#lb-public tr.lb-detail:not([hidden]) .lb-progress").count() == 2,
           "week 3, organizer: two drawers open at once, each with the evaluation's progress")
     op.locator("#lb-public tr.lb-expandable", has=op.locator(".lb-expand", has_text="Coxswains")).click()
-    first_prog = op.locator("#lb-detail-reg0x00 .lb-progress tr").evaluate_all(PROGRESS)
-    cox = op.locator("#lb-detail-coxswains")
-    cox_prog = cox.locator(".lb-progress tr").evaluate_all(PROGRESS)
-    check([s for _, s in first_prog] == ["completed"] * 3 and cox.is_visible() and [s for _, s in cox_prog] == ["not started"] * 3
-          and cox.locator(".lb-progress .lb-spin").count() == 0,
-          f"week 3, organizer: the drawers show the raw codes: reg0x00 completed on every model, Coxswains not started with no spinner ({first_prog}, {cox_prog})")
+    (first_prog, first_spins), (cox_prog, cox_spins) = progress_of(op, "reg0x00"), progress_of(op, "coxswains")
+    check([s for _, s in first_prog] == ["in progress"] * 3 and first_spins == [1, 1, 1] and op.is_visible("#lb-detail-coxswains")
+          and [s for _, s in cox_prog] == ["in progress"] * 3 and cox_spins == [1, 1, 1],
+          f"week 3, organizer, the site's coarse default: what a participant sees, every model in progress with the spinner ({first_prog}, {cox_prog})")
     op.screenshot(path=f"{OUT}/08-pending-organizer.png", full_page=True)
+    # pinned with ?progress=detailed, this browser shows the raw codes
+    op.goto(f"{LB}?progress=detailed")
+    op.wait_for_selector("#lb-detail-example-missing")
+    op.click("#lb-later")
+    op.wait_for_function("document.querySelectorAll('#lb-public tr.lb-expandable').length === 15")
+    prow.nth(0).click()
+    op.locator("#lb-public tr.lb-expandable", has=op.locator(".lb-expand", has_text="Coxswains")).click()
+    (first_prog, first_spins), (cox_prog, cox_spins) = progress_of(op, "reg0x00"), progress_of(op, "coxswains")
+    check(pinned(op) == "detailed" and [s for _, s in first_prog] == ["completed"] * 3 and first_spins == [0, 0, 0]
+          and [s for _, s in cox_prog] == ["not started"] * 3 and cox_spins == [0, 0, 0],
+          f"week 3, organizer pinned ?progress=detailed: the raw codes: reg0x00 completed on every model, Coxswains not started with no spinner ({first_prog}, {cox_prog})")
+    op.screenshot(path=f"{OUT}/08-pending-organizer-detailed.png", full_page=True)
+    op.goto(f"{LB}?progress=site")
+    op.wait_for_selector("#lb-detail-example-missing")
 
     # ---- 15. results API errors, from the fake Space. The board: 503 no_board, a refused connection (one retry, then the
     # failure copy, whose "try again" works), a later week that fails. The private view: 401 signs out, 404 is a week
