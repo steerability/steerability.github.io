@@ -61,15 +61,17 @@
      under the table says how many submissions were pulled and follows
      the run's phase (being checked, running, being scored); without a
      phase it says only the first. The drawer shows the evaluation's
-     progress per model, the record, and the method card. For a
-     participant a model reads completed, error, or else in progress
-     with the wheel: the week's evaluation is running whether or not
-     this submission's run has begun (they start one at a time, behind
-     the organizers' own), so "not started" would read as a stuck job.
-     A submission that did not pass the intake checks gets one line
-     saying it is not evaluated instead. An organizer's drawer shows
-     the raw code per model. GET /me?run=<pending> is fetched on every
-     visit, since its progress changes, and its run block is the
+     progress per model, the record, and the method card. How much
+     progress is a site setting, CONFIG.pendingProgress in hf-login.js
+     (an organizer's browser can pin its own with ?progress=):
+     'coarse', the default, reads in progress with the wheel on every
+     model of every submission until the board is published.
+     'detailed' gives a participant completed, error, or else in
+     progress with the wheel, and an organizer the raw code per
+     model. A submission that did not pass the intake checks gets one
+     line saying it is not evaluated instead of the table, except in
+     an organizer's detailed view. GET /me?run=<pending> is fetched on
+     every visit, since its progress changes, and its run block is the
      freshest for the line; in mock mode it is
      mock/<kind>.<pending run>.json. Before the pull (pending.pulled
      false) nothing is fetched: a signed-in participant sees a row per
@@ -123,8 +125,8 @@
     no_dim_scored: 'No dishonesty dimension could be scored'
   };
   var ENGINE_LABELS = { vllm: 'vLLM', huggingface: 'Hugging Face' };   // the record names the engines itself; kept with the vocabulary
-  var EVAL_LABELS = { not_started: 'not started', in_progress: 'in progress', completed: 'completed', error: 'error' };   // an organizer's
-  var PARTICIPANT_EVAL_LABELS = { completed: 'completed', error: 'error' };   // a participant's; any other code reads EVAL_LABELS.in_progress
+  var EVAL_LABELS = { not_started: 'not started', in_progress: 'in progress', completed: 'completed', error: 'error' };   // an organizer's detailed view
+  var PARTICIPANT_EVAL_LABELS = { completed: 'completed', error: 'error' };   // a participant's detailed view; any other code reads EVAL_LABELS.in_progress
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   /* ---------- formatting ---------- */
@@ -782,22 +784,31 @@
     });
   }
 
-  // The drawer on the pending week: the evaluation's progress per model (for a pulled entry), the record, the card. An
-  // organizer sees the raw code per model; a participant sees completed, error, or else in progress with the wheel, and
-  // for a submission that did not pass the intake checks one line instead of the table.
+  // Whether the pending week's drawers show each model's state (see the header comment): an organizer's pinned choice
+  // in this browser, else the site's. Anything but 'detailed' is the coarse view.
+  function detailedProgress() {
+    var login = window.SCLogin || {}, organizer = !!(state.roles && state.roles.organizer);
+    var own = organizer && login.progressView ? login.progressView() : null;
+    return (own || (login.config && login.config.pendingProgress)) === 'detailed';
+  }
+
+  // The drawer on the pending week: the evaluation's progress per model (for a pulled entry), the record, the card.
+  // Coarse: every model reads in progress with the wheel. Detailed: an organizer sees the raw code per model, a
+  // participant completed, error, or else in progress with the wheel. A submission that did not pass the intake checks
+  // gets one line instead of the table, except in an organizer's detailed view.
   function progressSection(team) {
-    var organizer = !!(state.roles && state.roles.organizer), intake = team.entry.intake;
-    if (!organizer && isObj(intake) && intake.ok === false) {
+    var detailed = detailedProgress(), raw = detailed && !!(state.roles && state.roles.organizer), intake = team.entry.intake;
+    if (!raw && isObj(intake) && intake.ok === false) {
       return section('progress', el('p', 'soft', 'Not evaluated: the submission did not pass the intake checks (see the record).'), false);
     }
     var table = el('table', 'lb-progress'), body = el('tbody'), progress = isObj(team.evaluation) ? team.evaluation : {};
     var models = isObj(team.run) && Array.isArray(team.run.models) ? team.run.models : list(state.pending && state.pending.models);
     models.forEach(function (m) {
       var cell = el('td'), code = progress[m];
-      if (organizer) {
+      if (raw) {
         if (code === 'in_progress') add(cell, spinner());
         add(cell, typeof code === 'string' ? labelOf(EVAL_LABELS, code) : '—');
-      } else if (typeof code === 'string' && Object.prototype.hasOwnProperty.call(PARTICIPANT_EVAL_LABELS, code)) {
+      } else if (detailed && typeof code === 'string' && Object.prototype.hasOwnProperty.call(PARTICIPANT_EVAL_LABELS, code)) {
         add(cell, PARTICIPANT_EVAL_LABELS[code]);
       } else {
         add(cell, spinner(), EVAL_LABELS.in_progress);

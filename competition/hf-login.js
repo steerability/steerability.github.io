@@ -62,6 +62,14 @@
        stays on there after that). That is also how to look at a deploy
        made dark. The pop-up page works regardless; nothing else links to
        it.
+     - CONFIG.pendingProgress says how much of the week being evaluated
+       a team's drawer shows (private-view.js): 'coarse', every model of
+       every submission in progress until the board is published, or
+       'detailed', each model's own state. An organizer's browser can
+       pin its own with ?progress=detailed or ?progress=coarse on either
+       page (localStorage sc:progress; any other value, e.g.
+       ?progress=site, goes back to CONFIG's); a participant always gets
+       CONFIG's.
 ============================================================= */
 (function () {
   'use strict';
@@ -78,6 +86,7 @@
     windowName: 'sc-leaderboard',  // window.open reuses the pop-up while it is open
     windowSize: [1040, 860],       // pop-up width, height (px)
     returnHash: '#leaderboard',    // where the competition page lands after ?mock
+    pendingProgress: 'coarse',     // the week being evaluated: 'coarse' reads every model in progress, 'detailed' each model's state
     starSnoozeDays: 14,            // "Go away" on the star-the-repo ask hides it this long
     defaultTokenSeconds: 8 * 3600  // used only when the token reply has no expires_in
   };
@@ -87,6 +96,7 @@
   var PREVIEW_KEY = 'sc:preview';      // localStorage: show the button even when CONFIG.enabled is false
   var MOCK_KEY = 'sc:mock';            // localStorage: '1' while the pop-up reads its fixtures instead of the results API
   var STAR_KEY = 'sc:star-ask';        // localStorage: 'visited', or when "Go away" was chosen (ms)
+  var PROGRESS_KEY = 'sc:progress';    // localStorage: an organizer's own CONFIG.pendingProgress, from ?progress=
   var PENDING_MAX_AGE = 10 * 60 * 1000;   // a sign-in left unfinished for longer is ignored
 
   var root = document.getElementById('lb-private');
@@ -488,12 +498,25 @@
 
   /* ---------- boot ---------- */
 
-  // For private-view.js: CONFIG (its api), the window fit (after a row opens), sign-out with a message (when the
-  // API rejects the token), the hash that names a team's row in the board, and whether to read the fixtures
-  window.SCLogin = { config: CONFIG, fitWindow: fitWindow, signOut: logout, sha256hex: sha256hex, isMock: isMock };
+  // The pending week's progress this browser has pinned with ?progress= ('coarse' or 'detailed'), else null.
+  // private-view.js applies it to an organizer's session only.
+  function progressView() {
+    var v = storageGet(PROGRESS_KEY);
+    return v === 'coarse' || v === 'detailed' ? v : null;
+  }
+
+  // For private-view.js: CONFIG (its api and pendingProgress), the window fit (after a row opens), sign-out with a
+  // message (when the API rejects the token), the hash that names a team's row in the board, whether to read the
+  // fixtures, and the progress this browser has pinned
+  window.SCLogin = { config: CONFIG, fitWindow: fitWindow, signOut: logout, sha256hex: sha256hex, isMock: isMock,
+                     progressView: progressView };
 
   function init() {
     var params = new URLSearchParams(location.search);
+    if (params.has('progress')) {   // pin this browser's view of the pending week's progress, or go back to CONFIG's
+      var progress = params.get('progress');
+      if (progress === 'coarse' || progress === 'detailed') storageSet(PROGRESS_KEY, progress); else storageDel(PROGRESS_KEY);
+    }
     var mock = params.has('mock') && isLocal();
     if (mock) {
       var kind = params.get('mock');
