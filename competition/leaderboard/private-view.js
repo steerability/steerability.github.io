@@ -656,15 +656,13 @@
   function breakdown(team) {
     var board = team.board, families = isObj(board.families) ? board.families : {}, models = modelsOf(team);
     var groups = el('div', 'lb-groups'), keys = ordered(Object.keys(families), FAMILY_LABELS);
+    // schema 3: a family with in_delta false on the board has no scored cell on any model this run, so it is not shown
+    keys = keys.filter(function (key) { return !(isObj(families[key]) && families[key].in_delta === false); });
     if (keys.length) {
       add(groups, group('dishonesty (g per family)', keys.map(function (key) {
-        // schema 3: in_delta false is a family with no target cell this week (g null); a file without in_delta counts it in
-        if (isObj(families[key]) && families[key].in_delta === false) {
-          return { label: labelOf(FAMILY_LABELS, key), value: '—', said: 'Not scored this week: this family has no target cell in this week’s delta.' };
-        }
         var said = 'g is the improvement over the unsteered model, per model: ' + models.map(function (m) {
           var f = modelEntry(team, m).families, e = isObj(f) && isObj(f[key]) ? f[key] : null;
-          return shortModel(m) + ' ' + (e && e.in_delta === false ? 'not scored' : fmtSigned(e ? e.g : null, 2));
+          return shortModel(m) + ' ' + (e && e.in_delta === false ? '--' : fmtSigned(e ? e.g : null, 2));
         }).join(', ');
         return { label: labelOf(FAMILY_LABELS, key), value: fmtSigned(isObj(families[key]) ? families[key].g : null, 2), said: said };
       })));
