@@ -82,8 +82,8 @@
      The latest published week's /me answer carries running: the teams
      the board does not list yet, the same for every viewer, each with
      the evaluation's state per model. They show as a divided section at
-     the top of the table, in the order given: rank and scores "--", no
-     drawer, the per-model state in the name's tooltip, and the viewer's
+     the top of the table, in the order given: rank and the side scores
+     "--", "eval in progress" for the overall score, no drawer, the per-model state in the name's tooltip, and the viewer's
      own team (by org_hash) in bold. Other weeks and the pending week
      show none; a missing key is an empty list.
 
@@ -585,9 +585,7 @@
     var teams = state.roles ? list(state.roles.teams) : [];
     return Promise.all(teams.map(function (t) { return isObj(t) && typeof t.handle === 'string' ? orgHash(t.handle) : null; })).then(function (mine) {
       if (document.querySelector('#lb-public tr.lb-running')) return;
-      var head = el('tr', 'lb-running lb-running-head'), td = el('td', null, 'Still being evaluated');
-      td.colSpan = 6;
-      var rows = [add(head, td)];
+      var rows = [];
       entries.forEach(function (e) {
         var row = el('tr', 'lb-running'), cell = el('td', 'lb-team', cap(e.team, LABEL_MAX));
         if (typeof e.org_hash === 'string' && e.org_hash && mine.indexOf(e.org_hash) !== -1) row.classList.add('lb-mine');
@@ -600,7 +598,8 @@
           add(cell, el('span', 'visually-hidden', ' ' + said));
         }
         add(row, el('td', 'lb-rank', '--'), cell);
-        for (var i = 0; i < 4; i++) add(row, el('td', 'lb-score', '--'));
+        add(row, el('td', 'lb-score', 'eval in progress'));
+        for (var i = 0; i < 3; i++) add(row, el('td', 'lb-score', '--'));
         rows.push(row);
       });
       rows[rows.length - 1].classList.add('lb-running-last');
