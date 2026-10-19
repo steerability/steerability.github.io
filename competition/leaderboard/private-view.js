@@ -24,7 +24,7 @@
                          them is not shown here). On the week being
                          evaluated its top-level run block carries the
                          phase and intake_done as well. A team file
-                         (schema 2) is made by the organizers' harness
+                         (schema 2, 3 or 4) is made by the organizers' harness
                          and contains only what a team may see about
                          its own submission; this script renders what
                          it gets. Its entry.record is the pull and the
@@ -78,6 +78,15 @@
      team organization of their session with the spinner, anyone else
      a line saying the week has not been pulled yet.
 
+   Still being evaluated
+     The latest published week's /me answer carries running: the teams
+     the board does not list yet, the same for every viewer, each with
+     the evaluation's state per model. They show as a divided section at
+     the top of the table, in the order given: rank and scores "--", no
+     drawer, the per-model state in the name's tooltip, and the viewer's
+     own team (by org_hash) in bold. Other weeks and the pending week
+     show none; a missing key is an empty list.
+
    Vocabulary
      The family, category, kind, reason and flag keys below, with the
      labels printed for them. An unknown key prints as the key itself.
@@ -86,7 +95,7 @@
 (function () {
   'use strict';
 
-  var SCHEMA = 2;              // the team-file contract this script reads
+  var SCHEMAS = [2, 3, 4];     // the team-file schemas this script reads: 3 adds in_delta to the families, 4 more guard kinds
   var RETRY_MS = 20000;        // a results server waking from sleep gets one retry after this long
   var LABEL_MAX = 80;          // participant-authored names are cut to this many characters
   var MESSAGE_MAX = 300;       // ... and the record's lines to this many
@@ -110,7 +119,9 @@
   var KIND_LABELS = {
     helpfulness: 'Helpfulness & compliance',
     pushback_and_feedback: 'Pushback & feedback accuracy',
-    refusals: 'Refusal behaviour'
+    refusals: 'Refusal behaviour',
+    over_conservativeness: 'Over-conservativeness',
+    confidentiality_and_persona: 'Confidentiality & persona'
   };
   var REASON_LABELS = {
     build_failed: 'The pipeline could not be built on either engine',
@@ -468,7 +479,7 @@
   /* ---------- the private view ---------- */
 
   function supported(team) {
-    return isObj(team) && team.schema === SCHEMA && isObj(team.entry) && isObj(team.run) && typeof team.org === 'string';
+    return isObj(team) && SCHEMAS.indexOf(team.schema) !== -1 && isObj(team.entry) && isObj(team.run) && typeof team.org === 'string';
   }
   function nameOf(team) { return cap(team.team || team.org, LABEL_MAX); }   // the org's display name is the team's own text
   function modelsOf(team) {
@@ -550,6 +561,7 @@
     }
     return Promise.all(items.map(function (it) { return supported(it.team) ? orgHash(it.org) : Promise.resolve(null); })).then(function (hashes) {
       if (stale()) return;
+      return runningSection(view).then(function () {
       items.forEach(function (it, i) { if (supported(it.team)) attachDetail(it.team, it.org, hashes[i]); });
       missing.forEach(function (org) {
         attachNote(org, org, 'No entry for this organization in ' + label + ". The next intake is on the competition page's countdown.");
@@ -560,6 +572,39 @@
         attachNote(it.org, org, 'This page needs an update to show the results for ' + org + '.');
       });
       fit();
+      });
+    });
+  }
+
+  // The teams still being evaluated, as a divided section at the top of the latest published week's table (see the
+  // header comment). Nothing is attached to these rows: no data-org (a team file never finds one), no drawer.
+  function runningSection(view) {
+    var entries = list(view.running).filter(function (e) { return isObj(e) && typeof e.team === 'string'; });
+    var body = document.querySelector('#lb-public .leaderboard > table > tbody');
+    if (!entries.length || !body || state.run !== state.latest || isPending(state.run)) return Promise.resolve();
+    var teams = state.roles ? list(state.roles.teams) : [];
+    return Promise.all(teams.map(function (t) { return isObj(t) && typeof t.handle === 'string' ? orgHash(t.handle) : null; })).then(function (mine) {
+      if (document.querySelector('#lb-public tr.lb-running')) return;
+      var head = el('tr', 'lb-running lb-running-head'), td = el('td', null, 'Still being evaluated');
+      td.colSpan = 6;
+      var rows = [add(head, td)];
+      entries.forEach(function (e) {
+        var row = el('tr', 'lb-running'), cell = el('td', 'lb-team', cap(e.team, LABEL_MAX));
+        if (typeof e.org_hash === 'string' && e.org_hash && mine.indexOf(e.org_hash) !== -1) row.classList.add('lb-mine');
+        var states = isObj(e.evaluation) ? Object.keys(e.evaluation).map(function (m) {
+          return shortModel(m) + ': ' + labelOf(EVAL_LABELS, e.evaluation[m]);
+        }) : [];
+        if (states.length) {
+          var said = cap(states.join(', '), MESSAGE_MAX);
+          cell.title = said;
+          add(cell, el('span', 'visually-hidden', ' ' + said));
+        }
+        add(row, el('td', 'lb-rank', '--'), cell);
+        for (var i = 0; i < 4; i++) add(row, el('td', 'lb-score', '--'));
+        rows.push(row);
+      });
+      rows[rows.length - 1].classList.add('lb-running-last');
+      rows.reverse().forEach(function (row) { body.insertBefore(row, body.firstChild); });
     });
   }
 
@@ -614,9 +659,13 @@
     var groups = el('div', 'lb-groups'), keys = ordered(Object.keys(families), FAMILY_LABELS);
     if (keys.length) {
       add(groups, group('dishonesty (g per family)', keys.map(function (key) {
+        // schema 3: in_delta false is a family with no target cell this week (g null); a file without in_delta counts it in
+        if (isObj(families[key]) && families[key].in_delta === false) {
+          return { label: labelOf(FAMILY_LABELS, key), value: '—', said: 'Not scored this week: this family has no target cell in this week’s delta.' };
+        }
         var said = 'g is the improvement over the unsteered model, per model: ' + models.map(function (m) {
-          var f = modelEntry(team, m).families;
-          return shortModel(m) + ' ' + fmtSigned(isObj(f) && isObj(f[key]) ? f[key].g : null, 2);
+          var f = modelEntry(team, m).families, e = isObj(f) && isObj(f[key]) ? f[key] : null;
+          return shortModel(m) + ' ' + (e && e.in_delta === false ? 'not scored' : fmtSigned(e ? e.g : null, 2));
         }).join(', ');
         return { label: labelOf(FAMILY_LABELS, key), value: fmtSigned(isObj(families[key]) ? families[key].g : null, 2), said: said };
       })));
@@ -675,9 +724,9 @@
 
   /* ---------- the week being evaluated ---------- */
 
-  // A pending file: a team file's entry (schema 2's), the evaluation's progress per model, and no board.
+  // A pending file: a team file's entry (schema 2's or later), the evaluation's progress per model, and no board.
   function supportedPending(team) {
-    return isObj(team) && (team.schema === 1 || team.schema === SCHEMA) && isObj(team.entry) && typeof team.org === 'string';
+    return isObj(team) && (team.schema === 1 || SCHEMAS.indexOf(team.schema) !== -1) && isObj(team.entry) && typeof team.org === 'string';
   }
   function spinner() {   // the status wheel, turning (.lb-spin)
     var s = el('span', 'lb-spin');
@@ -828,7 +877,7 @@
   // A team's row: by data-org, else by the exact team name on a row without data-org. A row is claimed once.
   function findRow(team, hash) {
     var rows = Array.prototype.slice.call(document.querySelectorAll('#lb-public .leaderboard > table > tbody > tr')).filter(function (row) {
-      return !row.classList.contains('lb-baseline') && !row.classList.contains('lb-detail') && !row.classList.contains('lb-expandable');
+      return !row.classList.contains('lb-baseline') && !row.classList.contains('lb-running') && !row.classList.contains('lb-detail') && !row.classList.contains('lb-expandable');
     });
     var byHash = hash && rows.filter(function (row) { return row.getAttribute('data-org') === hash; })[0];
     if (byHash) return byHash;
@@ -929,7 +978,7 @@
 
   // Take the private detail off the page: the drawers, the blocks, and the rows' expandable state.
   function clearDecoration() {
-    document.querySelectorAll('.lb-detail, .lb-detail-standalone').forEach(function (node) { node.parentNode.removeChild(node); });
+    document.querySelectorAll('.lb-detail, .lb-detail-standalone, #lb-public tr.lb-running').forEach(function (node) { node.parentNode.removeChild(node); });
     document.querySelectorAll('#lb-public tr.lb-expandable').forEach(function (row) {
       var button = row.querySelector('.lb-expand');
       if (button) button.parentNode.textContent = button.textContent;

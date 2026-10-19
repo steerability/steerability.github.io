@@ -304,5 +304,16 @@
       ]
     }
   ],
-  "missing": []
+  "missing": [],
+  "running": [
+    {
+      "team": "Example, Running's Lab @ IIS!",
+      "org_hash": "000000000000",
+      "evaluation": {
+        "google/gemma-4-31B-it": "completed",
+        "ibm-granite/granite-4.2-30b": "in_progress",
+        "Qwen/Qwen3.8-27B": "not_started"
+      }
+    }
+  ]
 }

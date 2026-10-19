@@ -1207,11 +1207,11 @@ with sync_playwright() as p:
         "pending", "pulled", "n_pulled", "intake_done", "phase", "evaluation",       # the week being evaluated
         "rank", "S", "ci", "delta", "r_side", "r_guard", "backend", "declines", "arm", "reference", "flag",
         "judge", "failed", "refused", "flags", "unscored", "reason", "families", "g", "side_effects", "guards",
-        "delta_comparable", "S_comparable"}
+        "delta_comparable", "S_comparable", "in_delta", "running"}
     MAPS = {   # maps whose keys are data: what they may be
         "families": {"instructed_deception", "incentives_and_sandbagging", "user_pressure", "fabrication", "owning_up", "harm_denial"},
         "side_effects": {"knowledge", "reasoning", "problem_solving", "instruction_following"},
-        "guards": {"helpfulness", "pushback_and_feedback", "refusals"},
+        "guards": {"helpfulness", "pushback_and_feedback", "refusals", "over_conservativeness", "confidentiality_and_persona"},
     }
     CODES = {"flags": {"truncation", "gpu_mismatch", "no_dim_scored"},
              "reason": {"build_failed", "timeout", "suite_failed", "reference_pending", "not_run"},
@@ -1258,7 +1258,7 @@ with sync_playwright() as p:
         if key == "entry":
             if "late" in node or not isinstance(node.get("record"), list):
                 problems.append(f"{where}: an entry has no 'late' and always a record")
-        if key is None and "schema" in node and "entry" in node and not pending_file and node["schema"] != 2:
+        if key is None and "schema" in node and "entry" in node and not pending_file and node["schema"] not in (2, 3, 4):
             problems.append(f"{where}: a team file of schema {node['schema']!r}")
         if key is None and "evaluation" in node and "board" in node:
             problems.append(f"{where}: a pending file with a board")
