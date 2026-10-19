@@ -295,6 +295,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
 
 /* Teams still being evaluated: a divided section at the top of the table, not clickable */
 .leaderboard tr.lb-running > td.lb-team, .leaderboard tr.lb-running > td.lb-score{ color:var(--soft); }
+.leaderboard tr.lb-running > td.lb-pending{ font-family:var(--font-mono); font-size:.78rem; }   /* as the column names */
 .leaderboard tr.lb-running.lb-mine > td.lb-team{ color:inherit; font-weight:600; }
 .leaderboard tr.lb-running-last > td{ border-bottom:2px solid var(--line); }
 .leaderboard.has-open > table > tbody > tr.lb-running > td{ color:var(--lb-dim); }

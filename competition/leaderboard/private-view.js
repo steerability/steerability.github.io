@@ -83,7 +83,7 @@
      the board does not list yet, the same for every viewer, each with
      the evaluation's state per model. They show as a divided section at
      the top of the table, in the order given: rank and the side scores
-     "--", "eval in progress" for the overall score, no drawer, the per-model state in the name's tooltip, and the viewer's
+     "--", "pending" for the overall score, no drawer, the per-model state in the name's tooltip, and the viewer's
      own team (by org_hash) in bold. Other weeks and the pending week
      show none; a missing key is an empty list.
 
@@ -598,7 +598,7 @@
           add(cell, el('span', 'visually-hidden', ' ' + said));
         }
         add(row, el('td', 'lb-rank', '--'), cell);
-        add(row, el('td', 'lb-score', 'eval in progress'));
+        add(row, el('td', 'lb-score lb-pending', 'pending'));
         for (var i = 0; i < 3; i++) add(row, el('td', 'lb-score', '--'));
         rows.push(row);
       });
