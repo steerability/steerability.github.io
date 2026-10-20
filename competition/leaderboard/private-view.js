@@ -719,7 +719,7 @@
     if (!board || typeof board.track !== 'string' || !Object.prototype.hasOwnProperty.call(TRACKS, board.track)) return null;
     var pos = board.track_position;
     if (typeof pos !== 'string' || !/^(10\+|[1-9]|10)$/.test(pos)) return null;
-    var sec = section('track', el('span', null, TRACKS[board.track] + ' (position: ' + pos + ')'));
+    var sec = section('track', add(el('span'), el('span', 'lb-model', TRACKS[board.track]), ' (position: ' + pos + ')'));
     sec.className += ' lb-track';
     return sec;
   }

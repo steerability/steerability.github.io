@@ -333,7 +333,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-models th.lb-ci, .lb-models td.lb-ci{ width:8rem; text-align:right; white-space:nowrap; }
 .lb-models td.lb-ci{ font-family:var(--font-mono); font-size:.8rem; color:var(--soft); }
 .lb-models td.lb-model-cell{ white-space:nowrap; }
-.lb-models .lb-model{ font-family:var(--font-mono); font-size:.8rem; }
+.lb-models .lb-model, .lb-track .lb-model{ font-family:var(--font-mono); font-size:.8rem; }
 .lb-models .lb-unscored{ color:var(--soft); margin-left:.5rem; }
 
 /* Breakdown: three groups side by side; each row a label at the left and a mono value at the right */
