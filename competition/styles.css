@@ -322,6 +322,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-sec{ display:grid; grid-template-columns:7rem minmax(0,1fr); padding:0 1.25rem; margin-top:1.6rem; }
 .lb-drawer > .lb-sec:first-child{ margin-top:0; }   /* the record alone (nothing scored) starts at the drawer's own padding */
 .lb-sec > .lb-k{ font-family:var(--font-mono); font-size:.78rem; line-height:1.55; color:var(--soft); }   /* on the first line of the content */
+.lb-sec.lb-track{ margin-bottom:1.6rem; }   /* air before the results table that follows */
 .lb-sec.lb-boxed > .lb-k{ padding-top:calc(.7rem + 1px); }                                            /* a box's top padding and border */
 
 /* Results per model: the four score columns sit under the board's own (same classes, same widths) */

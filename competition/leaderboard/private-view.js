@@ -712,14 +712,16 @@
     return section('method card', box, true);
   }
 
-  // "Black-box track · #2" (or "· 10+"): the team's position within its own track. Nothing without a known track or a
+  // "black-box (position: 2)" (or "10+"): the team's position within its own track. Nothing without a known track or a
   // position (an unranked team, an older cached file); how many teams the track holds is not shown.
-  var TRACKS = { 'black-box': 'Black-box', 'white-box': 'White-box', open: 'Open' };
+  var TRACKS = { 'black-box': 'black-box', 'white-box': 'white-box', open: 'open' };
   function trackSection(board) {
     if (!board || typeof board.track !== 'string' || !Object.prototype.hasOwnProperty.call(TRACKS, board.track)) return null;
     var pos = board.track_position;
     if (typeof pos !== 'string' || !/^(10\+|[1-9]|10)$/.test(pos)) return null;
-    return section('track', el('span', null, TRACKS[board.track] + ' track \u00b7 ' + (pos === '10+' ? pos : '#' + pos)));
+    var sec = section('track', el('span', null, TRACKS[board.track] + ' (position: ' + pos + ')'));
+    sec.className += ' lb-track';
+    return sec;
   }
 
   function drawer(team) {
