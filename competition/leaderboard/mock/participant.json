@@ -129,6 +129,8 @@
       },
       "board": {
         "rank": 4,
+        "track": "black-box",
+        "track_position": "2",
         "S": 0.438,
         "ci": [
           0.391,
