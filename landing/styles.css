@@ -10,8 +10,8 @@
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --gutter: clamp(1.25rem, 4vw, 3.5rem);
-  --mark: clamp(3rem, 3.9vw, 4.1rem);     /* lockup mark height */
-  --word: clamp(1.72rem, 2.25vw, 2.35rem); /* lockup word size */
+  --mark: clamp(3.45rem, 4.49vw, 4.72rem); /* lockup mark height */
+  --word: clamp(1.98rem, 2.59vw, 2.7rem);  /* lockup word size */
   color-scheme: light;
 }
 :root[data-style="graphite"] {
