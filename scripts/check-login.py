@@ -27,6 +27,7 @@ LB = BASE + "leaderboard/"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tmp", "shots")
 CLIENT_ID = "test-client-id-123"
 API = "https://results-api.invalid"   # CONFIG.api as the check serves hf-login.js: a fake origin, routed below
+ORG_API = "https://organisms-api.invalid"   # CONFIG.organismsApi likewise: the organisms gateway, answered from the fixture
 MOCK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "competition", "leaderboard", "mock")
 
 os.makedirs(OUT, exist_ok=True)
@@ -96,6 +97,7 @@ with sync_playwright() as p:
                 if n != 1:
                     failures.append("CONFIG.pendingProgress not found in hf-login.js")
             body, n = re.subn(r"api: (null|'[^']*')", f"api: '{API}'", body, count=1)
+            body = re.sub(r"organismsApi: (null|'[^']*')", f"organismsApi: '{ORG_API}'", body, count=1)
             if n != 1:   # never serve the committed CONFIG.api: the pop-up would call the real results server
                 failures.append("CONFIG.api not found in hf-login.js")
                 route.abort()
@@ -161,6 +163,34 @@ with sync_playwright() as p:
             return {**RUNS, "pending": {**RUNS["pending"], "pulled": False, "pull_finished": None, "n_pulled": None,
                                         "intake_done": False, "phase": "upcoming"}}
         return {**RUNS, "pending": phased(RUNS["pending"])} if api["pending"] == "pulled" else {**RUNS, "pending": None}
+
+    # The fake organisms gateway (organisms-api.js): /api/me answers from the organisms-me fixture, with the bearer
+    # token it was asked with recorded; POST /api/me/key answers the same with a new key. organisms["answer"] can be
+    # "401" / "403" / "refused" to test the panel's messages. The real gateway is never called.
+    organisms = {"answer": None, "me": [], "rotate": 0}
+    def organisms_endpoint(route, request):
+        url = urlparse(request.url)
+        cors = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization"}
+        if request.method == "OPTIONS":
+            route.fulfill(status=204, headers=cors); return
+        auth = request.headers.get("authorization", "")
+        if organisms["answer"] == "refused":
+            route.abort("connectionrefused"); return
+        if organisms["answer"] in ("401", "403"):
+            route.fulfill(status=int(organisms["answer"]), headers=cors, content_type="application/json",
+                          body=json.dumps({"detail": "nope"})); return
+        body = fixture("organisms/me")
+        if url.path == "/api/me" and request.method == "GET":
+            organisms["me"].append(auth)
+        elif url.path == "/api/me/key" and request.method == "POST":
+            organisms["rotate"] += 1
+            body = {**body, "api_key": "org-rotatedKEY0123456789abcdefghijklmnopqrst", "key_fresh": True}
+        else:
+            route.fulfill(status=404, headers=cors, content_type="application/json", body='{"detail":"not found"}'); return
+        route.fulfill(status=200, headers=cors, content_type="application/json", body=json.dumps(body))
+    def refuse_organisms(route, request):
+        captured.setdefault("organisms", []).append(request.url)
+        route.abort("connectionrefused")
 
     def api_endpoint(route, request):
         url = urlparse(request.url)
@@ -268,6 +298,8 @@ with sync_playwright() as p:
         ctx.route("https://huggingface.co/oauth/token", token_endpoint)
         ctx.route("https://huggingface.co/oauth/userinfo", userinfo_endpoint)
         ctx.route(API + "/**", api_endpoint)
+        ctx.route(ORG_API + "/**", organisms_endpoint)
+        ctx.route(re.compile(r"^https?://organisms\.api\.ndif\.us(/|$)"), refuse_organisms)
         ctx.route(re.compile(r"^https?://[^/]*\.hf\.space(/|$)"), refuse_space)
         ctx.route(BASE, page_guard)
         ctx.route(re.compile(r"/mock/board\.[^/]+\.json$"), mock_board_guard)
@@ -1334,12 +1366,60 @@ with sync_playwright() as p:
     check("organizer" in pg.inner_text("#lb-who"), "dark: the pop-up page itself still works (nothing links to it yet)")
     dark.close()
 
+    # ---- 19. the model-organisms API panel (organisms-api.js): collapsed under the who line; opened, it asks the
+    # organisms gateway for /api/me with the session's bearer token and shows the key (masked, Show reveals it), the
+    # meters, the 14-day bars and the recent requests; Rotate posts /api/me/key; the errors have their messages; it goes
+    # with the session. In mock mode it reads the fixture and never asks the gateway.
+    oc = new_context()
+    pg = oc.new_page()
+    pg.goto(f"{LB}?mock=participant")
+    pg.wait_for_selector("#lb-api-panel")
+    check(not pg.locator("#lb-api-panel").evaluate("e => e.open"), "organisms: the panel starts collapsed")
+    pg.click("#lb-api-panel > summary")
+    pg.wait_for_selector(".lb-api-key")
+    check(pg.inner_text(".lb-api-key") == "org-mock…stuv", "organisms (mock): the fixture key, masked")
+    pg.click(".lb-api-keyrow .link-btn:has-text('Show')")
+    check(pg.inner_text(".lb-api-key").startswith("org-mockKEY0123456789"), "organisms (mock): Show reveals it")
+    check(pg.locator(".lb-api-meter").count() == 2 and pg.locator(".lb-api-hist-bar").count() == 14,
+          "organisms (mock): two meters and fourteen bars")
+    pg.click(".lb-api-recent > summary")
+    check(pg.locator(".lb-api-recent tbody tr").count() == 9, "organisms (mock): the recent requests")
+    check(not organisms["me"], "organisms (mock): the gateway was not asked")
+    shot(pg, "19-organisms-mock", "#lb-api", "#lb-api")
+    pg.click("#hf-logout")
+    pg.wait_for_selector("#hf-login")
+    check(pg.locator("#lb-api-panel").count() == 0, "organisms: the panel goes with the session")
+    oc.close()
+    # signed in for real (the fake endpoints): the gateway is asked with the token, Rotate posts, errors have copy
+    oc = new_context()
+    pg = oc.new_page()
+    pg.goto(f"{LB}?mock=off")
+    pg.wait_for_selector("#hf-login")
+    pg.evaluate("localStorage.setItem('sc:api-open', '1')")
+    pg.click("#hf-login")
+    pg.wait_for_selector(".lb-api-key", timeout=15000)
+    check(len(organisms["me"]) == 1 and organisms["me"][0] == "Bearer hf_oauth_mock_token",
+          "organisms: /api/me asked once, with the session's bearer token")
+    check(pg.inner_text(".lb-api-key") == "org-mock…stuv", "organisms: the key from the gateway, masked")
+    pg.once("dialog", lambda d: d.accept())
+    pg.click(".lb-api-rotate")
+    pg.wait_for_function("document.querySelector('.lb-api-key') && document.querySelector('.lb-api-key').textContent === 'org-rota…qrst'")
+    check(organisms["rotate"] == 1, "organisms: Rotate posts /api/me/key (after confirming) and shows the new key")
+    for answer, text in (("401", "no longer accepted"), ("403", "not enabled"), ("refused", "didn't answer")):
+        organisms["answer"] = answer
+        pg.evaluate("SCOrganismsApi.refresh()")
+        pg.wait_for_function(f"document.querySelector('.lb-api-body').textContent.includes({json.dumps(text)})", timeout=15000)
+        check(True, f"organisms: {answer} shows its message")
+    organisms["answer"] = None
+    oc.close()
+    check(not captured.get("organisms"), f"the real organisms gateway was never called ({captured.get('organisms')})")
+
     check(not captured["space"], f"the real results server was never called ({captured['space']})")
     check(not captured["page"], f"the pop-up never asked for the competition page ({captured['page']})")
     # the 400 from step 6; the 401, 404, 503s and refused connections of step 15; and mock mode's 404 for a week without a
     # fixture, are deliberate
     noise = [e for e in console_errors if "mailerlite" not in e.lower() and "net::ERR_FAILED" not in e and "fonts" not in e.lower()
-             and "400" not in e and "status of 401" not in e and "status of 404" not in e and "status of 503" not in e
+             and "400" not in e and "status of 401" not in e and "status of 403" not in e and "status of 404" not in e and "status of 503" not in e
              and "ERR_CONNECTION_REFUSED" not in e]
     check(not noise, f"no unexpected console errors: {noise}")
     browser.close()

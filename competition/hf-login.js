@@ -21,7 +21,10 @@
      2. handleRedirect()  back on leaderboard/ with ?code=&state=: exchange
                           the code for a token (POST /oauth/token), fetch
                           /oauth/userinfo, keep a small session, clean the URL
-     3. renderWindow()    the "who" line (handle, tags, sign out) and the
+     3. renderWindow()    the "who" line (handle, tags, sign out), the
+                          model-organisms API panel (organisms-api.js: the
+                          person's key, usage and limits from CONFIG.organismsApi,
+                          asked with the session's access token) and the
                           private view (leaderboard/private-view.js, which
                           reads the results API at CONFIG.api and opens a
                           team's results in its row of the board; without
@@ -79,6 +82,7 @@
     clientId: '959e50bd-c96f-4a34-8384-f69cd9ae779c',   // from https://huggingface.co/settings/applications
     hub: 'https://huggingface.co',
     api: 'https://steerability-challenge-evals-leaderboard-api.hf.space',   // the results API; null keeps the placeholders
+    organismsApi: 'https://organisms.api.ndif.us',   // the model-organisms gateway (organisms-api.js); null hides that panel's data
     scopes: 'openid profile read-memberships',
     organizerUsers: ['steerability-challenge-evaluator'],
     organizerOrg: 'steerability-challenge-evals',
@@ -420,12 +424,14 @@
     var s = loadSession();
     if (!s) {
       if (window.SCPrivateView) window.SCPrivateView.clear();   // its rows and blocks go with the session; the board stays
+      if (window.SCOrganismsApi) window.SCOrganismsApi.clear();
       els.signedOut.hidden = false;
       els.signedIn.hidden = true;
       return;
     }
     var roles = rolesOf(s);
     renderWho(s, roles);
+    if (window.SCOrganismsApi) window.SCOrganismsApi.render(s, roles);   // the organisms API panel (organisms-api.js)
     renderContent(s, roles);
     els.signedOut.hidden = true;
     els.signedIn.hidden = false;

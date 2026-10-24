@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=20261013b">
+<link rel="stylesheet" href="../styles.css?v=20261024a">
 </head>
 <body class="lb-window">
 
@@ -28,6 +28,8 @@
     </div>
     <div data-auth-state="signed-in" hidden>
       <p class="lb-who" id="lb-who"></p>
+      <!-- The model-organisms API panel (../organisms-api.js): key, usage and rate limits, collapsed by default -->
+      <div id="lb-api"></div>
       <!-- Filled in by private-view.js: loading and error lines only. A team's own results open from its row of
            the board below. -->
       <div id="lb-private-content"></div>
@@ -64,6 +66,7 @@
 <!-- private-view.js first: it owns the board and the private view; hf-login.js renders the sign-in state as soon
      as it loads and hands the session to SCPrivateView -->
 <script src="private-view.js?v=20261016a"></script>
-<script src="../hf-login.js?v=20261016a"></script>
+<script src="../organisms-api.js?v=20261024a"></script>
+<script src="../hf-login.js?v=20261024a"></script>
 </body>
 </html>

@@ -488,3 +488,41 @@ pre .c{ color:#8A8C96; font-style:italic; }
   html{ scroll-behavior:auto; }
   *,*::before,*::after{ transition:none !important; }
 }
+
+/* The model-organisms API panel in the pop-up (organisms-api.js): a collapsible hairline block under the who line.
+   Mono for the key, the endpoint and numbers; meters for today's use against the day's limit; 14 thin bars */
+.lb-api{ border:1px solid var(--line); margin:0 0 1.1rem; }
+.lb-api > summary{ cursor:pointer; padding:.6rem .9rem; display:flex; flex-wrap:wrap; gap:.4rem .8rem; align-items:baseline; list-style:none; }
+.lb-api > summary::-webkit-details-marker{ display:none; }
+.lb-api > summary::before{ content:"+"; font-family:var(--font-mono); color:var(--soft); width:1em; }
+.lb-api[open] > summary::before{ content:"\2013"; }
+.lb-api > summary:hover .lb-api-title{ color:var(--accent); }
+.lb-api-title{ font-weight:600; }
+.lb-api-body{ padding:.2rem .9rem .9rem; border-top:1px solid var(--line); }
+.lb-api-body p{ margin:.7rem 0 0; }
+.lb-api-row, .lb-api-keyrow{ display:flex; flex-wrap:wrap; align-items:center; gap:.3rem .7rem; margin-top:.6rem; }
+.lb-api-label{ font-family:var(--font-mono); font-size:.75rem; color:var(--soft); min-width:5rem; }
+.lb-api-key, .lb-api-row code{ font-family:var(--font-mono); font-size:.85rem; background:var(--lb-shade); padding:.15em .45em; }
+.lb-api-keyrow .link-btn{ font-size:.85rem; }
+.lb-api-note{ font-size:.9rem; }
+.lb-api-cols{ display:grid; grid-template-columns:1fr 1fr; gap:1rem 2rem; margin-top:1rem; }
+@media (max-width:640px){ .lb-api-cols{ grid-template-columns:1fr; } }
+.lb-api-h{ font-size:.75rem; font-family:var(--font-mono); font-weight:400; color:var(--soft); margin:0 0 .5rem; text-transform:none; }
+.lb-api-meter{ margin:.45rem 0; }
+.lb-api-meter-head{ display:flex; justify-content:space-between; font-size:.85rem; gap:1rem; }
+.lb-api-meter-val{ font-family:var(--font-mono); font-size:.78rem; }
+.lb-api-bar{ height:6px; background:var(--lb-shade); border:1px solid var(--line); margin-top:.25rem; }
+.lb-api-bar-fill{ height:100%; background:var(--ink); }
+.lb-api-bar-fill.is-high{ background:#B3261E; }
+.lb-api-limits{ font-size:.85rem; }
+.lb-api-hist{ display:flex; align-items:flex-end; gap:3px; height:64px; border-bottom:1px solid var(--line); padding-bottom:1px; }
+.lb-api-hist-bar{ flex:1; background:var(--ink); min-height:2px; }
+.lb-api-hist-bar.has-rejected{ background:#B3261E; }
+.lb-api-recent, .lb-api-snippet{ margin-top:1rem; }
+.lb-api-recent > summary, .lb-api-snippet > summary{ cursor:pointer; font-size:.85rem; color:var(--soft); }
+.lb-api-recent table{ width:100%; border-collapse:collapse; font-size:.8rem; margin-top:.4rem; }
+.lb-api-recent th, .lb-api-recent td{ text-align:left; padding:.25rem .5rem; border-bottom:1px solid var(--line); font-family:var(--font-mono); font-weight:400; }
+.lb-api-recent th{ color:var(--soft); font-size:.72rem; }
+.lb-api-recent td.num, .lb-api-recent th.num{ text-align:right; }
+.lb-api-recent td.is-warn{ color:#9A6700; } .lb-api-recent td.is-bad{ color:#B3261E; }
+.lb-api-snippet pre{ margin:.5rem 0 0; font-size:.78rem; overflow-x:auto; }

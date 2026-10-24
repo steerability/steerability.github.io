@@ -1,0 +1,246 @@
+{
+  "hf_user": "ada",
+  "admin": false,
+  "api_key": "org-mockKEY0123456789abcdefghijklmnopqrstuv",
+  "key_prefix": "org-mockKEY0",
+  "key_created": 1792620430.2252188,
+  "key_fresh": false,
+  "key_retrievable": true,
+  "base_url": "https://organisms.api.ndif.us/v1",
+  "models": [
+    "lying-qwen"
+  ],
+  "limits": {
+    "tokens_per_minute": 20000,
+    "tokens_per_day": 500000,
+    "max_inflight": 4,
+    "max_tokens_per_request": 1024
+  },
+  "today": {
+    "day": "2026-10-24",
+    "requests": 9,
+    "prompt_tokens": 225,
+    "completion_tokens": 8100,
+    "rejected": 0
+  },
+  "inflight": 1,
+  "days": [
+    {
+      "day": "2026-10-11",
+      "requests": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-12",
+      "requests": 3,
+      "prompt_tokens": 75,
+      "completion_tokens": 270,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-13",
+      "requests": 12,
+      "prompt_tokens": 300,
+      "completion_tokens": 1080,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-14",
+      "requests": 8,
+      "prompt_tokens": 200,
+      "completion_tokens": 720,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-15",
+      "requests": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-16",
+      "requests": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-17",
+      "requests": 21,
+      "prompt_tokens": 525,
+      "completion_tokens": 1890,
+      "rejected": 2
+    },
+    {
+      "day": "2026-10-18",
+      "requests": 15,
+      "prompt_tokens": 375,
+      "completion_tokens": 1350,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-19",
+      "requests": 30,
+      "prompt_tokens": 750,
+      "completion_tokens": 2700,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-20",
+      "requests": 7,
+      "prompt_tokens": 175,
+      "completion_tokens": 630,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-21",
+      "requests": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-22",
+      "requests": 44,
+      "prompt_tokens": 1100,
+      "completion_tokens": 3960,
+      "rejected": 5
+    },
+    {
+      "day": "2026-10-23",
+      "requests": 18,
+      "prompt_tokens": 450,
+      "completion_tokens": 1620,
+      "rejected": 0
+    },
+    {
+      "day": "2026-10-24",
+      "requests": 9,
+      "prompt_tokens": 225,
+      "completion_tokens": 810,
+      "rejected": 0
+    }
+  ],
+  "recent": [
+    {
+      "id": 9,
+      "ts": 1792879210.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": true,
+      "prompt_tokens": 20,
+      "completion_tokens": 60,
+      "latency_ms": 900,
+      "reason": null
+    },
+    {
+      "id": 8,
+      "ts": 1792878790.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": false,
+      "prompt_tokens": 21,
+      "completion_tokens": 67,
+      "latency_ms": 1020,
+      "reason": null
+    },
+    {
+      "id": 7,
+      "ts": 1792878370.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 429,
+      "stream": false,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "latency_ms": 2,
+      "reason": "rate limit: 20000 tokens/min"
+    },
+    {
+      "id": 6,
+      "ts": 1792877950.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": true,
+      "prompt_tokens": 23,
+      "completion_tokens": 81,
+      "latency_ms": 1260,
+      "reason": null
+    },
+    {
+      "id": 5,
+      "ts": 1792877530.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": false,
+      "prompt_tokens": 24,
+      "completion_tokens": 88,
+      "latency_ms": 1380,
+      "reason": null
+    },
+    {
+      "id": 4,
+      "ts": 1792877110.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": false,
+      "prompt_tokens": 25,
+      "completion_tokens": 95,
+      "latency_ms": 1500,
+      "reason": null
+    },
+    {
+      "id": 3,
+      "ts": 1792876690.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": true,
+      "prompt_tokens": 26,
+      "completion_tokens": 102,
+      "latency_ms": 1620,
+      "reason": null
+    },
+    {
+      "id": 2,
+      "ts": 1792876270.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": false,
+      "prompt_tokens": 27,
+      "completion_tokens": 109,
+      "latency_ms": 1740,
+      "reason": null
+    },
+    {
+      "id": 1,
+      "ts": 1792875850.2252188,
+      "hf_user": "ada",
+      "model": "lying-qwen",
+      "endpoint": "chat",
+      "status": 200,
+      "stream": false,
+      "prompt_tokens": 28,
+      "completion_tokens": 116,
+      "latency_ms": 1860,
+      "reason": null
+    }
+  ]
+}
