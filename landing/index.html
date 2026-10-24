@@ -1,134 +1,117 @@
 <!doctype html>
-<html lang="en-GB">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Steerability</title>
-		<meta
-			name="description"
-			content="Labs, demos, and competitions around Steerability, an open-source toolkit for steering large language models."
-		/>
-		<link rel="canonical" href="https://steerability.github.io/" />
-		<link rel="icon" href="/shared/favicon.png" type="image/png" />
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Steerability</title>
+<meta name="description" content="The steerability toolkit is an open source Python package for steering large language models.">
+<link rel="canonical" href="https://steerability.github.io/">
+<link rel="icon" href="/favicon.png" type="image/png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Steerability">
+<meta property="og:description" content="The steerability toolkit is an open source Python package for steering large language models.">
+<meta property="og:url" content="https://steerability.github.io/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  // The chosen style, applied before first paint. Styles: paper (default), graphite, moss.
+  (function () { try { var s = localStorage.getItem('steer-style'); if (s) document.documentElement.setAttribute('data-style', s); } catch (e) {} })();
+</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <section class="hero" id="hero">
+    <canvas id="mark" aria-hidden="true"></canvas>
+    <div class="copy" id="copy">
+      <h1><span class="lockup-mark" id="lockup"></span><span>steerability</span></h1>
+      <p class="first">The steerability toolkit is an open source Python library for steering large language models.</p>
+      <p class="more">The toolkit enables the development and evaluation (via <a href="https://inspect.aisi.org.uk" rel="noreferrer noopener">Inspect</a>) of a wide range of steering methods across four model control surfaces (input, structure, state, and output). Features include modular abstractions for the construction of steering methods, composition of steering methods into steering pipelines, and benchmarking of pipelines on custom use cases and metrics (including measurement of steering side effects).</p>
+      <p class="news"><b>News:</b> We are hosting a NeurIPS competition, entitled <a href="/competition/">The Steerability Challenge</a>, where participants are competing to steer models to be less dishonest while preserving general capabilities. Submissions are due November 21. Winners and prizes (totaling over $25k) to be announced at the competition workshop at NeurIPS Paris on December 13.</p>
+      <nav class="links" aria-label="Toolkit">
+        <!-- Icons from GitHub's Octicons set (MIT). -->
+        <a href="https://github.com/generative-computing/steerability/" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"/></svg><span>repo</span></a>
+        <a href="https://generative-computing.github.io/steerability/" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0 3.75A.75.75 0 0 1 .75 3h7.497c1.566 0 2.945.8 3.751 2.014A4.495 4.495 0 0 1 15.75 3h7.5a.75.75 0 0 1 .75.75v15.063a.752.752 0 0 1-.755.75l-7.682-.052a3 3 0 0 0-2.142.878l-.89.891a.75.75 0 0 1-1.061 0l-.902-.901a2.996 2.996 0 0 0-2.121-.879H.75a.75.75 0 0 1-.75-.75Zm12.75 15.232a4.503 4.503 0 0 1 2.823-.971l6.927.047V4.5h-6.75a3 3 0 0 0-3 3ZM11.247 7.497a3 3 0 0 0-3-2.997H1.5V18h6.947c1.018 0 2.006.346 2.803.98Z"/></svg><span>docs</span></a>
+        <a href="https://arxiv.org/abs/2603.07837" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3a2 2 0 0 1 2-2h9.982a2 2 0 0 1 1.414.586l4.018 4.018A2 2 0 0 1 21 7.018V21a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm2-.5a.5.5 0 0 0-.5.5v18a.5.5 0 0 0 .5.5h14a.5.5 0 0 0 .5-.5V8.5h-4a2 2 0 0 1-2-2v-4Zm10 0v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0-.146-.336l-4.018-4.018A.5.5 0 0 0 15 2.5Z"/></svg><span>paper</span></a>
+      </nav>
+    </div>
+  </section>
 
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Spline+Sans+Mono:wght@400;500&display=swap"
-			rel="stylesheet"
-		/>
+</main>
 
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content="Steerability" />
-		<meta
-			property="og:description"
-			content="Labs, demos, and competitions around  Steerability, an open-source toolkit for steering large language models."
-		/>
-		<meta property="og:url" content="https://steerability.github.io/" />
+<div class="palette" role="group" aria-label="Page style" id="palette">
+  <button type="button" data-style="paper" aria-label="Paper" title="Paper" style="--sw:#f4f5f7;--sw-glyph:#17181c"></button>
+  <button type="button" data-style="graphite" aria-label="Graphite" title="Graphite" style="--sw:#0f1014;--sw-glyph:#d4d7e2"></button>
+  <button type="button" data-style="moss" aria-label="Moss" title="Moss" style="--sw:#0c2a1d;--sw-glyph:#ff8a3d"></button>
+</div>
 
-		<link rel="stylesheet" href="styles.css" />
+<script src="steer-engine.js"></script>
+<script>
+  (function () {
+    const S = window.Steer;
 
-		<!-- Theme: mirrors the lab/competition sites (shared localStorage key across the origin). Defaults to light. -->
-		<script>
-			(function () {
-				function getUserPref() {
-					const storedTheme =
-						typeof localStorage !== "undefined" && localStorage.getItem("theme");
-					return storedTheme || "light";
-				}
-				function setTheme(newTheme) {
-					if (newTheme !== "light" && newTheme !== "dark") return;
-					document.documentElement.setAttribute("data-theme", newTheme);
-					if (typeof localStorage !== "undefined") localStorage.setItem("theme", newTheme);
-				}
-				setTheme(getUserPref());
-			})();
-		</script>
-	</head>
-	<body>
-		<main id="main">
-			<div class="toolkit">
-				<img src="/logo-light.svg" alt="Steerability logo" />
-				<span class="links">
-					<a href="https://github.com/generative-computing/steerability/" target="_blank" rel="noreferrer noopener"
-						>Repo</a
-					>
-					<a href="https://generative-computing.github.io/steerability/" target="_blank" rel="noreferrer noopener"
-						>Docs</a
-					>
-					<a href="https://arxiv.org/abs/2603.07837" target="_blank" rel="noreferrer noopener"
-						>Paper</a
-					>
-				</span>
-			</div>
+    const hero = document.getElementById('hero'), canvas = document.getElementById('mark'), copy = document.getElementById('copy');
+    document.getElementById('lockup').outerHTML = S.LOGO.svg();
+    const ring = new Path2D(S.LOGO.ring), nd = new Path2D(S.LOGO.needle);
+    const [px, py] = S.LOGO.pivot;
+    let field = null;
 
-			<h1 class="wordmark">steer<em>&middot;ability</em></h1>
+    // The mark, in CSS px of the hero: its size follows the height but is capped by the width, so on a narrow
+    // window it shrinks and keeps its corner; a fifth of it lies past the right edge and the top edge cuts a slice.
+    const place = (w, h) => {
+      const size = Math.min(h * 1.0, w * (w < 560 ? 0.78 : w < 900 ? 0.66 : 0.62));
+      return { size, x: w - size * 0.8, y: -size * 0.15 };
+    };
+    const pivot = (w, h) => { const p = place(w, h); return { x: p.x + p.size * px / 300, y: p.y + p.size * py / 300, size: p.size }; };
+    const needle = S.needle({
+      scope: hero, reach: 900, delay: 400,
+      center: () => { const r = canvas.getBoundingClientRect(); const c = pivot(r.width, r.height); return { x: r.left + c.x, y: r.top + c.y }; },
+      onFrame: () => field && field.repaint(),
+    });
+    canvas.addEventListener('click', () => needle.replay());
+    canvas.style.pointerEvents = 'auto';
 
-			<section class="intro">
-				<p>
-					The <em>steerability</em> toolkit is an open source Python package for steering
-					large language models.
-				</p>
-				<p>
-					The toolkit enables the development and evaluation of a wide range of steering
-					methods through an expressive library of reusable components across four model
-					control surfaces (input, structure, state, and output). Features include modular 
-					abstractions for the construction of steering methods, composition of steering methods
-					into steering pipelines, and benchmarking of pipelines on custom use cases and
-					metrics (including measurement of steering side effects). Check out
-					<a href="https://github.com/generative-computing/steerability">our repo</a> for more info.
-				</p>
-			</section>
+    field = S.glyphField(canvas, {
+      charset: ' .:-=+*#%@', font: '"IBM Plex Mono", ui-monospace, monospace', cellSize: 8, cellAspect: 0.6, glyphScale: 0.9,
+      ink: 'var(--glyph)', highlight: 'var(--glyph-hi)', scene: 'none', contrast: 1.1,
+      trail: { strength: 1.1, radius: 0.07, refraction: 0.04, decay: 1.6, energyDecay: 1.5 },
+      pointerScope: hero,
+      focus: (w, h) => { const c = pivot(w, h); return { x: c.x, y: c.y, r0: c.size * 0.43, r1: c.size * 0.64 }; },
+      sizes: [1, 0.8, 0.62, 0.46, 0.32, 0.2],
+      clear: copy, clearPad: 26, clearShape: 'rect', clearFeather: 0.07,
+      paint: ({ pen, w, h, scale }) => {
+        pen.setTransform(scale, 0, 0, scale, 0, 0);
+        const p = place(w, h), s = p.size / 300;
+        pen.globalAlpha = needle.alpha; pen.fillStyle = '#fff';
+        pen.save(); pen.translate(p.x, p.y); pen.scale(s, s); pen.fill(ring);
+        pen.translate(px, py); pen.rotate(needle.angle * Math.PI / 180); pen.translate(-px, -py); pen.fill(nd); pen.restore();
+        return !needle.settled;
+      },
+    });
+    // Finer cells as the mark gets smaller, and a wake that scales with it: its radius and the push it gives the
+    // characters are fractions of the mark's size, not of the window's height.
+    const fit = () => {
+      if (!field) return;
+      const size = place(innerWidth, innerHeight).size, rel = size / Math.max(1, innerHeight);
+      field.update({ cellSize: size < 420 ? 5 : size < 640 ? 6 : size < 820 ? 7 : 8, trail: { radius: 0.075 * rel, refraction: 0.04 * rel } });
+      field.repaint();
+    };
+    fit();
+    addEventListener('resize', fit);
 
-			<section>
-				<h2>News</h2>
-				<ol class="timeline">
-					<li class="event upcoming">
-						<div class="when">Submissions due Nov 21</div>
-						<div class="what">
-							<span class="prefix">NeurIPS 2026 Competition:</span>
-							<a href="/competition/">The Steerability Challenge</a>
-						</div>
-						<p>
-							Design steering pipelines that reduce dishonesty while preserving general
-							capabilities. In-person workshop to be held at NeurIPS 2026 in Paris on December 13.
-						</p>
-					</li>
-					<li class="today">
-						<span class="today-label" id="today-date">Today &middot; Aug 5, 2026</span>
-					</li>
-					<li class="event">
-						<div class="when">Jul 7, 2026 &middot; San Diego</div>
-						<div class="what">
-							<span class="prefix">ACL 2026</span>
-							<a href="https://aclanthology.org/2026.acl-demo.43/">Systems Demo</a>
-						</div>
-						<p>
-							A system demonstration of the toolkit: building, composing, and benchmarking
-							steering methods across the four control surfaces.
-						</p>
-					</li>
-					<li class="event">
-						<div class="when">Jan 21, 2026 &middot; Singapore</div>
-						<div class="what">
-							<span class="prefix">AAAI 2026 Lab:</span>
-							<a href="/lab/">Learning to Steer Large Language Models</a>
-						</div>
-						<p>
-							A hands-on lab on inspecting model behavior, designing steering
-							controls, and validating the steered behavior.
-						</p>
-					</li>
-				</ol>
-			</section>
-		</main>
-
-		<footer></footer>
-		<script>
-			const today = new Date();
-			const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-			const dateStr = `${months[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
-			document.getElementById('today-date').textContent = `Today · ${dateStr}`;
-		</script>
-	</body>
+    // The palette. The glyph ink is re-read from the new style's tokens.
+    const root = document.documentElement, palette = document.getElementById('palette');
+    const apply = (name) => {
+      if (name === 'paper') root.removeAttribute('data-style'); else root.setAttribute('data-style', name);
+      for (const b of palette.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.style === name));
+      if (field) field.update({ ink: 'var(--glyph)', highlight: 'var(--glyph-hi)' });
+      try { localStorage.setItem('steer-style', name); } catch (e) {}
+    };
+    palette.addEventListener('click', (e) => { const b = e.target.closest('button[data-style]'); if (b) apply(b.dataset.style); });
+    const current = root.getAttribute('data-style') || 'paper';
+    for (const b of palette.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.style === current));
+  })();
+</script>
+</body>
 </html>

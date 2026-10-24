@@ -1,254 +1,95 @@
-/* ============================================================
-   Steerability Landing — styles matching the competition site
-   ============================================================= */
-
+/* Steerability landing.
+   The mark, typed in characters, sits in the top-right corner past two edges and shrinks as the window
+   narrows. The copy sits left; below it the repo panel, a hard-shadow box that presses in. A palette in the
+   corner switches the page's style; the glyph ink follows it. */
 :root {
-	--bg: #FFFFFF;
-	--ink: #17181C;
-	--soft: #5A5C66;
-	--line: #E4E4E8;
-	--accent: #1F3BD3;
-	--font-serif: "Newsreader", Georgia, "Times New Roman", serif;
-	--font-mono: "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, monospace;
-	--measure: 70rem;
-	--lift: 5px;
+  --paper: #f4f5f7; --card: #ffffff; --ink: #17181c; --soft: #5f6372; --line: #d7d9df; --accent: #1f3bd3;
+  --glyph: #17181c; --glyph-hi: #1f3bd3;
+  --wordmark: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --mark: clamp(3rem, 3.9vw, 3.6rem);     /* lockup mark height */
+  --word: clamp(1.72rem, 2.25vw, 2.05rem); /* lockup word size */
+  color-scheme: light;
 }
-
-* {
-	box-sizing: border-box;
+:root[data-style="graphite"] {
+  --paper: #0f1014; --card: #17181e; --ink: #e8eaf1; --soft: #9a9eae; --line: #2b2d37; --accent: #8fa3ff;
+  --glyph: #d4d7e2; --glyph-hi: #ffbfd8; color-scheme: dark;
 }
-html {
-	scroll-behavior: smooth;
+:root[data-style="moss"] {
+  --paper: #0c2a1d; --card: #123726; --ink: #eaf2ec; --soft: #9fb9aa; --line: #26533f; --accent: #ff8a3d;
+  --glyph: #ff8a3d; --glyph-hi: #8fe8b8; color-scheme: dark;
 }
+* { box-sizing: border-box; }
 body {
-	margin: 0 auto;
-	max-width: var(--measure);
-	min-height: 100vh;
-	padding: 2.25rem 1.25rem;
-	background: var(--bg);
-	color: var(--ink);
-	font-family: var(--font-serif);
-	font-size: 1.125rem;
-	line-height: 1.7;
-	-webkit-font-smoothing: antialiased;
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 1rem; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-a {
-	color: var(--accent);
-	text-decoration: underline;
-	text-underline-offset: 3px;
-	text-decoration-thickness: 1px;
-	padding: 0 0.12em;
-	margin: 0 -0.12em;
-}
-a:hover {
-	background: var(--accent);
-	color: #fff;
-	text-decoration: none;
-}
-:focus-visible {
-	outline: 2px solid var(--accent);
-	outline-offset: 3px;
-}
+.hero { position: relative; min-height: 100svh; overflow: hidden; }
+.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-p {
-	margin: 0 0 1.1rem;
+.copy {
+  position: absolute; z-index: 2;
+  left: max(var(--gutter), env(safe-area-inset-left, 0px)); right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  bottom: clamp(4.5rem, 17vh, 10rem);
+  max-width: 34rem;
 }
+h1 {
+  display: flex; align-items: center; gap: calc(var(--mark) * .3);
+  margin: 0 0 1.1rem; color: var(--ink);
+  font-family: var(--wordmark); font-weight: 600; font-size: var(--word);
+  line-height: 1; letter-spacing: -.02em;
+}
+h1 svg { display: block; width: var(--mark); height: var(--mark); flex: none; }
+h1 span { position: relative; top: calc(var(--mark) * -.07); }
+.copy p { margin: 0 0 .85rem; text-wrap: pretty; }
+.copy p:last-of-type { margin-bottom: 0; }
+.copy .first { font-size: 1.12rem; line-height: 1.45; color: var(--ink); }
+.copy .more { font-size: .94rem; line-height: 1.55; color: var(--soft); }
+.copy .news { margin-top: 1.1rem; font-size: .94rem; line-height: 1.55; color: var(--soft); }
+.copy .news b { font-weight: 600; color: var(--accent); }
+.copy p a {
+  color: inherit; text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  transition: text-decoration-color .15s, color .15s;
+}
+.copy p a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 
-.toolkit {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	margin: 0 0 1.1rem 0;
-	padding-bottom: 3rem;
+/* Repo, docs and paper, side by side with hairline divisions between them. */
+.links { display: flex; flex-wrap: wrap; margin: 1.35rem 0 0 -.95rem; font-family: var(--mono); font-weight: 300; font-size: .84rem; line-height: 1.3; }
+.links a {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .25rem .95rem;
+  color: var(--ink); text-decoration: none; border-left: 1px solid var(--line);
+  transition: color .15s;
 }
-.toolkit a {
-	display: flex;
-	padding: 0;
-	margin: 0;
-	text-decoration: none;
-}
-.toolkit a:hover {
-	background: none;
-}
-.toolkit img {
-	display: block;
-	height: 3.5rem;
-	width: auto;
-}
-.toolkit .links {
-	color: var(--soft);
-	display: flex;
-	flex-wrap: wrap;
-	gap: 1.4rem;
-	font-size: 0.95rem;
-}
-.toolkit .links a {
-	color: var(--soft);
-	text-decoration: none;
-	padding: 0;
-	margin: 0;
-}
-.toolkit .links a:hover {
-	background: var(--ink);
-	color: #fff;
-}
+.links a:first-child { border-left-color: transparent; }
+.links a:hover { color: var(--accent); }
+.links svg { width: 1rem; height: 1rem; fill: currentColor; display: block; opacity: .85; }
 
-.wordmark {
-	margin: 0 0 2rem;
-	font-size: 3rem;
-	font-weight: 600;
-	line-height: 1;
-	letter-spacing: -0.01em;
-	text-transform: lowercase;
-	color: var(--ink);
+/* The palette: a little box per style, the chosen one outlined. */
+.palette {
+  position: fixed; z-index: 5;
+  right: max(1.25rem, env(safe-area-inset-right, 0px)); bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  display: flex; gap: .55rem;
 }
-.wordmark em {
-	font-style: italic;
-	color: var(--accent);
+.palette button {
+  width: .8rem; height: .8rem; padding: 0; cursor: pointer; border-radius: 1px;
+  border: 1px solid color-mix(in srgb, var(--ink) 40%, transparent); background: var(--sw);
 }
+.palette button[aria-pressed="true"] { outline: 1px solid var(--ink); outline-offset: 2px; }
+.palette button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-section {
-	margin-top: 3.25rem;
-}
-.intro {
-	margin-top: 0;
-}
-.intro p:first-child {
-	font-size: 1.35rem;
-	line-height: 1.5;
-	color: var(--ink);
-}
-h2 {
-	font-size: 1.25rem;
-	font-weight: 600;
-	line-height: 1.35;
-	margin: 3.25rem 0 1.5rem;
-}
 
-/* Events timeline: reverse-chronological hard-shadow boxes on a
-   left-hand rail (dots + pulsing "today" marker). The rail starts at
-   the first event and runs past the last one into a short tail, capped
-   by a terminal stopper (::after). */
-ol.timeline {
-	position: relative;
-	list-style: none;
-	margin: 0 0 1.1rem;
-	padding: 0 0 4rem 2rem;
-}
-/* The vertical rail: from the first event down through the tail. */
-ol.timeline::before {
-	content: "";
-	position: absolute;
-	left: 4px;
-	top: 1.6rem;
-	bottom: 0;
-	width: 1px;
-	background: var(--line);
-}
-/* Terminal stopper: a small circle where the rail ends. */
-ol.timeline::after {
-	content: "";
-	position: absolute;
-	left: 5px;
-	bottom: -3px;
-	width: 0.5rem;
-	height: 0.5rem;
-	background: var(--line);
-	border-radius: 50%;
-	transform: translateX(-50%);
-}
 
-/* Event boxes retain the hard-shadow style. */
-ol.timeline li.event {
-	position: relative;
-	background: #fff;
-	border: 1px solid var(--ink);
-	box-shadow: var(--lift) var(--lift) 0 var(--ink);
-	padding: 1.1rem 1.25rem;
-	margin: 0 var(--lift) 2rem 0;
+@media (max-width: 900px) {
+  .copy { bottom: auto; top: clamp(10rem, 30svh, 18rem); max-width: 32rem; }
 }
-ol.timeline li.event:last-child {
-	margin-bottom: 0;
-}
-/* Dot centered on the rail, aligned to the box's first line.
-   The box has a 1px border, so its padding box (the positioning
-   origin) starts 1px inside the 2rem gutter; offset accounts for it. */
-ol.timeline li.event::before {
-	content: "";
-	position: absolute;
-	left: calc(4px - 2rem - 1px);
-	top: 1.35rem;
-	width: 0.5em;
-	height: 0.5em;
-	background: var(--accent);
-	border: 1.5px solid var(--accent);
-	transform: translateX(-50%);
-}
-ol.timeline li.event.upcoming::before {
-	background: var(--bg);
-	border-color: var(--ink);
-}
-
-/* "Today" marker: a pulsing diamond on the rail, no box. */
-ol.timeline li.today {
-	position: relative;
-	margin: 0 0 2rem 0;
-}
-ol.timeline li.today::before {
-	content: "";
-	position: absolute;
-	left: calc(5px - 2rem);
-	top: 50%;
-	width: 0.5em;
-	height: 0.5em;
-	background: var(--accent);
-	transform: translate(-50%, -50%) rotate(45deg);
-	animation: today-pulse 2.5s ease-out infinite;
-}
-@keyframes today-pulse {
-	0% {
-		box-shadow: 0 0 0 0 rgba(31, 59, 211, 0.35);
-	}
-	70%,
-	100% {
-		box-shadow: 0 0 0 7px rgba(31, 59, 211, 0);
-	}
-}
-.today-label {
-	color: var(--soft);
-	font-family: var(--font-mono);
-	font-size: 0.8rem;
-	font-weight: 500;
-	letter-spacing: 0.02em;
-}
-
-.when {
-	color: var(--soft);
-	font-family: var(--font-mono);
-	font-size: 0.8rem;
-	letter-spacing: 0.02em;
-}
-.what {
-	margin: 0.5rem 0 0;
-	font-weight: 600;
-	color: var(--ink);
-}
-.what .prefix {
-	color: var(--accent);
-}
-ol.timeline a {
-	color: var(--accent);
-}
-ol.timeline p {
-	margin: 0.5rem 0 0;
-	color: var(--soft);
-}
-
-footer {
-	margin-top: 4.5rem;
-	padding: 1.5rem 0 3rem;
-	font-size: 0.85rem;
-	color: var(--soft);
+@media (max-width: 560px) {
+  .copy { top: clamp(8rem, 24svh, 14rem); }
+  .copy .more { font-size: .9rem; }
 }
