@@ -498,11 +498,13 @@ uniform vec3 uInk, uHighlight;
 uniform float uContrast, uBrightness, uGamma, uInvert, uShade, uVignette, uFloor;
 uniform vec2 uLevels;
 uniform float uFluidOn, uRefraction, uGlow;
-uniform vec4 uClear;
+uniform vec4 uClear[3];
 uniform float uClearFeather, uClearShape;
-// Focus: x, y, r0, r1 in device px. Past r0 the characters shrink step by step (the atlas's size rows) until they
-// vanish at r1; r1 <= 0 turns it off.
+// Focus: x, y, r0, r1 in device px. Past r0 the wake weakens and the characters shrink step by step (the atlas's
+// size rows), reaching uFocusFloor.x of the wake and uFocusFloor.y of the size at r1 and staying there beyond.
+// Floors of 0 make the field vanish past r1; r1 <= 0 turns the focus off.
 uniform vec4 uFocus;
+uniform vec2 uFocusFloor;
 uniform float uSizeRows;
 out vec4 outColor;
 const float BAYER[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
@@ -577,16 +579,23 @@ void main(){
   vec2 cell=floor(frag/uCell);
   vec2 uv=(cell+.5)*uCell/uRes;
   float aspect=uRes.x/uRes.y;
+  // Focus: 1 at the mark, falling to 0 at r1. Strength and size follow it down to their floors.
+  float vis=1.;
+  if(uFocus.w>0.){
+    float d=distance((cell+.5)*uCell,uFocus.xy);
+    vis=1.-smoothstep(uFocus.z,uFocus.w,d);
+  }
+  float strength=mix(uFocusFloor.x,1.,vis),sizeV=mix(uFocusFloor.y,1.,vis);
   float lift=0.,wake=0.;
   vec2 disp=vec2(0.);
   if(uFluidOn>.5){
     vec4 f=decodeFluid(texture(uFluid,vec2(uv.x,1.-uv.y)));
-    disp=vec2(f.x/aspect,-f.y)*uRefraction;
+    disp=vec2(f.x/aspect,-f.y)*uRefraction*strength;
     // Any motion lights the characters: the flow's speed and the splat energy, with a little cell-to-cell grain so
     // the lit area stays a shimmer of letters rather than a solid block.
     float grain=.7+.6*hash(cell*.731+vec2(19.17,3.71));
     float speed=clamp(length(f.xy)*.22,0.,.6);
-    wake=clamp((f.z*.9+speed)*uGlow,0.,1.);
+    wake=clamp((f.z*.9+speed)*uGlow,0.,1.)*strength;
     lift=wake*.7*grain;
   }
   vec2 at=uv-disp;
@@ -601,15 +610,19 @@ void main(){
   tone=pow(tone,1./uGamma);
   if(uInvert>.5)tone=1.-tone;
   tone=max(tone,uFloor);
-  tone=clamp(tone+lift,0.,1.);
-  tone*=1.-uVignette*smoothstep(.35,1.05,length((uv-.5)*vec2(min(aspect,1.8),1.)*2.));
-  if(uClear.z>0.){
-    vec2 half_=uClear.zw*.5*vec2(aspect,1.),q=(uv-uClear.xy-uClear.zw*.5)*vec2(aspect,1.);
+  // Clear zone: the picture fades out around content so text above it stays readable. The wake is added after,
+  // so a pointer still stirs the field there.
+  for(int i=0;i<3;i++){
+    vec4 c=uClear[i];
+    if(c.z<=0.)continue;
+    vec2 half_=c.zw*.5*vec2(aspect,1.),q=(uv-c.xy-c.zw*.5)*vec2(aspect,1.);
     float dz;
     if(uClearShape>.5){vec2 e=abs(q)-half_;dz=length(max(e,0.))+min(max(e.x,e.y),0.);}
     else dz=(length(q/max(half_,vec2(1e-4)))-1.)*min(half_.x,half_.y);
     tone*=smoothstep(0.,uClearFeather,dz);
   }
+  tone=clamp(tone+lift,0.,1.);
+  tone*=1.-uVignette*smoothstep(.35,1.05,length((uv-.5)*vec2(min(aspect,1.8),1.)*2.));
   float level=tone*(uCount-1.),upper=fract(level)>=.5?1.:0.;
   if(uBlend>.5&&tone>.02&&tone<.98){
     ivec2 q=ivec2(mod(cell,4.));
@@ -617,13 +630,8 @@ void main(){
   }
   float index=min(uCount-1.,floor(level)+upper);
   vec2 local=frag-cell*uCell;
-  float vis=1.;
-  if(uFocus.w>0.){
-    float d=distance((cell+.5)*uCell,uFocus.xy);
-    vis=1.-smoothstep(uFocus.z,uFocus.w,d);
-  }
-  int row=int(floor((1.-vis)*(uSizeRows-1.)+.5));
-  float cov=vis<=0.?0.:texelFetch(uAtlas,ivec2(int(index)*int(uCell.x)+int(local.x),row*int(uCell.y)+int(local.y)),0).a;
+  int row=int(floor((1.-sizeV)*(uSizeRows-1.)+.5));
+  float cov=sizeV<=0.?0.:texelFetch(uAtlas,ivec2(int(index)*int(uCell.x)+int(local.x),row*int(uCell.y)+int(local.y)),0).a;
   vec3 ink=uInk*mix(1.,.3+.7*tone,uShade);
   ink=mix(ink,uHighlight,clamp(wake*1.2,0.,1.));
   outColor=vec4(ink*cov,cov);
@@ -636,9 +644,11 @@ void main(){
    *   return true while more frames are needed), sourceMix, sourcePx (source px per cell, default 2), contrast,
    *   brightness, gamma, invert, levels [lo, hi], blend, shade, vignette, floor, scale, speed, hover ('trail' | false),
    *   trail { strength, radius, refraction, decay }, pointerScope (element receiving pointer events; default canvas's
-   *   parent), clear (element | {x,y,w,h} CSS px rel. to canvas | null), clearShape ('ellipse' | 'rect'), clearFeather,
-   *   watch (visibility element), maxPixels, focus ({x, y, r0, r1} in CSS px, or (w, h) => that: beyond r0 the characters
-   *   step down through `sizes` until they vanish at r1), sizes (glyph size steps, largest first).
+   *   parent), clear (element | {x,y,w,h} CSS px rel. to canvas | a list of up to three | null), clearShape
+   *   ('ellipse' | 'rect'), clearFeather,
+   *   watch (visibility element), maxPixels, focus ({x, y, r0, r1, far, sizeFloor} in CSS px, or (w, h) => that: beyond
+   *   r0 the wake weakens and the characters step down through `sizes`, reaching `far` of the wake and `sizeFloor` of
+   *   the size at r1; both default to 0, which makes the field vanish there), sizes (glyph size steps, largest first).
    */
   function glyphField(canvas, options = {}) {
     const o = Object.assign({
@@ -792,17 +802,19 @@ void main(){
       fluidIndex = 1 - fluidIndex;
     };
 
-    const clearBox = () => {
-      if (!o.clear) return [0, 0, 0, 0];
+    // Up to three clear zones (elements or {x, y, w, h} boxes in CSS px), packed as uv rects; empty ones are zero.
+    const clearBoxes = () => {
+      const out = new Float32Array(12);
+      const list = (Array.isArray(o.clear) ? o.clear : [o.clear]).filter(Boolean).slice(0, 3);
       const r = canvas.getBoundingClientRect();
-      let b = o.clear;
-      if (b instanceof Element) {
-        const e = b.getBoundingClientRect();
-        b = { x: e.left - r.left, y: e.top - r.top, w: e.width, h: e.height };
-      }
-      if (!r.width || !r.height) return [0, 0, 0, 0];
+      if (!r.width || !r.height) return out;
       const pad = o.clearPad || 0;
-      return [(b.x - pad) / r.width, (b.y - pad) / r.height, (b.w + 2 * pad) / r.width, (b.h + 2 * pad) / r.height];
+      list.forEach((b, i) => {
+        if (b instanceof Element) { const e = b.getBoundingClientRect(); b = { x: e.left - r.left, y: e.top - r.top, w: e.width, h: e.height }; }
+        if (!b.w || !b.h) return;
+        out.set([(b.x - pad) / r.width, (b.y - pad) / r.height, (b.w + 2 * pad) / r.width, (b.h + 2 * pad) / r.height], i * 4);
+      });
+      return out;
     };
 
     const render = (dt) => {
@@ -852,11 +864,10 @@ void main(){
       gl.uniform2f(fieldU.uLevels, o.levels[0], o.levels[1]);
       gl.uniform1f(fieldU.uFluidOn, fluidOn ? 1 : 0);
       gl.uniform1f(fieldU.uRefraction, o.trail.refraction); gl.uniform1f(fieldU.uGlow, o.trail.strength);
-      const cb = clearBox();
-      gl.uniform4f(fieldU.uClear, cb[0], cb[1], cb[2], cb[3]);
+      gl.uniform4fv(fieldU.uClear, clearBoxes());
       const f = typeof o.focus === 'function' ? o.focus(canvas.clientWidth, canvas.clientHeight) : o.focus;
-      if (f && f.r1 > 0) gl.uniform4f(fieldU.uFocus, f.x * scale, f.y * scale, f.r0 * scale, f.r1 * scale);
-      else gl.uniform4f(fieldU.uFocus, 0, 0, 0, 0);
+      if (f && f.r1 > 0) { gl.uniform4f(fieldU.uFocus, f.x * scale, f.y * scale, f.r0 * scale, f.r1 * scale); gl.uniform2f(fieldU.uFocusFloor, f.far ?? 0, f.sizeFloor ?? 0); }
+      else { gl.uniform4f(fieldU.uFocus, 0, 0, 0, 0); gl.uniform2f(fieldU.uFocusFloor, 1, 1); }
       gl.uniform1f(fieldU.uSizeRows, o.sizes && o.sizes.length ? o.sizes.length : 1);
       gl.uniform1f(fieldU.uClearFeather, o.clearFeather); gl.uniform1f(fieldU.uClearShape, o.clearShape === 'rect' ? 1 : 0);
       gl.clearColor(0, 0, 0, 0);

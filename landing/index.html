@@ -24,17 +24,17 @@
 <main>
   <section class="hero" id="hero">
     <canvas id="mark" aria-hidden="true"></canvas>
+    <nav class="links" aria-label="Toolkit">
+      <!-- Icons from GitHub's Octicons set (MIT). -->
+      <a href="https://github.com/generative-computing/steerability/" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"/></svg><span>repo</span></a>
+      <a href="https://generative-computing.github.io/steerability/" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0 3.75A.75.75 0 0 1 .75 3h7.497c1.566 0 2.945.8 3.751 2.014A4.495 4.495 0 0 1 15.75 3h7.5a.75.75 0 0 1 .75.75v15.063a.752.752 0 0 1-.755.75l-7.682-.052a3 3 0 0 0-2.142.878l-.89.891a.75.75 0 0 1-1.061 0l-.902-.901a2.996 2.996 0 0 0-2.121-.879H.75a.75.75 0 0 1-.75-.75Zm12.75 15.232a4.503 4.503 0 0 1 2.823-.971l6.927.047V4.5h-6.75a3 3 0 0 0-3 3ZM11.247 7.497a3 3 0 0 0-3-2.997H1.5V18h6.947c1.018 0 2.006.346 2.803.98Z"/></svg><span>docs</span></a>
+      <a href="https://arxiv.org/abs/2603.07837" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3a2 2 0 0 1 2-2h9.982a2 2 0 0 1 1.414.586l4.018 4.018A2 2 0 0 1 21 7.018V21a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm2-.5a.5.5 0 0 0-.5.5v18a.5.5 0 0 0 .5.5h14a.5.5 0 0 0 .5-.5V8.5h-4a2 2 0 0 1-2-2v-4Zm10 0v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0-.146-.336l-4.018-4.018A.5.5 0 0 0 15 2.5Z"/></svg><span>paper</span></a>
+    </nav>
     <div class="copy" id="copy">
       <h1><span class="lockup-mark" id="lockup"></span><span>steerability</span></h1>
       <p class="first">The steerability toolkit is an open source Python library for steering large language models.</p>
-      <p class="more">The toolkit enables the development and evaluation (via <a href="https://inspect.aisi.org.uk" rel="noreferrer noopener">Inspect</a>) of a wide range of steering methods across four model control surfaces (input, structure, state, and output). Features include modular abstractions for the construction of steering methods, composition of steering methods into steering pipelines, and benchmarking of pipelines on custom use cases and metrics (including measurement of steering side effects).</p>
-      <p class="news"><b>News:</b> We are hosting a NeurIPS competition, entitled <a href="/competition/">The Steerability Challenge</a>, where participants are competing to steer models to be less dishonest while preserving general capabilities. Submissions are due November 21. Winners and prizes (totaling over $25k) to be announced at the competition workshop at NeurIPS Paris on December 13.</p>
-      <nav class="links" aria-label="Toolkit">
-        <!-- Icons from GitHub's Octicons set (MIT). -->
-        <a href="https://github.com/generative-computing/steerability/" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"/></svg><span>repo</span></a>
-        <a href="https://generative-computing.github.io/steerability/" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0 3.75A.75.75 0 0 1 .75 3h7.497c1.566 0 2.945.8 3.751 2.014A4.495 4.495 0 0 1 15.75 3h7.5a.75.75 0 0 1 .75.75v15.063a.752.752 0 0 1-.755.75l-7.682-.052a3 3 0 0 0-2.142.878l-.89.891a.75.75 0 0 1-1.061 0l-.902-.901a2.996 2.996 0 0 0-2.121-.879H.75a.75.75 0 0 1-.75-.75Zm12.75 15.232a4.503 4.503 0 0 1 2.823-.971l6.927.047V4.5h-6.75a3 3 0 0 0-3 3ZM11.247 7.497a3 3 0 0 0-3-2.997H1.5V18h6.947c1.018 0 2.006.346 2.803.98Z"/></svg><span>docs</span></a>
-        <a href="https://arxiv.org/abs/2603.07837" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3a2 2 0 0 1 2-2h9.982a2 2 0 0 1 1.414.586l4.018 4.018A2 2 0 0 1 21 7.018V21a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm2-.5a.5.5 0 0 0-.5.5v18a.5.5 0 0 0 .5.5h14a.5.5 0 0 0 .5-.5V8.5h-4a2 2 0 0 1-2-2v-4Zm10 0v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0-.146-.336l-4.018-4.018A.5.5 0 0 0 15 2.5Z"/></svg><span>paper</span></a>
-      </nav>
+      <p class="more">The toolkit enables the development and evaluation of a wide range of steering methods across four model control surfaces (input, structure, state, and output). Features include modular abstractions for the construction of steering methods, composition of steering methods into steering pipelines, and benchmarking of pipelines (via <a href="https://inspect.aisi.org.uk" rel="noreferrer noopener">Inspect</a>) on custom use cases and metrics (including measurement of steering side effects).</p>
+      <p class="news"><b>News:</b> We are hosting a NeurIPS competition, entitled <a href="/competition/">The Steerability Challenge</a>, where participants are competing to steer models to be less dishonest while preserving general capabilities. Submissions are due November 21. Winners and prizes (totaling over $40k) to be announced at the competition workshop at NeurIPS Paris on December 13.</p>
     </div>
   </section>
 
@@ -57,10 +57,12 @@
     const [px, py] = S.LOGO.pivot;
     let field = null;
 
-    // The mark, in CSS px of the hero: its size follows the height but is capped by the width, so on a narrow
-    // window it shrinks and keeps its corner; a fifth of it lies past the right edge and the top edge cuts a slice.
+    // The mark, in CSS px of the hero: its size follows the height but is capped by the width (so on a narrow
+    // window it shrinks and keeps its corner) and by MARK_MAX (so on a very wide window it stops growing). A fifth
+    // of it lies past the right edge and the top edge cuts a slice.
+    const MARK_MAX = 960;
     const place = (w, h) => {
-      const size = Math.min(h * 1.0, w * (w < 560 ? 0.78 : w < 900 ? 0.66 : 0.62));
+      const size = Math.min(h * 1.0, w * (w < 560 ? 0.78 : w < 900 ? 0.66 : 0.62), MARK_MAX);
       return { size, x: w - size * 0.8, y: -size * 0.15 };
     };
     const pivot = (w, h) => { const p = place(w, h); return { x: p.x + p.size * px / 300, y: p.y + p.size * py / 300, size: p.size }; };
@@ -72,14 +74,25 @@
     canvas.addEventListener('click', () => needle.replay());
     canvas.style.pointerEvents = 'auto';
 
+    // The links' clear zone, read each frame; inset so its fade stays tighter than the copy's.
+    const links = document.querySelector('.links'), inset = 8;
+    const linksBox = {
+      get x() { return links.getBoundingClientRect().left - canvas.getBoundingClientRect().left + inset; },
+      get y() { return links.getBoundingClientRect().top - canvas.getBoundingClientRect().top + inset; },
+      get w() { return Math.max(0, links.getBoundingClientRect().width - 2 * inset); },
+      get h() { return Math.max(0, links.getBoundingClientRect().height - 2 * inset); },
+    };
     field = S.glyphField(canvas, {
       charset: ' .:-=+*#%@', font: '"IBM Plex Mono", ui-monospace, monospace', cellSize: 8, cellAspect: 0.6, glyphScale: 0.9,
       ink: 'var(--glyph)', highlight: 'var(--glyph-hi)', scene: 'none', contrast: 1.1,
       trail: { strength: 1.1, radius: 0.07, refraction: 0.04, decay: 1.6, energyDecay: 1.5 },
       pointerScope: hero,
-      focus: (w, h) => { const c = pivot(w, h); return { x: c.x, y: c.y, r0: c.size * 0.43, r1: c.size * 0.64 }; },
+      // The field runs across the whole page. The wake is strongest on the mark and, from its rim outward, settles
+      // to a third of its strength in characters half the size, so it shows behind the copy without crowding it.
+      focus: (w, h) => { const c = pivot(w, h); return { x: c.x, y: c.y, r0: c.size * 0.43, r1: c.size * 1.1, far: 0.32, sizeFloor: 0.46 }; },
       sizes: [1, 0.8, 0.62, 0.46, 0.32, 0.2],
-      clear: copy, clearPad: 26, clearShape: 'rect', clearFeather: 0.07,
+      // The mark itself fades out behind the copy and the links where they overlap on a narrow window; the wake does not.
+      clear: [copy, linksBox], clearPad: 24, clearShape: 'rect', clearFeather: 0.045,
       paint: ({ pen, w, h, scale }) => {
         pen.setTransform(scale, 0, 0, scale, 0, 0);
         const p = place(w, h), s = p.size / 300;
