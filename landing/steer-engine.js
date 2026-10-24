@@ -641,7 +641,9 @@ void main(){
    * A field of characters on a canvas that fills its CSS box.
    * options: charset, font, fontWeight, cellSize (CSS px, cell height), cellAspect, glyphScale, ink, highlight,
    *   scene ('none' | 'orb' | 'drift' | 'swell' | 'ripple' | 'halo' | 'flow'), paint(frame) → bool (paints the source;
-   *   return true while more frames are needed), sourceMix, sourcePx (source px per cell, default 2), contrast,
+   *   return true while more frames are needed; its frame carries `pen`, `w`, `h`, `scale` and `bleed`, so draw with
+   *   pen.setTransform(scale, 0, 0, scale, bleed * scale, bleed * scale) to work in CSS px), sourceMix, sourcePx (source
+   *   px per cell, default 2), sourceBleed (CSS px of source kept past each edge of the canvas), contrast,
    *   brightness, gamma, invert, levels [lo, hi], blend, shade, vignette, floor, scale, speed, hover ('trail' | false),
    *   trail { strength, radius, refraction, decay }, pointerScope (element receiving pointer events; default canvas's
    *   parent), clear (element | {x,y,w,h} CSS px rel. to canvas | a list of up to three | null), clearShape
@@ -654,7 +656,7 @@ void main(){
     const o = Object.assign({
       charset: ' .:-=+*#%@', font: '"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace', fontWeight: 400,
       cellSize: 10, cellAspect: 0.62, glyphScale: 0.86, ink: '#e8e8e8', highlight: null,
-      scene: 'none', sceneMix: 1, paint: null, sourceMix: 1, sourcePx: 2, sourceFit: 'stretch',
+      scene: 'none', sceneMix: 1, paint: null, sourceMix: 1, sourcePx: 2, sourceBleed: 0, sourceFit: 'stretch',
       contrast: 1, brightness: 0, gamma: 1, invert: false, levels: [0, 1], blend: true, shade: 0, vignette: 0, floor: 0,
       scale: 1, speed: 1, hover: 'trail', trail: { strength: 1, radius: 0.09, refraction: 0.035, decay: 1.4, energyDecay: 1.1 },
       pointerScope: null, clear: null, clearShape: 'ellipse', clearFeather: 0.08, watch: null, maxPixels: 4.2e6, stillTime: 40, onFrame: null,
@@ -736,10 +738,11 @@ void main(){
       buildAtlas();
       if (o.paint) {
         // The source keeps the canvas's aspect, at `sourcePx` pixels per cell height, so painters draw in CSS px
-        // under one uniform scale.
+        // under one uniform scale. `sourceBleed` CSS px of extra room on every side let a picture that runs past
+        // the canvas keep its hidden part, so the wake can pull it into view whole.
         source = source || document.createElement('canvas');
-        const q = o.sourcePx / o.cellSize;
-        source.width = Math.max(2, Math.round(w * q)); source.height = Math.max(2, Math.round(h * q));
+        const q = o.sourcePx / o.cellSize, b = o.sourceBleed || 0;
+        source.width = Math.max(2, Math.round((w + 2 * b) * q)); source.height = Math.max(2, Math.round((h + 2 * b) * q));
         sourceCtx = source.getContext('2d');
         sourceDirty = true; morePaint = true;
       }
@@ -827,7 +830,7 @@ void main(){
         sourceCtx.fillRect(0, 0, source.width, source.height);
         morePaint = !!o.paint({
           pen: sourceCtx, width: source.width, height: source.height,
-          w: canvas.clientWidth, h: canvas.clientHeight, scale: o.sourcePx / o.cellSize,
+          w: canvas.clientWidth, h: canvas.clientHeight, scale: o.sourcePx / o.cellSize, bleed: o.sourceBleed || 0,
           now: t, still, box: (el) => { const r = canvas.getBoundingClientRect(), e = el.getBoundingClientRect(); return { x: e.left - r.left, y: e.top - r.top, w: e.width, h: e.height }; },
         });
         sourceDirty = false;
@@ -853,7 +856,8 @@ void main(){
       gl.uniform1i(fieldU.uScene, FIELD_SCENES[o.scene] ?? 3);
       gl.uniform1f(fieldU.uSourceMix, o.paint ? o.sourceMix : 0);
       gl.uniform1f(fieldU.uSceneMix, o.sceneMix);
-      gl.uniform2f(fieldU.uSourceScale, 1, 1); gl.uniform2f(fieldU.uSourceOffset, 0, 0);
+      { const b = o.sourceBleed || 0, cw2 = Math.max(1, canvas.clientWidth), ch2 = Math.max(1, canvas.clientHeight);
+        gl.uniform2f(fieldU.uSourceScale, cw2 / (cw2 + 2 * b), ch2 / (ch2 + 2 * b)); gl.uniform2f(fieldU.uSourceOffset, b / (cw2 + 2 * b), b / (ch2 + 2 * b)); }
       const ink = parseColor(o.ink, canvas), hi = o.highlight ? parseColor(o.highlight, canvas) : null;
       gl.uniform3f(fieldU.uInk, ink[0], ink[1], ink[2]);
       if (hi) gl.uniform3f(fieldU.uHighlight, hi[0], hi[1], hi[2]);
@@ -899,7 +903,7 @@ void main(){
       gl, canvas,
       get cells() { return { cols, rows, cw, ch, scale }; },
       update(partial) {
-        const relayout = ['charset', 'font', 'fontWeight', 'cellSize', 'cellAspect', 'glyphScale', 'sourcePx', 'sizes'].some((k) => k in partial && partial[k] !== o[k]);
+        const relayout = ['charset', 'font', 'fontWeight', 'cellSize', 'cellAspect', 'glyphScale', 'sourcePx', 'sourceBleed', 'sizes'].some((k) => k in partial && partial[k] !== o[k]);
         const { trail, ...rest } = partial;
         Object.assign(o, rest);
         if (trail) o.trail = Object.assign({}, o.trail, trail);

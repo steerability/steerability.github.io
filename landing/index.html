@@ -62,7 +62,8 @@
     // of it lies past the right edge and the top edge cuts a slice.
     const MARK_MAX = 960;
     const place = (w, h) => {
-      const size = Math.min(h * 1.0, w * (w < 560 ? 0.78 : w < 900 ? 0.66 : 0.62), MARK_MAX);
+      const vh = Math.min(h, window.innerHeight || h);
+      const size = Math.min(vh * 1.0, w * (w < 560 ? 0.78 : w < 900 ? 0.66 : 0.62), MARK_MAX);
       return { size, x: w - size * 0.8, y: -size * 0.15 };
     };
     const pivot = (w, h) => { const p = place(w, h); return { x: p.x + p.size * px / 300, y: p.y + p.size * py / 300, size: p.size }; };
@@ -93,8 +94,9 @@
       sizes: [1, 0.8, 0.62, 0.46, 0.32, 0.2],
       // The mark itself fades out behind the copy and the links where they overlap on a narrow window; the wake does not.
       clear: [copy, linksBox], clearPad: 24, clearShape: 'rect', clearFeather: 0.045,
-      paint: ({ pen, w, h, scale }) => {
-        pen.setTransform(scale, 0, 0, scale, 0, 0);
+      sourceBleed: 300,
+      paint: ({ pen, w, h, scale, bleed }) => {
+        pen.setTransform(scale, 0, 0, scale, bleed * scale, bleed * scale);
         const p = place(w, h), s = p.size / 300;
         pen.globalAlpha = needle.alpha; pen.fillStyle = '#fff';
         pen.save(); pen.translate(p.x, p.y); pen.scale(s, s); pen.fill(ring);
@@ -106,7 +108,8 @@
     // characters are fractions of the mark's size, not of the window's height.
     const fit = () => {
       if (!field) return;
-      const size = place(innerWidth, innerHeight).size, rel = size / Math.max(1, innerHeight);
+      const p = place(innerWidth, innerHeight), size = p.size, rel = size / Math.max(1, innerHeight);
+      hero.style.setProperty('--mark-bottom', Math.round(p.y + size) + 'px');
       field.update({ cellSize: size < 420 ? 5 : size < 640 ? 6 : size < 820 ? 7 : 8, trail: { radius: 0.075 * rel, refraction: 0.04 * rel } });
       field.repaint();
     };

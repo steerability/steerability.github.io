@@ -33,6 +33,11 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
+## Uncommon Web (templates)
+
+The landing page started from templates in Uncommon Web (https://webdev.teknium.io), Teknium's field guide to
+stylistically unusual web libraries.
+
 ## Typefaces
 
 Loaded from Google Fonts under the SIL Open Font License: Bricolage Grotesque, Geist, Geist Mono, Newsreader,

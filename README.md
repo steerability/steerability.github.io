@@ -22,7 +22,8 @@ Re-run it after editing files. For the lab site on its own: `cd lab && pnpm inst
 
 `landing/index.html` gets its effects from `landing/steer-engine.js`; keep
 `landing/THIRD-PARTY.md` (its license notices) alongside it. The page styles are the
-`[data-style]` token blocks at the top of `landing/styles.css`.
+`[data-style]` token blocks at the top of `landing/styles.css`. The page started from
+templates in [Uncommon Web](https://webdev.teknium.io).
 
 ## Competition page
 
