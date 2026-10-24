@@ -1,26 +1,27 @@
 /* Steerability landing.
    The mark, typed in characters, sits in the top-right corner past two edges; it shrinks as the window narrows
    and stops growing on very wide ones. The repo, docs and paper links sit top left; the copy sits left and low
-   and grows a little with the window. Three little boxes in the corner switch the page's style; the glyph ink
-   follows it. */
+   and grows a little with the window. Three little boxes in the corner switch the page's style, and the left
+   and right arrow keys step through them; the glyph ink follows it. Moss is the default, so its tokens live on
+   :root; paper and graphite override them. */
 :root {
-  --paper: #f4f5f7; --card: #ffffff; --ink: #17181c; --soft: #5f6372; --line: #d7d9df; --accent: #1f3bd3;
-  --glyph: #17181c; --glyph-hi: #1f3bd3;
+  --paper: #0c2a1d; --card: #123726; --ink: #eaf2ec; --soft: #9fb9aa; --line: #26533f; --accent: #ff8a3d;
+  --glyph: #ff8a3d; --glyph-hi: #8fe8b8;
   --wordmark: "Inter", "Helvetica Neue", Arial, sans-serif;
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --gutter: clamp(1.25rem, 4vw, 3.5rem);
   --mark: clamp(3.45rem, 4.49vw, 4.72rem); /* lockup mark height */
   --word: clamp(1.98rem, 2.59vw, 2.7rem);  /* lockup word size */
-  color-scheme: light;
+  color-scheme: dark;
+}
+:root[data-style="paper"] {
+  --paper: #f4f5f7; --card: #ffffff; --ink: #17181c; --soft: #5f6372; --line: #d7d9df; --accent: #1f3bd3;
+  --glyph: #17181c; --glyph-hi: #1f3bd3; color-scheme: light;
 }
 :root[data-style="graphite"] {
   --paper: #0f1014; --card: #17181e; --ink: #e8eaf1; --soft: #9a9eae; --line: #2b2d37; --accent: #8fa3ff;
   --glyph: #d4d7e2; --glyph-hi: #ffbfd8; color-scheme: dark;
-}
-:root[data-style="moss"] {
-  --paper: #0c2a1d; --card: #123726; --ink: #eaf2ec; --soft: #9fb9aa; --line: #26533f; --accent: #ff8a3d;
-  --glyph: #ff8a3d; --glyph-hi: #8fe8b8; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body {

@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script>
-  // The chosen style, applied before first paint. Styles: paper (default), graphite, moss.
-  (function () { try { var s = localStorage.getItem('steer-style'); if (s) document.documentElement.setAttribute('data-style', s); } catch (e) {} })();
+  // The chosen style, applied before first paint. Styles: moss (default), paper, graphite.
+  (function () { try { var s = localStorage.getItem('steer-style'); if (s && s !== 'moss') document.documentElement.setAttribute('data-style', s); } catch (e) {} })();
 </script>
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -41,9 +41,9 @@
 </main>
 
 <div class="palette" role="group" aria-label="Page style" id="palette">
+  <button type="button" data-style="moss" aria-label="Moss" title="Moss" style="--sw:#0c2a1d;--sw-glyph:#ff8a3d"></button>
   <button type="button" data-style="paper" aria-label="Paper" title="Paper" style="--sw:#f4f5f7;--sw-glyph:#17181c"></button>
   <button type="button" data-style="graphite" aria-label="Graphite" title="Graphite" style="--sw:#0f1014;--sw-glyph:#d4d7e2"></button>
-  <button type="button" data-style="moss" aria-label="Moss" title="Moss" style="--sw:#0c2a1d;--sw-glyph:#ff8a3d"></button>
 </div>
 
 <script src="steer-engine.js"></script>
@@ -117,17 +117,33 @@
     fit();
     addEventListener('resize', fit);
 
-    // The palette. The glyph ink is re-read from the new style's tokens.
+    // The palette: a box per style, in the order they cycle; the first is the default (its tokens live on :root,
+    // so it needs no attribute). The glyph ink is re-read from the new style's tokens.
     const root = document.documentElement, palette = document.getElementById('palette');
+    const buttons = [...palette.querySelectorAll('button[data-style]')], names = buttons.map((b) => b.dataset.style);
+    const DEFAULT = names[0];
+    const current = () => { const s = root.getAttribute('data-style'); return names.includes(s) ? s : DEFAULT; };
     const apply = (name) => {
-      if (name === 'paper') root.removeAttribute('data-style'); else root.setAttribute('data-style', name);
-      for (const b of palette.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.style === name));
+      if (name === DEFAULT) root.removeAttribute('data-style'); else root.setAttribute('data-style', name);
+      for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.style === name));
       if (field) field.update({ ink: 'var(--glyph)', highlight: 'var(--glyph-hi)' });
       try { localStorage.setItem('steer-style', name); } catch (e) {}
     };
     palette.addEventListener('click', (e) => { const b = e.target.closest('button[data-style]'); if (b) apply(b.dataset.style); });
-    const current = root.getAttribute('data-style') || 'paper';
-    for (const b of palette.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.style === current));
+    // The left and right arrow keys step through the styles, wrapping at either end. Held keys don't repeat, and
+    // keys with a modifier (Alt+Left is the browser's back) or typed into a field are left alone.
+    addEventListener('keydown', (e) => {
+      if (e.repeat || e.altKey || e.ctrlKey || e.metaKey) return;
+      const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!step) return;
+      const t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      const next = names[(names.indexOf(current()) + step + names.length) % names.length];
+      apply(next);
+      // If one of the boxes had focus, the focus moves along with the choice.
+      if (palette.contains(document.activeElement)) buttons[names.indexOf(next)].focus();
+    });
+    for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.style === current()));
   })();
 </script>
 </body>
