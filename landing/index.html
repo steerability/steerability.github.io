@@ -31,7 +31,7 @@
       <a href="https://arxiv.org/abs/2603.07837" rel="noreferrer noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3a2 2 0 0 1 2-2h9.982a2 2 0 0 1 1.414.586l4.018 4.018A2 2 0 0 1 21 7.018V21a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm2-.5a.5.5 0 0 0-.5.5v18a.5.5 0 0 0 .5.5h14a.5.5 0 0 0 .5-.5V8.5h-4a2 2 0 0 1-2-2v-4Zm10 0v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0-.146-.336l-4.018-4.018A.5.5 0 0 0 15 2.5Z"/></svg><span>paper</span></a>
     </nav>
     <div class="copy" id="copy">
-      <h1><span class="lockup-mark" id="lockup"></span><span>steerability</span></h1>
+      <h1><a href="https://github.com/generative-computing/steerability/" rel="noreferrer noopener"><span class="lockup-mark" id="lockup"></span><span>steerability</span></a></h1>
       <p class="first">The steerability toolkit is an open source Python library for steering large language models.</p>
       <p class="more">The toolkit enables the development and evaluation of a wide range of steering methods across four model control surfaces (input, structure, state, and output). Features include modular abstractions for the construction of steering methods, composition of steering methods into steering pipelines, and benchmarking of pipelines (via <a href="https://inspect.aisi.org.uk" rel="noreferrer noopener">Inspect</a>) on custom use cases and metrics (including measurement of steering side effects).</p>
       <p class="news"><b>News:</b> We are hosting a NeurIPS competition, entitled <a href="/competition/">The Steerability Challenge</a>, where participants are competing to steer models to be less dishonest while preserving general capabilities. Submissions are due November 21. Winners and prizes (totaling over $40k) to be announced at the competition workshop at NeurIPS Paris on December 13.</p>
@@ -55,6 +55,8 @@
 
     const hero = document.getElementById('hero'), canvas = document.getElementById('mark'), copy = document.getElementById('copy');
     document.getElementById('lockup').outerHTML = S.LOGO.svg();
+    // iOS Safari only shows :active (the lockup's pressed colour) on an element that listens for touches.
+    document.querySelector('h1 a').addEventListener('touchstart', () => {}, { passive: true });
     const ring = new Path2D(S.LOGO.ring), nd = new Path2D(S.LOGO.needle);
     const [px, py] = S.LOGO.pivot;
     let field = null;

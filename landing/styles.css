@@ -20,7 +20,7 @@
   --glyph: #17181c; --glyph-hi: #1f3bd3; color-scheme: light;
 }
 :root[data-style="graphite"] {
-  --paper: #0f1014; --card: #17181e; --ink: #e8eaf1; --soft: #9a9eae; --line: #2b2d37; --accent: #8fa3ff;
+  --paper: #0f1014; --card: #17181e; --ink: #e8eaf1; --soft: #9a9eae; --line: #2b2d37; --accent: #ffbfd8;
   --glyph: #d4d7e2; --glyph-hi: #ffbfd8; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -44,11 +44,20 @@ a { color: var(--accent); }
   max-width: 34em;
 }
 h1 {
-  display: flex; align-items: center; gap: calc(var(--mark) * .3);
+  display: flex;
   margin: 0 0 1.1em; color: var(--ink);
   font-family: var(--wordmark); font-weight: 600; font-size: var(--word);
   line-height: 1; letter-spacing: -.02em;
 }
+/* The lockup links to the repo and fades to the style's accent when hovered or, on a touch screen, pressed (hover
+   is left to pointers that can hover, so it doesn't stick after a tap). */
+h1 a {
+  display: flex; align-items: center; gap: calc(var(--mark) * .3);
+  color: inherit; text-decoration: none; transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+h1 a:active { color: var(--accent); }
+@media (hover: hover) { h1 a:hover { color: var(--accent); } }
 h1 svg { display: block; width: var(--mark); height: var(--mark); flex: none; }
 h1 span { position: relative; top: calc(var(--mark) * -.07); }
 .copy p { margin: 0 0 .85em; text-wrap: pretty; }
@@ -105,10 +114,11 @@ h1 span { position: relative; top: calc(var(--mark) * -.07); }
 
 /* Narrow windows: the copy leaves the corner to the mark and flows from its lower edge, in the page's normal flow, so
    the hero grows with it and the page scrolls (the script writes --mark-bottom and --mark-size from the mark's
-   placement). */
+   placement). It stays positioned (relative, with its offsets dropped) so it sits above the mark's canvas, which
+   takes clicks, and its links can be tapped. */
 @media (max-width: 900px) {
   .copy {
-    position: static; max-width: 32em;
+    position: relative; inset: auto; max-width: 32em;
     /* The offset is a margin, not padding, so the copy's own box (which the field fades out behind) starts where the
        copy does, overlapping the foot of the mark. */
     margin: calc(var(--mark-bottom, 60vw) - var(--mark-size, 50vw) * .2) max(var(--gutter), env(safe-area-inset-right, 0px)) 0 max(var(--gutter), env(safe-area-inset-left, 0px));
@@ -122,7 +132,7 @@ h1 span { position: relative; top: calc(var(--mark) * -.07); }
    page scrolls, rather than being pinned to the bottom and clipped. */
 @media (min-width: 901px) and (max-height: 640px) {
   .copy {
-    position: static;
+    position: relative; inset: auto;
     margin: 5.5rem max(var(--gutter), env(safe-area-inset-right, 0px)) 0 max(var(--gutter), env(safe-area-inset-left, 0px));
     padding: 0 0 3.5rem;
   }
