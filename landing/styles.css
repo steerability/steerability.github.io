@@ -103,13 +103,15 @@ h1 span { position: relative; top: calc(var(--mark) * -.07); }
 }
 
 
-/* Narrow windows: the copy leaves the corner to the mark and flows below it, in the page's normal flow, so the
-   hero grows with it and the page scrolls (the script writes --mark-bottom from the mark's placement). */
+/* Narrow windows: the copy leaves the corner to the mark and flows from its lower edge, in the page's normal flow, so
+   the hero grows with it and the page scrolls (the script writes --mark-bottom and --mark-size from the mark's
+   placement). */
 @media (max-width: 900px) {
   .copy {
     position: static; max-width: 32em;
-    /* The offset is a margin, not padding, so the copy's own box (which the field fades out behind) starts below the mark. */
-    margin: calc(var(--mark-bottom, 60vw) + 1.75rem) max(var(--gutter), env(safe-area-inset-right, 0px)) 0 max(var(--gutter), env(safe-area-inset-left, 0px));
+    /* The offset is a margin, not padding, so the copy's own box (which the field fades out behind) starts where the
+       copy does, overlapping the foot of the mark. */
+    margin: calc(var(--mark-bottom, 60vw) - var(--mark-size, 50vw) * .2) max(var(--gutter), env(safe-area-inset-right, 0px)) 0 max(var(--gutter), env(safe-area-inset-left, 0px));
     padding: 0 0 3.5rem;
   }
 }

@@ -62,12 +62,12 @@
     // The mark, in CSS px of the hero: its size follows the height but is capped by the width (so on a narrow
     // window it shrinks and keeps its corner) and by MARK_MAX (so on a very wide window it stops growing). A fifth
     // of it lies past the right edge. On a wide window the top edge cuts a slice; on a narrow one it drops to sit
-    // just under the links.
+    // clear of the links.
     const MARK_MAX = 960;
     const place = (w, h) => {
       const vh = Math.min(h, window.innerHeight || h);
       const size = Math.min(vh * 1.0, w * (w < 560 ? 0.78 : w < 900 ? 0.66 : 0.62), MARK_MAX);
-      return { size, x: w - size * 0.8, y: w < 900 ? size * 0.06 : -size * 0.15 };
+      return { size, x: w - size * 0.8, y: w < 900 ? size * 0.15 : -size * 0.15 };
     };
     const pivot = (w, h) => { const p = place(w, h); return { x: p.x + p.size * px / 300, y: p.y + p.size * py / 300, size: p.size }; };
     const needle = S.needle({
@@ -113,6 +113,7 @@
       if (!field) return;
       const p = place(innerWidth, innerHeight), size = p.size, rel = size / Math.max(1, innerHeight);
       hero.style.setProperty('--mark-bottom', Math.round(p.y + size) + 'px');
+      hero.style.setProperty('--mark-size', Math.round(size) + 'px');
       field.update({ cellSize: size < 420 ? 5 : size < 640 ? 6 : size < 820 ? 7 : 8, trail: { radius: 0.075 * rel, refraction: 0.04 * rel } });
       field.repaint();
     };
