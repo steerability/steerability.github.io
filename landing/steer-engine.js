@@ -5,6 +5,12 @@
  *  Steer.glyphField(canvas, options)  A field of characters in the manner of asciify-engine (MIT): a glyph atlas,
  *                                     tone → glyph with a 4x4 Bayer blend, generated scenes or a painted source,
  *                                     and a fluid cursor wake (semi-Lagrangian advection, as asciify's field does it).
+ *                                     Its handle's pulse() drops a radial splat into the wake: a burst outward from
+ *                                     a point, or a draw in toward it.
+ *  Steer.pulser(field, options)       A key's pulse, built on pulse(): a tap lets out a small one, holding charges
+ *                                     a bigger one while the field is drawn in toward the point, and a long hold
+ *                                     primes the field to throb there until the release lets out the biggest pulse
+ *                                     the wake allows.
  *  Steer.needle(options)              The mark's needle: the seeking motion traced frame by frame from the brand
  *                                     animation, then spring-steered toward the pointer.
  *  Steer.logo(svg, options)           Binds a needle controller to an inline SVG of the mark.
@@ -456,12 +462,23 @@ const float VSCALE=6.;
 vec4 decodeFluid(vec4 t){return vec4((t.xy*2.-1.)*VSCALE,t.z,t.w);}
 vec4 encodeFluid(vec4 v){return vec4(clamp(v.xy/VSCALE*.5+.5,0.,1.),clamp(v.z,0.,1.),1.);}`;
 
+  // Two kinds of splat: the pointer's capsule (uFrom → uTo, pushed along uForce) and up to four radial pulses a
+  // frame (uPulse: centre in uv, radius in field heights, strength; uPulseExtra: energy, hold, ring). The profile
+  // is a Gaussian disc about the centre or, with ring above 0, a Gaussian annulus at that distance. With hold at 0
+  // the pulse is an impulse, pushing the field out from the centre (or in, for a negative strength); with hold
+  // above 0 it instead eases the field that fraction of the way toward a steady radial flow at `strength`, which is
+  // how a draw is held frame after frame without small pushes vanishing in the 8-bit texture. The same decay,
+  // advection and speed cap apply to all of it.
+  const PULSES = 4;
   const FLUID_FS = `#version 300 es
 precision highp float;
 uniform sampler2D uPrevious;
 uniform vec2 uSize;
 uniform float uAspect, uDt, uDecay, uEnergyDecay, uRadius, uSplat;
 uniform vec2 uFrom, uTo, uForce;
+uniform vec4 uPulse[${PULSES}];
+uniform vec3 uPulseExtra[${PULSES}];
+uniform int uPulseCount;
 out vec4 outColor;
 ${FLUID_CODEC}
 float segment(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-8),0.,1.);return length(pa-ba*h);}
@@ -471,12 +488,24 @@ void main(){
   vec4 state=decodeFluid(texture(uPrevious,uv-uDt*here.xy*vec2(1./uAspect,1.)));
   state.xy*=exp(-uDt*uDecay);
   state.z*=exp(-uDt*uEnergyDecay);
+  vec2 scale=vec2(uAspect,1.);
   if(uSplat>.5){
-    vec2 scale=vec2(uAspect,1.);
     float d=segment(uv*scale,uFrom*scale,uTo*scale);
     float g=exp(-d*d/(uRadius*uRadius));
     state.xy+=uForce*g;
     state.z=min(1.,state.z+g*min(1.,length(uForce)*.5+.08));
+  }
+  for(int i=0;i<${PULSES};i++){
+    if(i>=uPulseCount)break;
+    vec4 p=uPulse[i];
+    vec3 e=uPulseExtra[i];
+    vec2 off=(uv-p.xy)*scale;
+    float d=length(off),q=(d-e.z)/p.z;
+    float g=exp(-q*q);
+    vec2 dir=d>1e-4?off/d:vec2(0.);
+    if(e.y>0.)state.xy=mix(state.xy,dir*p.w,g*e.y);
+    else state.xy+=dir*p.w*g;
+    state.z=min(1.,state.z+g*e.x);
   }
   float speed=length(state.xy);
   if(speed>5.)state.xy*=5./speed;
@@ -768,6 +797,11 @@ void main(){
     scope.addEventListener('pointermove', onMove, { passive: true });
     scope.addEventListener('pointerleave', onLeave, { passive: true });
 
+    // Radial splats waiting for the next fluid step, as [cx, cy, radius, strength, energy, hold, ring] in the fluid
+    // frame. Up to PULSES go in each step; the queue keeps a few more so a burst of calls is not lost, and drops the
+    // oldest past that.
+    const pulses = [], pulseData = new Float32Array(4 * PULSES), pulseExtra = new Float32Array(3 * PULSES);
+
     const stepFluid = (dt) => {
       gl.useProgram(fluidProg);
       const src = fluid[fluidIndex], dst = fluid[1 - fluidIndex];
@@ -799,6 +833,15 @@ void main(){
       }
       gl.uniform1f(fluidU.uSplat, splat ? 1 : 0);
       if (!splat) { gl.uniform2f(fluidU.uFrom, 0, 0); gl.uniform2f(fluidU.uTo, 0, 0); gl.uniform2f(fluidU.uForce, 0, 0); }
+      const n = Math.min(PULSES, pulses.length);
+      for (let i = 0; i < n; i++) {
+        const p = pulses[i];
+        pulseData[i * 4] = p[0]; pulseData[i * 4 + 1] = p[1]; pulseData[i * 4 + 2] = p[2]; pulseData[i * 4 + 3] = p[3];
+        pulseExtra[i * 3] = p[4]; pulseExtra[i * 3 + 1] = p[5]; pulseExtra[i * 3 + 2] = p[6];
+      }
+      pulses.splice(0, n);
+      gl.uniform1i(fluidU.uPulseCount, n);
+      if (n) { gl.uniform4fv(fluidU.uPulse, pulseData); gl.uniform3fv(fluidU.uPulseExtra, pulseExtra); }
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, W, H);
@@ -911,6 +954,24 @@ void main(){
         render(0); kick();
       },
       repaint() { sourceDirty = true; morePaint = true; kick(); },
+      /**
+       * A radial splat into the wake at the next fluid step: {x, y} and radius in CSS px of the canvas; strength the
+       * push given to the field, outward if positive and inward if negative (the wake's own pushes run 0–5, and 5 is
+       * the cap); energy how brightly it lights (0–1, 1 saturates). The splat is a soft disc of that radius, or with
+       * `ring` (CSS px) a band that wide at that distance from the centre. Either way it bulges and fades where it
+       * is put: the wake's advection carries nothing into still fluid, so a pulse is a flash rather than a ripple.
+       * With `hold` (0–1) the field is instead eased that fraction of the way toward a steady flow at
+       * `strength` — call it every frame with hold = 1 - exp(-rate * dt) to keep a draw or a stream going. Returns
+       * false when the wake is off (reduced motion).
+       */
+      pulse({ x, y, radius = 40, strength = 0, energy = 0, hold = 0, ring = 0 }) {
+        if (still || o.hover !== 'trail' || disposed) return false;
+        const w = Math.max(1, canvas.clientWidth), h = Math.max(1, canvas.clientHeight);
+        pulses.push([x / w, 1 - y / h, Math.max(1e-3, radius / h), strength, energy, clamp(hold), Math.max(0, ring) / h]);
+        if (pulses.length > 2 * PULSES) pulses.splice(0, pulses.length - 2 * PULSES);
+        kick();
+        return true;
+      },
       play() { playing = true; kick(); },
       pause() { playing = false; },
       destroy() {
@@ -1055,5 +1116,77 @@ void main(){
     return ctrl;
   }
 
-  window.Steer = { dither, glyphField, needle, logo, LOGO, parseColor, reduced, watchVisible, seekAngle, DITHER_SHAPES, DITHER_TYPES };
+  // ------------------------------------------------------------------ 4. The pulse
+  /**
+   * A key's pulse, let out through `field.pulse()` from wherever `origin()` says. Call press() when the key goes down
+   * and release() when it comes up:
+   *   - a tap lets out a small pulse;
+   *   - holding charges a bigger one over `prime` ms, and while it charges the field is drawn in toward the point and
+   *     glows there, harder and brighter as the charge builds;
+   *   - held past `prime`, the field is primed: it throbs from the point every `period` ms until the key is
+   *     released, which lets out the biggest pulse the wake allows (its speed cap, full brightness).
+   * A pulse here is what the wake's physics makes of a radial push: a disc that lights, bulges outward and fades
+   * in under a second (the advection carries nothing into still fluid, so it is a flash rather than a ripple).
+   * options: origin() → {x, y} in CSS px of the field's canvas (null for nowhere), radius() → the base radius in CSS
+   *   px (the wake's own radius reads well), prime (ms, default 5000), period (ms, default 700), onFrame(charge,
+   *   primed) each frame while held and once on release. Nothing happens under reduced motion.
+   */
+  function pulser(field, options = {}) {
+    const o = Object.assign({ origin: null, radius: () => 60, prime: 5000, period: 700, onFrame: null }, options);
+    let down = false, t0 = 0, last = 0, raf = 0, nextThrob = 0, disposed = false;
+    const charge = (now) => clamp((now - t0) / o.prime);
+    const emit = (spec) => field && field.pulse(spec);
+    // The pulse let out on release, from the tap's up to the maximal one. Its radius and push grow with the square
+    // of the charge, so the first second or two stay modest and the last stretch to the cap of 5 is where it gets
+    // big: the tap lights about two of the base radius, the maximal pulse about seven.
+    const fire = (c, at) => {
+      const r = o.radius(), k = c * c;
+      emit({ x: at.x, y: at.y, radius: r * (1.1 + 2.1 * k), strength: 1.4 + 3.6 * k, energy: 0.5 + 0.5 * c });
+    };
+    const step = (now) => {
+      raf = 0;
+      if (disposed || !down) return;
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
+      last = now;
+      const c = charge(now), at = o.origin ? o.origin() : null, r = o.radius();
+      if (at && dt > 0) {
+        if (c < 1) {
+          // Charging: the field is held flowing in toward the point, faster as the charge builds, and glows there. The
+          // glow is added per second of real time, so it settles at the same brightness whatever the frame rate.
+          emit({ x: at.x, y: at.y, radius: r * (1 + 0.6 * c), strength: -2.2 * c, hold: 1 - Math.exp(-6 * dt) });
+          emit({ x: at.x, y: at.y, radius: r * (1.2 + 0.8 * c), energy: (0.5 + 1.3 * c) * dt });
+        } else {
+          // Primed: a glowing core, and every `period` a beat from it — a flash a little bigger than a tap, gone
+          // before the next, and a clear step down from the maximal pulse the release will bring.
+          emit({ x: at.x, y: at.y, radius: r * 0.9, energy: 0.5 * dt });
+          if (now >= nextThrob) { emit({ x: at.x, y: at.y, radius: r * 1.3, strength: 2.2, energy: 0.7 }); nextThrob = now + o.period; }
+        }
+      }
+      if (o.onFrame) o.onFrame(c, c >= 1);
+      raf = requestAnimationFrame(step);
+    };
+    const handle = {
+      get held() { return down; },
+      get charge() { return down ? charge(performance.now()) : 0; },
+      get primed() { return down && charge(performance.now()) >= 1; },
+      press() {
+        if (disposed || down || reduced()) return;
+        down = true; t0 = performance.now(); last = 0; nextThrob = t0 + o.prime;
+        if (!raf) raf = requestAnimationFrame(step);
+      },
+      release() {
+        if (!down) return;
+        down = false;
+        const at = o.origin ? o.origin() : null;
+        if (at) fire(charge(performance.now()), at);
+        if (o.onFrame) o.onFrame(0, false);
+      },
+      /** Lets go without a pulse (the window lost focus mid-hold, say). */
+      cancel() { if (!down) return; down = false; if (o.onFrame) o.onFrame(0, false); },
+      destroy() { disposed = true; down = false; if (raf) cancelAnimationFrame(raf); },
+    };
+    return handle;
+  }
+
+  window.Steer = { dither, glyphField, pulser, needle, logo, LOGO, parseColor, reduced, watchVisible, seekAngle, DITHER_SHAPES, DITHER_TYPES };
 })();

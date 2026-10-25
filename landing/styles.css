@@ -94,6 +94,13 @@ h1 span { position: relative; top: calc(var(--mark) * -.07); }
 .palette button[aria-pressed="true"] { outline: 1px solid var(--ink); outline-offset: 2px; }
 .palette button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* The footnote, bottom left on the copy's gutter, level with the palette (its line is as tall as the boxes). */
+.foot {
+  position: fixed; z-index: 5; margin: 0;
+  left: max(var(--gutter), env(safe-area-inset-left, 0px)); bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  font-family: var(--mono); font-weight: 300; font-size: .72rem; line-height: .8rem; letter-spacing: .02em;
+  color: var(--soft);
+}
 
 
 /* Narrow windows: the copy leaves the corner to the mark and flows below it, in the page's normal flow, so the
@@ -118,9 +125,9 @@ h1 span { position: relative; top: calc(var(--mark) * -.07); }
     padding: 0 0 3.5rem;
   }
 }
-/* Wherever the copy flows and the page scrolls, the palette sits at the foot of the page, under the copy, rather
-   than fixed over it. */
+/* Wherever the copy flows and the page scrolls, the palette and the footnote sit at the foot of the page, under the
+   copy, rather than fixed over it. */
 @media (max-width: 900px), (max-height: 640px) {
   body { position: relative; }
-  .palette { position: absolute; }
+  .palette, .foot { position: absolute; }
 }

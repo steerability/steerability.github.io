@@ -40,6 +40,8 @@
 
 </main>
 
+<footer class="foot">IBM Research</footer>
+
 <div class="palette" role="group" aria-label="Page style" id="palette">
   <button type="button" data-style="moss" aria-label="Moss" title="Moss" style="--sw:#0c2a1d;--sw-glyph:#ff8a3d"></button>
   <button type="button" data-style="paper" aria-label="Paper" title="Paper" style="--sw:#f4f5f7;--sw-glyph:#17181c"></button>
@@ -116,6 +118,33 @@
     };
     fit();
     addEventListener('resize', fit);
+
+    // The space bar's pulse, let out from the pointer (or from the mark's pivot when the pointer is off the page): a
+    // tap gives a small one; holding charges a bigger one and draws the field in toward the point; held for five
+    // seconds the field throbs from the point until the release lets out the biggest pulse the wake allows. The
+    // pulse is the wake's own physics, so like the wake it is strongest on the mark and quieter out by the copy.
+    let pointerAt = null;
+    addEventListener('pointermove', (e) => { pointerAt = { x: e.clientX, y: e.clientY }; }, { passive: true });
+    document.addEventListener('pointerleave', () => { pointerAt = null; }, { passive: true });
+    const pulser = S.pulser(field, {
+      origin: () => {
+        const r = canvas.getBoundingClientRect();
+        if (pointerAt) return { x: pointerAt.x - r.left, y: pointerAt.y - r.top };
+        const c = pivot(r.width, r.height); return { x: c.x, y: c.y };
+      },
+      radius: () => 0.075 * place(innerWidth, innerHeight).size, // the wake's radius, as fit() sets it, in CSS px
+      prime: 5000, period: 700,
+    });
+    const typing = (t) => !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    const isSpace = (e) => e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar';
+    addEventListener('keydown', (e) => {
+      if (!isSpace(e) || typing(e.target) || e.altKey || e.ctrlKey || e.metaKey) return;
+      e.preventDefault(); // neither a page scroll nor, with a palette box focused, a click on the key's release
+      if (!e.repeat) pulser.press();
+    });
+    addEventListener('keyup', (e) => { if (!isSpace(e) || typing(e.target)) return; e.preventDefault(); pulser.release(); });
+    addEventListener('blur', () => pulser.cancel());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) pulser.cancel(); });
 
     // The palette: a box per style, in the order they cycle; the first is the default (its tokens live on :root,
     // so it needs no attribute). The glyph ink is re-read from the new style's tokens.
