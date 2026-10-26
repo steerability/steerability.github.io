@@ -2,9 +2,12 @@
    The Steerability Challenge — organisms-api.js
    ------------------------------------------------------------
    The "Model organisms API" panel in the leaderboard pop-up: a
-   collapsible block below the board for signed-in people, with
-   their API key for the organisms gateway, their rate limits, today's
-   usage, a 14-day history and their recent requests.
+   collapsible block below the board for signed-in people. One section
+   per team (a Hugging Face organization they belong to): the team's
+   shared API key, the person's own key on the team's budget, the
+   team's rate limits, today's usage, a 14-day history and the team's
+   recent requests (with who made each). Organizers get a personal
+   section instead.
 
    Data: GET <CONFIG.organismsApi>/api/me with the session's Hugging
    Face access token (the gateway verifies it with Hugging Face and
@@ -56,20 +59,28 @@
   }
 
   /* ---------- data ---------- */
+  // rotate: null, or {team: <org>|null, which: 'team'|'member'} (team null = the personal key)
   function load(session, rotate) {
     if (mockSession(session)) {
       return getJSON('mock/organisms/me.json', { cache: 'no-cache' }).then(function (r) {
         if (r.status !== 200 || !r.body) throw new Error('fixture missing');
-        if (rotate) { r.body.api_key = 'org-mockNewKey_' + Math.random().toString(36).slice(2, 10); r.body.key_fresh = true; }
+        if (rotate) {
+          var fresh = { api_key: 'org-mockNewKey_' + Math.random().toString(36).slice(2, 10), key_prefix: 'org-mockNew', created: Date.now() / 1000, fresh: true };
+          if (!rotate.team && r.body.personal) r.body.personal.key = fresh;
+          r.body.teams.forEach(function (t) { if (t.org === rotate.team) t[rotate.which === 'team' ? 'team_key' : 'member_key'] = fresh; });
+        }
         return { status: 200, body: r.body };
       });
     }
     var api = apiBase();
     if (!api) return Promise.resolve({ status: 0 });
-    return getJSON(api + '/api/me' + (rotate ? '/key' : ''), {
-      method: rotate ? 'POST' : 'GET', cache: 'no-store',
-      headers: { Authorization: 'Bearer ' + session.accessToken }
-    });
+    var url = api + '/api/me';
+    if (rotate) {
+      url += '/key';
+      if (rotate.team) url += '?' + new URLSearchParams({ team: rotate.team, which: rotate.which }).toString();
+    }
+    return getJSON(url, { method: rotate ? 'POST' : 'GET', cache: 'no-store',
+                          headers: { Authorization: 'Bearer ' + session.accessToken } });
   }
   function withRetry(fn) {
     return fn().catch(function (err) {
@@ -94,99 +105,93 @@
     fill.style.width = pct(used, max) + '%';
   }
 
-  function renderKeyRow(body, d) {
-    var row = add(body, el('div', 'lb-api-keyrow'));
-    add(row, el('span', 'lb-api-label', 'API key'));
-    var code = add(row, el('code', 'lb-api-key', d.api_key ? maskKey(d.api_key) : 'not available'));
-    code.title = d.api_key ? (d.key_fresh ? 'New key' : 'Created ' + when(d.key_created)) : '';
+  // One key line: label, the key (masked; Show reveals it), Copy, Rotate. `rotate` is null when this person may not
+  // rotate it; `onReveal` tells the section's snippet which key to show.
+  function renderKeyRow(parent, label, k, rotate, onReveal, note) {
+    var row = add(parent, el('div', 'lb-api-keyrow'));
+    add(row, el('span', 'lb-api-label', label));
+    if (!k) { add(row, el('span', 'soft', 'not available')); return; }
+    var code = add(row, el('code', 'lb-api-key', k.api_key ? maskKey(k.api_key) : 'not available'));
+    code.title = k.api_key ? (k.fresh ? 'New key' : 'Created ' + when(k.created)) : '';
     var revealed = false;
-    if (d.api_key) {
+    if (k.api_key) {
       var show = add(row, el('button', 'link-btn', 'Show'));
       show.type = 'button';
       show.addEventListener('click', function () {
         revealed = !revealed;
-        code.textContent = revealed ? d.api_key : maskKey(d.api_key);
+        code.textContent = revealed ? k.api_key : maskKey(k.api_key);
         show.textContent = revealed ? 'Hide' : 'Show';
-        renderSnippet(d, revealed);
+        if (onReveal) onReveal(revealed ? k.api_key : null);
       });
       var copy = add(row, el('button', 'link-btn', 'Copy'));
       copy.type = 'button';
       copy.addEventListener('click', function () {
         var done = function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy'; }, 1500); };
-        if (navigator.clipboard) navigator.clipboard.writeText(d.api_key).then(done, function () { window.prompt('Your API key', d.api_key); });
-        else window.prompt('Your API key', d.api_key);
+        if (navigator.clipboard) navigator.clipboard.writeText(k.api_key).then(done, function () { window.prompt('API key', k.api_key); });
+        else window.prompt('API key', k.api_key);
       });
     }
-    var rotate = add(row, el('button', 'link-btn lb-api-rotate', 'Rotate'));
-    rotate.type = 'button';
-    rotate.title = 'Revoke this key and get a new one';
-    rotate.addEventListener('click', function () {
-      if (state.busy || !window.confirm('Revoke your current key and mint a new one? Anything using the old key stops working.')) return;
-      refresh(true);
-    });
-    if (d.key_fresh) add(row, el('span', 'lb-tag', 'new'));
-    if (d.key_fresh && d.api_key) add(body, el('p', 'soft lb-api-note', 'This key was just minted for you. It stays available here while you are signed in.'));
+    if (rotate) {
+      var btn = add(row, el('button', 'link-btn lb-api-rotate', 'Rotate'));
+      btn.type = 'button';
+      btn.title = 'Revoke this key and get a new one';
+      btn.addEventListener('click', function () {
+        if (state.busy || !window.confirm(rotate.which === 'team'
+          ? 'Revoke the team\'s shared key and mint a new one? Everyone on the team using the old key stops working.'
+          : 'Revoke this key and mint a new one? Anything using the old key stops working.')) return;
+        refresh(rotate);
+      });
+    }
+    if (k.fresh) add(row, el('span', 'lb-tag', 'new'));
+    if (note) add(row, el('span', 'soft lb-api-keynote', note));
   }
 
-  var snippetEl = null;
-  function renderSnippet(d, revealed) {
-    if (!snippetEl) return;
-    var key = revealed && d.api_key ? d.api_key : 'org-…';
-    snippetEl.textContent =
-      'from openai import OpenAI\n' +
-      'client = OpenAI(base_url="' + d.base_url + '", api_key="' + key + '")\n' +
+  function snippetText(d, key) {
+    return 'from openai import OpenAI\n' +
+      'client = OpenAI(base_url="' + d.base_url + '", api_key="' + (key || 'org-…') + '")\n' +
       'r = client.chat.completions.create(model="' + (d.models[0] || 'lying-qwen') + '",\n' +
       '    messages=[{"role": "user", "content": "How many moons does Mars have?"}], max_tokens=200)\n' +
       'print(r.choices[0].message.content)';
   }
 
-  function renderData(body, d) {
-    body.textContent = '';
-    renderKeyRow(body, d);
-
-    var ep = add(body, el('div', 'lb-api-row'));
-    add(ep, el('span', 'lb-api-label', 'Endpoint'));
-    add(ep, el('code', null, d.base_url));
-    var md = add(body, el('div', 'lb-api-row'));
-    add(md, el('span', 'lb-api-label', 'Models'));
-    add(md, el('span', null, d.models.length ? d.models.join(', ') : 'none online right now'));
-
-    var cols = add(body, el('div', 'lb-api-cols'));
+  // A budget's usage: meters against the limits (or the admin wording), the 14-day bars, the recent requests
+  function renderBudget(parent, d, b, withUser) {
+    var cols = add(parent, el('div', 'lb-api-cols'));
     var left = add(cols, el('div', 'lb-api-col'));
-    add(left, el('h3', 'lb-api-h', d.admin ? 'Usage today (no rate limits: admin)' : 'Usage today & limits'));
-    var t = d.today || {};
-    if (d.limits) {
-      meter(left, 'Tokens today', (t.prompt_tokens || 0) + (t.completion_tokens || 0), d.limits.tokens_per_day);
-      meter(left, 'In flight now', d.inflight || 0, d.limits.max_inflight, 'requests');
-      var lim = add(left, el('p', 'soft lb-api-limits'));
-      lim.textContent = num(d.limits.tokens_per_minute) + ' tokens/min · ' + num(d.limits.max_tokens_per_request) +
-        ' max_tokens per request · ' + num(t.requests) + ' requests today' + (t.rejected ? ' · ' + num(t.rejected) + ' rate-limited' : '');
+    add(left, el('h3', 'lb-api-h', b.limits ? 'Usage today & limits' : 'Usage today (no rate limits: admin)'));
+    var t = b.today || {};
+    if (b.limits) {
+      meter(left, 'Tokens today', (t.prompt_tokens || 0) + (t.completion_tokens || 0), b.limits.tokens_per_day);
+      meter(left, 'In flight now', b.inflight || 0, b.limits.max_inflight, 'requests');
+      add(left, el('p', 'soft lb-api-limits', num(b.limits.tokens_per_minute) + ' tokens/min · ' +
+        num(b.limits.max_tokens_per_request || d.max_tokens_per_request) + ' max_tokens per request · ' +
+        num(t.requests) + ' requests today' + (t.rejected ? ' · ' + num(t.rejected) + ' rate-limited' : '')));
     } else {
-      add(left, el('p', 'soft lb-api-limits', num(t.requests) + ' requests · ' + num((t.prompt_tokens || 0) + (t.completion_tokens || 0)) +
-        ' tokens today · ' + num(d.inflight || 0) + ' in flight'));
+      add(left, el('p', 'soft lb-api-limits', num(t.requests) + ' requests · ' +
+        num((t.prompt_tokens || 0) + (t.completion_tokens || 0)) + ' tokens today · ' + num(b.inflight || 0) + ' in flight'));
     }
-
     var right = add(cols, el('div', 'lb-api-col'));
     add(right, el('h3', 'lb-api-h', 'Last 14 days (requests)'));
     var hist = add(right, el('div', 'lb-api-hist'));
-    var max = Math.max.apply(null, [1].concat((d.days || []).map(function (x) { return x.requests; })));
-    (d.days || []).forEach(function (x) {
-      var b = add(hist, el('div', 'lb-api-hist-bar' + (x.rejected ? ' has-rejected' : '')));
-      b.style.height = Math.max(2, Math.round(100 * x.requests / max)) + '%';
-      b.title = x.day + ': ' + num(x.requests) + ' requests, ' + num(x.prompt_tokens + x.completion_tokens) + ' tokens' +
+    var max = Math.max.apply(null, [1].concat((b.days || []).map(function (x) { return x.requests; })));
+    (b.days || []).forEach(function (x) {
+      var bar = add(hist, el('div', 'lb-api-hist-bar' + (x.rejected ? ' has-rejected' : '')));
+      bar.style.height = Math.max(2, Math.round(100 * x.requests / max)) + '%';
+      bar.title = x.day + ': ' + num(x.requests) + ' requests, ' + num(x.prompt_tokens + x.completion_tokens) + ' tokens' +
         (x.rejected ? ', ' + num(x.rejected) + ' rate-limited' : '');
     });
-
-    if (d.recent && d.recent.length) {
-      var det = add(body, el('details', 'lb-api-recent'));
+    if (b.recent && b.recent.length) {
+      var det = add(parent, el('details', 'lb-api-recent'));
       add(det, el('summary', null, 'Recent requests'));
       var table = add(det, el('table'));
-      var thead = add(table, el('thead')); var hr = add(thead, el('tr'));
-      ['time', 'model', 'status', 'prompt', 'completion', 'ms'].forEach(function (h) { add(hr, el('th', null, h)); });
+      var hr = add(add(table, el('thead')), el('tr'));
+      (withUser ? ['time', 'who', 'model', 'status', 'prompt', 'completion', 'ms'] : ['time', 'model', 'status', 'prompt', 'completion', 'ms'])
+        .forEach(function (h) { add(hr, el('th', null, h)); });
       var tb = add(table, el('tbody'));
-      d.recent.forEach(function (r) {
+      b.recent.forEach(function (r) {
         var tr = add(tb, el('tr'));
         add(tr, el('td', null, when(r.ts)));
+        if (withUser) add(tr, el('td', null, /^team:/.test(r.hf_user || '') ? 'team key' : (r.hf_user || '')));
         add(tr, el('td', null, r.model || ''));
         var st = add(tr, el('td', r.status === 200 ? '' : (r.status === 429 ? 'is-warn' : 'is-bad'), String(r.status)));
         if (r.reason) st.title = r.reason;
@@ -196,12 +201,58 @@
       });
       det.addEventListener('toggle', fit);
     }
+  }
 
-    var snip = add(body, el('details', 'lb-api-snippet'));
+  function renderSnippetBlock(parent, d) {
+    var snip = add(parent, el('details', 'lb-api-snippet'));
     add(snip, el('summary', null, 'Example (Python, OpenAI SDK)'));
-    snippetEl = add(snip, el('pre'));
-    renderSnippet(d, false);
+    var pre = add(snip, el('pre', null, snippetText(d, null)));
     snip.addEventListener('toggle', fit);
+    return function (key) { pre.textContent = snippetText(d, key); };
+  }
+
+  function renderTeam(body, d, t) {
+    var sec = add(body, el('section', 'lb-api-team'));
+    sec.setAttribute('data-org', t.org);
+    var h = add(sec, el('h3', 'lb-api-team-h'));
+    add(h, el('span', null, 'Team: ' + (t.name || t.org)));
+    add(h, el('span', 'lb-tag', t.org));
+    if (t.role) add(h, el('span', 'lb-tag', t.role));
+    var onReveal = null;
+    var mine = add(sec, el('div', 'lb-api-member'));
+    renderKeyRow(mine, 'Your key', t.member_key, { team: t.org, which: 'member' }, function (k) { if (onReveal) onReveal(k); },
+      'yours alone; counts against the team\'s budget');
+    var shared = add(sec, el('div', 'lb-api-shared'));
+    renderKeyRow(shared, 'Team key', t.team_key, t.can_rotate_team_key ? { team: t.org, which: 'team' } : null, null,
+      'shared by the whole team');
+    renderBudget(sec, d, t, true);
+    onReveal = renderSnippetBlock(sec, d);
+  }
+
+  function renderPersonal(body, d, p) {
+    var sec = add(body, el('section', 'lb-api-team lb-api-personal'));
+    add(add(sec, el('h3', 'lb-api-team-h')), el('span', null, d.admin ? 'Personal key (organizer)' : 'Personal key'));
+    var onReveal = null;
+    var mine = add(sec, el('div', 'lb-api-member'));
+    renderKeyRow(mine, 'Your key', p.key, { team: null, which: 'member' }, function (k) { if (onReveal) onReveal(k); });
+    renderBudget(sec, d, p, false);
+    onReveal = renderSnippetBlock(sec, d);
+  }
+
+  function renderData(body, d) {
+    body.textContent = '';
+    var ep = add(body, el('div', 'lb-api-row'));
+    add(ep, el('span', 'lb-api-label', 'Endpoint'));
+    add(ep, el('code', null, d.base_url));
+    var md = add(body, el('div', 'lb-api-row'));
+    add(md, el('span', 'lb-api-label', 'Models'));
+    add(md, el('span', null, d.models.length ? d.models.join(', ') : 'none online right now'));
+    (d.teams || []).forEach(function (t) { renderTeam(body, d, t); });
+    if (d.personal) renderPersonal(body, d, d.personal);
+    if (!(d.teams || []).length && !d.personal) add(body, el('p', 'soft', 'No team found for this account.'));
+    if ((d.teams || []).some(function (t) { return t.team_key && t.team_key.fresh; }) || (d.personal && d.personal.key && d.personal.key.fresh)) {
+      add(body, el('p', 'soft lb-api-note', 'Newly minted keys stay available here while you are signed in.'));
+    }
     fit();
   }
 
@@ -210,14 +261,15 @@
     var body = panel.querySelector('.lb-api-body');
     var s = state.session;
     state.busy = true;
-    message(body, rotate ? 'Rotating your key…' : 'Loading your API access…');
+    message(body, rotate ? 'Rotating the key…' : 'Loading your API access…');
     withRetry(function () { return load(s, rotate); }).then(function (r) {
       state.busy = false;
       if (state.session !== s) return;   // signed out meanwhile
       if (r.status === 200 && r.body) { state.data = r.body; renderData(body, r.body); return; }
       if (r.status === 0) return message(body, 'The organisms API is not configured for this site yet.');
       if (r.status === 401) return message(body, 'Your Hugging Face sign-in is no longer accepted by the organisms API. Sign out and sign in again.', 'lb-error');
-      if (r.status === 403) return message(body, 'This Hugging Face account is not enabled for the organisms API yet.', 'lb-error');
+      if (r.status === 403) return message(body, (r.body && r.body.detail) ||
+        'This Hugging Face account is not a member of a team organization; the organisms API is for registered teams.', 'lb-error');
       if (r.status === 503) return message(body, 'The organisms API is not ready yet. Please try again later.');
       message(body, 'The organisms API answered ' + r.status + '. Please try again later.', 'lb-error');
     }).catch(function () {
@@ -240,16 +292,16 @@
     add(panel, el('div', 'lb-api-body'));
     panel.addEventListener('toggle', function () {
       storageSet(OPEN_KEY, panel.open ? '1' : '0');
-      if (panel.open && !state.data && !state.busy) refresh(false);
+      if (panel.open && !state.data && !state.busy) refresh(null);
       fit();
     });
-    if (panel.open) refresh(false);
+    if (panel.open) refresh(null);
   }
 
   function clear() {
     root.textContent = '';
-    state.session = null; state.data = null; state.busy = false; snippetEl = null;
+    state.session = null; state.data = null; state.busy = false;
   }
 
-  window.SCOrganismsApi = { render: render, clear: clear, refresh: function () { refresh(false); } };
+  window.SCOrganismsApi = { render: render, clear: clear, refresh: function () { refresh(null); } };
 })();

@@ -184,7 +184,12 @@ with sync_playwright() as p:
             organisms["me"].append(auth)
         elif url.path == "/api/me/key" and request.method == "POST":
             organisms["rotate"] += 1
-            body = {**body, "api_key": "org-rotatedKEY0123456789abcdefghijklmnopqrst", "key_fresh": True}
+            q = {k: v[0] for k, v in parse_qs(url.query).items()}
+            organisms["rotated"] = q
+            fresh = {"api_key": "org-rotatedKEY0123456789abcdefghijklmnopqrst", "key_prefix": "org-rotated", "created": 0, "fresh": True}
+            for t in body["teams"]:
+                if t["org"] == q.get("team"):
+                    t["team_key" if q.get("which") == "team" else "member_key"] = fresh
         else:
             route.fulfill(status=404, headers=cors, content_type="application/json", body='{"detail":"not found"}'); return
         route.fulfill(status=200, headers=cors, content_type="application/json", body=json.dumps(body))
@@ -1376,14 +1381,18 @@ with sync_playwright() as p:
     pg.wait_for_selector("#lb-api-panel")
     check(not pg.locator("#lb-api-panel").evaluate("e => e.open"), "organisms: the panel starts collapsed")
     pg.click("#lb-api-panel > summary")
-    pg.wait_for_selector(".lb-api-key")
-    check(pg.inner_text(".lb-api-key") == "org-mock…stuv", "organisms (mock): the fixture key, masked")
-    pg.click(".lb-api-keyrow .link-btn:has-text('Show')")
-    check(pg.inner_text(".lb-api-key").startswith("org-mockKEY0123456789"), "organisms (mock): Show reveals it")
+    pg.wait_for_selector(".lb-api-member .lb-api-key")
+    check(pg.locator(".lb-api-team").count() == 1 and "Example Team" in pg.inner_text(".lb-api-team-h"),
+          "organisms (mock): one section, the team's")
+    check(pg.inner_text(".lb-api-member .lb-api-key") == "org-mock…stuv" and pg.inner_text(".lb-api-shared .lb-api-key") == "org-mock…nopq",
+          "organisms (mock): the member's and the team's keys, masked")
+    pg.click(".lb-api-member .link-btn:has-text('Show')")
+    check(pg.inner_text(".lb-api-member .lb-api-key").startswith("org-mockKEY0123456789"), "organisms (mock): Show reveals it")
     check(pg.locator(".lb-api-meter").count() == 2 and pg.locator(".lb-api-hist-bar").count() == 14,
-          "organisms (mock): two meters and fourteen bars")
+          "organisms (mock): two meters and fourteen bars for the team's budget")
     pg.click(".lb-api-recent > summary")
-    check(pg.locator(".lb-api-recent tbody tr").count() == 9, "organisms (mock): the recent requests")
+    check(pg.locator(".lb-api-recent tbody tr").count() == 9 and "grace" in pg.inner_text(".lb-api-recent tbody"),
+          "organisms (mock): the team's recent requests, with who made them")
     check(not organisms["me"], "organisms (mock): the gateway was not asked")
     shot(pg, "19-organisms-mock", "#lb-api", "#lb-api")
     pg.click("#hf-logout")
@@ -1397,14 +1406,19 @@ with sync_playwright() as p:
     pg.wait_for_selector("#hf-login")
     pg.evaluate("localStorage.setItem('sc:api-open', '1')")
     pg.click("#hf-login")
-    pg.wait_for_selector(".lb-api-key", timeout=15000)
+    pg.wait_for_selector(".lb-api-member .lb-api-key", timeout=15000)
     check(len(organisms["me"]) == 1 and organisms["me"][0] == "Bearer hf_oauth_mock_token",
           "organisms: /api/me asked once, with the session's bearer token")
-    check(pg.inner_text(".lb-api-key") == "org-mock…stuv", "organisms: the key from the gateway, masked")
+    check(pg.inner_text(".lb-api-member .lb-api-key") == "org-mock…stuv", "organisms: the member's key from the gateway, masked")
     pg.once("dialog", lambda d: d.accept())
-    pg.click(".lb-api-rotate")
-    pg.wait_for_function("document.querySelector('.lb-api-key') && document.querySelector('.lb-api-key').textContent === 'org-rota…qrst'")
-    check(organisms["rotate"] == 1, "organisms: Rotate posts /api/me/key (after confirming) and shows the new key")
+    pg.click(".lb-api-member .lb-api-rotate")
+    pg.wait_for_function("document.querySelector('.lb-api-member .lb-api-key') && document.querySelector('.lb-api-member .lb-api-key').textContent === 'org-rota…qrst'")
+    check(organisms["rotate"] == 1 and organisms["rotated"] == {"team": "example-team", "which": "member"},
+          "organisms: Rotate posts /api/me/key?team=example-team&which=member (after confirming) and shows the new key")
+    pg.once("dialog", lambda d: d.accept())
+    pg.click(".lb-api-shared .lb-api-rotate")
+    pg.wait_for_function("document.querySelector('.lb-api-shared .lb-api-key') && document.querySelector('.lb-api-shared .lb-api-key').textContent === 'org-rota…qrst'")
+    check(organisms["rotated"] == {"team": "example-team", "which": "team"}, "organisms: the team key rotates with which=team")
     for answer, text in (("401", "no longer accepted"), ("403", "not enabled"), ("refused", "didn't answer")):
         organisms["answer"] = answer
         pg.evaluate("SCOrganismsApi.refresh()")

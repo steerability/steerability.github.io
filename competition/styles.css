@@ -526,3 +526,7 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-api-recent td.num, .lb-api-recent th.num{ text-align:right; }
 .lb-api-recent td.is-warn{ color:#9A6700; } .lb-api-recent td.is-bad{ color:#B3261E; }
 .lb-api-snippet pre{ margin:.5rem 0 0; font-size:.78rem; overflow-x:auto; }
+.lb-api-team{ border-top:1px solid var(--line); margin-top:1rem; padding-top:.6rem; }
+.lb-api-team:first-of-type{ border-top:0; }
+.lb-api-team-h{ display:flex; flex-wrap:wrap; align-items:baseline; gap:.4rem .6rem; font-size:1rem; font-weight:600; margin:.4rem 0 .2rem; }
+.lb-api-keynote{ font-size:.8rem; }
