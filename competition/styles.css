@@ -489,9 +489,9 @@ pre .c{ color:#8A8C96; font-style:italic; }
   *,*::before,*::after{ transition:none !important; }
 }
 
-/* The model-organisms API panel in the pop-up (organisms-api.js): a collapsible hairline block under the who line.
+/* The model-organisms API panel in the pop-up (organisms-api.js): a collapsible hairline block below the board.
    Mono for the key, the endpoint and numbers; meters for today's use against the day's limit; 14 thin bars */
-.lb-api{ border:1px solid var(--line); margin:0 0 1.1rem; }
+.lb-api{ border:1px solid var(--line); margin:1.6rem 0 0; }
 .lb-api > summary{ cursor:pointer; padding:.6rem .9rem; display:flex; flex-wrap:wrap; gap:.4rem .8rem; align-items:baseline; list-style:none; }
 .lb-api > summary::-webkit-details-marker{ display:none; }
 .lb-api > summary::before{ content:"+"; font-family:var(--font-mono); color:var(--soft); width:1em; }

@@ -2,7 +2,7 @@
    The Steerability Challenge — organisms-api.js
    ------------------------------------------------------------
    The "Model organisms API" panel in the leaderboard pop-up: a
-   collapsible block under the "who" line for signed-in people, with
+   collapsible block below the board for signed-in people, with
    their API key for the organisms gateway, their rate limits, today's
    usage, a 14-day history and their recent requests.
 

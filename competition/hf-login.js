@@ -22,13 +22,14 @@
                           the code for a token (POST /oauth/token), fetch
                           /oauth/userinfo, keep a small session, clean the URL
      3. renderWindow()    the "who" line (handle, tags, sign out), the
-                          model-organisms API panel (organisms-api.js: the
-                          person's key, usage and limits from CONFIG.organismsApi,
-                          asked with the session's access token) and the
                           private view (leaderboard/private-view.js, which
                           reads the results API at CONFIG.api and opens a
                           team's results in its row of the board; without
-                          it, or without CONFIG.api, a placeholder)
+                          it, or without CONFIG.api, a placeholder) and, below
+                          the board, the model-organisms API panel
+                          (organisms-api.js: the person's key, usage and limits
+                          from CONFIG.organismsApi, asked with the session's
+                          access token)
 
    Storage
      The session and the pending verifier live in localStorage. huggingface.co

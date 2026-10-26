@@ -388,8 +388,8 @@ with sync_playwright() as p:
     check(win.is_visible("#lb-weeks") and win.inner_text("#lb-week") == "Week 2" and win.is_enabled("#lb-later") and win.is_enabled("#lb-earlier"),
           "pop-up: the picker reads 'Week 2', ← enabled, → enabled (a week is being evaluated after it)")
     check(win.is_hidden("#lb-caption") and win.locator(".lb-status").count() == 0
-          and win.locator("#lb-public ~ :not(.lb-detail-standalone):not(#lb-caption)").count() == 0,
-          "pop-up: nothing under a published board but the blocks (the pending week's line is hidden), no status block above it")
+          and win.locator("#lb-public ~ :not(.lb-detail-standalone):not(#lb-caption):not(#lb-api)").count() == 0,
+          "pop-up: nothing under a published board but the blocks and the organisms panel (the pending week's line is hidden), no status block above it")
     arrow, a_s = win.locator("#lb-earlier"), win.locator("#lb-earlier").evaluate("e => getComputedStyle(e)")
     check(all(a_s[k] == rs[k] for k in ("backgroundColor", "color", "fontFamily", "fontWeight", "boxShadow", "borderTopColor"))
           and arrow.inner_text() == "←" and win.inner_text("#lb-later") == "→",
