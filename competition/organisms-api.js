@@ -9,7 +9,11 @@
    Data: GET <CONFIG.organismsApi>/api/me with the session's Hugging
    Face access token (the gateway verifies it with Hugging Face and
    mints a key on the first visit); POST /api/me/key rotates the key.
-   In mock mode (hf-login.js) it reads leaderboard/mock/organisms/me.json.
+   A mock session (?mock=participant etc., hf-login.js) reads
+   leaderboard/mock/organisms/me.json instead and says so in the
+   header; a real sign-in always asks the gateway, even while the
+   board is in mock mode, so real usage is never confused with the
+   fixture's.
 
    hf-login.js calls SCOrganismsApi.render(session, roles) when a
    session is shown and .clear() when it ends, like SCPrivateView.
@@ -27,7 +31,8 @@
   /* ---------- helpers ---------- */
   function cfg() { var l = window.SCLogin; return (l && l.config) || {}; }
   function apiBase() { return cfg().organismsApi || null; }
-  function mockMode() { var l = window.SCLogin; return !!(l && l.isMock && l.isMock()); }
+  // The fixture stands in for a mock session only (its token is not real); a real session always asks the gateway
+  function mockSession(session) { return !!(session && session.mock); }
   function fit() { var l = window.SCLogin; if (l && l.fitWindow) setTimeout(l.fitWindow, 0); }
   function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
@@ -52,7 +57,7 @@
 
   /* ---------- data ---------- */
   function load(session, rotate) {
-    if (mockMode()) {
+    if (mockSession(session)) {
       return getJSON('mock/organisms/me.json', { cache: 'no-cache' }).then(function (r) {
         if (r.status !== 200 || !r.body) throw new Error('fixture missing');
         if (rotate) { r.body.api_key = 'org-mockNewKey_' + Math.random().toString(36).slice(2, 10); r.body.key_fresh = true; }
@@ -231,6 +236,7 @@
     var sum = add(panel, el('summary'));
     add(sum, el('span', 'lb-api-title', 'Model organisms API'));
     add(sum, el('span', 'soft', 'your key, usage and rate limits'));
+    if (mockSession(session)) add(sum, el('span', 'lb-tag', 'mock data'));
     add(panel, el('div', 'lb-api-body'));
     panel.addEventListener('toggle', function () {
       storageSet(OPEN_KEY, panel.open ? '1' : '0');
