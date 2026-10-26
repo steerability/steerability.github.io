@@ -15,7 +15,6 @@
       "role": "write",
       "budget": "team:example-team",
       "limits": {
-        "tokens_per_minute": 20000,
         "tokens_per_day": 10000,
         "max_inflight": 4,
         "max_tokens_per_request": 1024,
@@ -170,7 +169,7 @@
           "prompt_tokens": 0,
           "completion_tokens": 0,
           "latency_ms": 2,
-          "reason": "rate limit: 60000 tokens/min"
+          "reason": "daily token quota exhausted (10000/10000 used)"
         },
         {
           "id": 6,

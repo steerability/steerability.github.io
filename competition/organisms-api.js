@@ -193,8 +193,8 @@
       if (b.limits.tokens_per_week && b.week) meter(left, 'Tokens this week', b.week.tokens || 0, b.limits.tokens_per_week, null,
         m ? ((m.week || {}).tokens || 0) : null);
       meter(left, 'In flight now', b.inflight || 0, b.limits.max_inflight, 'requests', m ? (m.inflight || 0) : null);
-      add(left, el('p', 'soft lb-api-limits', num(b.limits.tokens_per_minute) + ' tokens/min · ' +
-        num(b.limits.max_tokens_per_request || d.max_tokens_per_request) + ' max_tokens per request · ' +
+      add(left, el('p', 'soft lb-api-limits', num(b.limits.max_tokens_per_request || d.max_tokens_per_request) +
+        ' max_tokens per request · ' +
         (m ? 'you ' + num(mt.requests) + ' of the team\'s ' + num(t.requests) + ' requests today'
            : num(t.requests) + ' requests today') + (t.rejected ? ' · ' + num(t.rejected) + ' rate-limited' : '')));
       if (m) add(left, el('p', 'soft lb-api-limits lb-api-younote', 'The limits apply to the whole team\'s use (grey); your share is in black.'));
