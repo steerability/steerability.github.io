@@ -1397,6 +1397,22 @@ with sync_playwright() as p:
     pg.click(".lb-api-recent > summary")
     check(pg.locator(".lb-api-recent tbody tr").count() == 9 and "grace" in pg.inner_text(".lb-api-recent tbody"),
           "organisms (mock): the team's recent requests, with who made them")
+    # the Team / You switch: your share in ink inside the team's dimmed use, your requests only; remembered
+    pg.click(".lb-api-switch-btn:has-text('You')")
+    pg.wait_for_selector(".lb-api-bar-mine")
+    check(pg.locator(".lb-api-bar-fill.is-dim").count() == 3 and pg.locator(".lb-api-bar-mine").count() == 3
+          and pg.locator(".lb-api-hist-mine").count() == 14 and "you 3,000" in pg.inner_text(".lb-api-meter")
+          and "team 8,325 / 30,000" in pg.inner_text(".lb-api-meter"),
+          "organisms (mock): 'You' dims the team's meters and bars and draws your share, with both numbers")
+    check(pg.locator(".lb-api-recent tbody tr").count() == 4 and "grace" not in pg.inner_text(".lb-api-recent tbody")
+          and pg.inner_text(".lb-api-recent > summary") == "Your recent requests",
+          "organisms (mock): 'You' lists your requests only")
+    pg.reload()
+    pg.wait_for_selector(".lb-api-bar-mine")
+    check(pg.locator(".lb-api-switch-btn.is-on").inner_text() == "You", "organisms (mock): the view is remembered")
+    pg.click(".lb-api-switch-btn:has-text('Team')")
+    pg.wait_for_function("!document.querySelector('.lb-api-bar-mine')")
+    check(pg.locator(".lb-api-bar-fill.is-dim").count() == 0, "organisms (mock): back to the team view")
     check(not organisms["me"], "organisms (mock): the gateway was not asked")
     shot(pg, "19-organisms-mock", "#lb-api", "#lb-api")
     pg.click("#hf-logout")

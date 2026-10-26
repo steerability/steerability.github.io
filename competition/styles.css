@@ -509,12 +509,27 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-api-meter-head{ display:flex; justify-content:space-between; font-size:.85rem; gap:1rem; }
 .lb-api-meter-val{ font-family:var(--font-mono); font-size:.78rem; }
 .lb-api-bar{ height:6px; background:var(--lb-shade); border:1px solid var(--line); margin-top:.25rem; }
+.lb-api-bar{ position:relative; }
 .lb-api-bar-fill{ height:100%; background:var(--ink); }
 .lb-api-bar-fill.is-high{ background:#B3261E; }
+.lb-api-bar-fill.is-dim{ background:#C9CBD3; }           /* the "you" view: the team's use, dimmed */
+.lb-api-bar-fill.is-dim.is-high{ background:#E3B0AB; }
+.lb-api-bar-mine{ position:absolute; left:0; top:0; height:100%; background:var(--ink); }   /* your share, in ink */
+.lb-api-switch{ margin-left:auto; display:inline-flex; border:1px solid var(--line); }
+.lb-api-switch-btn{ font:inherit; font-size:.75rem; font-family:var(--font-mono); padding:.1em .6em; background:none; border:0; color:var(--soft); cursor:pointer; }
+.lb-api-switch-btn + .lb-api-switch-btn{ border-left:1px solid var(--line); }
+.lb-api-switch-btn.is-on{ background:var(--ink); color:#fff; cursor:default; }
+.lb-api-switch-btn:not(.is-on):hover{ color:var(--accent); }
+.lb-api-h{ display:flex; align-items:center; gap:.6rem; }
+.lb-api-younote{ font-size:.8rem; }
 .lb-api-limits{ font-size:.85rem; }
 .lb-api-hist{ display:flex; align-items:flex-end; gap:3px; height:64px; border-bottom:1px solid var(--line); padding-bottom:1px; }
-.lb-api-hist-bar{ flex:1; background:var(--ink); min-height:2px; }
+.lb-api-hist-cell{ flex:1; position:relative; height:100%; display:flex; align-items:flex-end; }
+.lb-api-hist-bar{ width:100%; background:var(--ink); min-height:2px; }
 .lb-api-hist-bar.has-rejected{ background:#B3261E; }
+.lb-api-hist-bar.is-dim{ background:#C9CBD3; }
+.lb-api-hist-bar.is-dim.has-rejected{ background:#E3B0AB; }
+.lb-api-hist-mine{ position:absolute; left:0; right:0; bottom:0; background:var(--ink); }
 .lb-api-recent, .lb-api-snippet{ margin-top:1rem; }
 .lb-api-recent > summary, .lb-api-snippet > summary{ cursor:pointer; font-size:.85rem; color:var(--soft); }
 .lb-api-recent table{ width:100%; border-collapse:collapse; font-size:.8rem; margin-top:.4rem; }

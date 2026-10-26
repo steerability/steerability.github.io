@@ -269,6 +269,177 @@
         "key_prefix": "org-mockKEY0",
         "created": 1792772295.6977808,
         "fresh": false
+      },
+      "mine": {
+        "today": {
+          "day": "2026-10-26",
+          "requests": 4,
+          "prompt_tokens": 100,
+          "completion_tokens": 2900,
+          "rejected": 0
+        },
+        "week": {
+          "tokens": 12800
+        },
+        "days": [
+          {
+            "day": "2026-10-13",
+            "requests": 0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-14",
+            "requests": 1,
+            "prompt_tokens": 25,
+            "completion_tokens": 90,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-15",
+            "requests": 4,
+            "prompt_tokens": 100,
+            "completion_tokens": 360,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-16",
+            "requests": 2,
+            "prompt_tokens": 50,
+            "completion_tokens": 180,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-17",
+            "requests": 0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-18",
+            "requests": 0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-19",
+            "requests": 7,
+            "prompt_tokens": 175,
+            "completion_tokens": 630,
+            "rejected": 1
+          },
+          {
+            "day": "2026-10-20",
+            "requests": 5,
+            "prompt_tokens": 125,
+            "completion_tokens": 450,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-21",
+            "requests": 10,
+            "prompt_tokens": 250,
+            "completion_tokens": 900,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-22",
+            "requests": 2,
+            "prompt_tokens": 50,
+            "completion_tokens": 180,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-23",
+            "requests": 0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-24",
+            "requests": 14,
+            "prompt_tokens": 350,
+            "completion_tokens": 1260,
+            "rejected": 1
+          },
+          {
+            "day": "2026-10-25",
+            "requests": 6,
+            "prompt_tokens": 150,
+            "completion_tokens": 540,
+            "rejected": 0
+          },
+          {
+            "day": "2026-10-26",
+            "requests": 3,
+            "prompt_tokens": 75,
+            "completion_tokens": 270,
+            "rejected": 0
+          }
+        ],
+        "inflight": 1,
+        "recent": [
+          {
+            "id": 9,
+            "ts": 1793031075.6977808,
+            "hf_user": "ada",
+            "principal": "team:example-team",
+            "model": "lying-qwen",
+            "endpoint": "chat",
+            "status": 200,
+            "stream": true,
+            "prompt_tokens": 20,
+            "completion_tokens": 60,
+            "latency_ms": 900,
+            "reason": null
+          },
+          {
+            "id": 6,
+            "ts": 1793029815.6977808,
+            "hf_user": "ada",
+            "principal": "team:example-team",
+            "model": "lying-qwen",
+            "endpoint": "chat",
+            "status": 200,
+            "stream": true,
+            "prompt_tokens": 23,
+            "completion_tokens": 81,
+            "latency_ms": 1260,
+            "reason": null
+          },
+          {
+            "id": 5,
+            "ts": 1793029395.6977808,
+            "hf_user": "ada",
+            "principal": "team:example-team",
+            "model": "lying-qwen",
+            "endpoint": "chat",
+            "status": 200,
+            "stream": false,
+            "prompt_tokens": 24,
+            "completion_tokens": 88,
+            "latency_ms": 1380,
+            "reason": null
+          },
+          {
+            "id": 2,
+            "ts": 1793028135.6977808,
+            "hf_user": "ada",
+            "principal": "team:example-team",
+            "model": "lying-qwen",
+            "endpoint": "chat",
+            "status": 200,
+            "stream": false,
+            "prompt_tokens": 27,
+            "completion_tokens": 109,
+            "latency_ms": 1740,
+            "reason": null
+          }
+        ]
       }
     }
   ]

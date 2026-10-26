@@ -25,10 +25,13 @@
   'use strict';
 
   var RETRY_MS = 1500;
+  var VIEW_KEY = 'sc:api-view';   // localStorage: 'team' (default) or 'you', the usage view of a team section
   var root = document.getElementById('lb-api');
   if (!root) return;
 
-  var state = { session: null, data: null, shown: false, busy: false };
+  var state = { session: null, data: null, shown: false, busy: false, view: 'team' };
+  try { if (localStorage.getItem(VIEW_KEY) === 'you') state.view = 'you'; } catch (e) { /* ignore */ }
+  function setView(v) { state.view = v; try { localStorage.setItem(VIEW_KEY, v); } catch (e) { /* ignore */ } }
 
   /* ---------- helpers ---------- */
   function cfg() { var l = window.SCLogin; return (l && l.config) || {}; }
@@ -95,14 +98,25 @@
     fit();
   }
 
-  function meter(parent, label, used, max, unit) {
+  // A meter of the budget's use against its limit. With `mine` (the "you" view) the budget's fill is dimmed and the
+  // person's own share drawn in ink inside it, so the real limit stays visible and the bar keeps its scale.
+  function meter(parent, label, used, max, unit, mine) {
     var row = add(parent, el('div', 'lb-api-meter'));
     var head = add(row, el('div', 'lb-api-meter-head'));
     add(head, el('span', null, label));
-    add(head, el('span', 'lb-api-meter-val', num(used) + ' / ' + num(max) + (unit ? ' ' + unit : '')));
+    var val = add(head, el('span', 'lb-api-meter-val'));
+    if (mine == null) val.textContent = num(used) + ' / ' + num(max) + (unit ? ' ' + unit : '');
+    else {
+      add(val, el('strong', null, 'you ' + num(mine)));
+      add(val, el('span', 'soft', ' · team ' + num(used) + ' / ' + num(max) + (unit ? ' ' + unit : '')));
+    }
     var bar = add(row, el('div', 'lb-api-bar'));
-    var fill = add(bar, el('div', 'lb-api-bar-fill' + (pct(used, max) >= 90 ? ' is-high' : '')));
+    var fill = add(bar, el('div', 'lb-api-bar-fill' + (pct(used, max) >= 90 ? ' is-high' : '') + (mine == null ? '' : ' is-dim')));
     fill.style.width = pct(used, max) + '%';
+    if (mine != null) {
+      var own = add(bar, el('div', 'lb-api-bar-mine'));
+      own.style.width = pct(mine, max) + '%';
+    }
   }
 
   // One key line: label, the key (masked; Show reveals it), Copy, Rotate. `rotate` is null when this person may not
@@ -153,18 +167,37 @@
   }
 
   // A budget's usage: meters against the limits (or the admin wording), the 14-day bars, the recent requests
+  // `withUser`: a team budget — the section gets a Team / You switch; in the "you" view the meters and bars show the
+  // person's share inside the team's (dimmed) use, and the recent requests are theirs only
   function renderBudget(parent, d, b, withUser) {
+    var you = withUser && b.mine && state.view === 'you';
+    var m = you ? b.mine : null;
     var cols = add(parent, el('div', 'lb-api-cols'));
     var left = add(cols, el('div', 'lb-api-col'));
-    add(left, el('h3', 'lb-api-h', b.limits ? 'Usage today & limits' : 'Usage today (no rate limits: admin)'));
+    var h = add(left, el('h3', 'lb-api-h', b.limits ? 'Usage today & limits' : 'Usage today (no rate limits: admin)'));
+    if (withUser && b.mine) {
+      var sw = add(h, el('span', 'lb-api-switch'));
+      sw.setAttribute('role', 'group'); sw.setAttribute('aria-label', 'Usage view');
+      [['team', 'Team'], ['you', 'You']].forEach(function (o) {
+        var btn = add(sw, el('button', 'lb-api-switch-btn' + (state.view === o[0] ? ' is-on' : ''), o[1]));
+        btn.type = 'button';
+        btn.setAttribute('aria-pressed', state.view === o[0] ? 'true' : 'false');
+        btn.addEventListener('click', function () { if (state.view !== o[0]) { setView(o[0]); rerender(); } });
+      });
+    }
     var t = b.today || {};
+    var mt = m ? (m.today || {}) : null;
     if (b.limits) {
-      meter(left, 'Tokens today', (t.prompt_tokens || 0) + (t.completion_tokens || 0), b.limits.tokens_per_day);
-      if (b.limits.tokens_per_week && b.week) meter(left, 'Tokens this week', b.week.tokens || 0, b.limits.tokens_per_week);
-      meter(left, 'In flight now', b.inflight || 0, b.limits.max_inflight, 'requests');
+      meter(left, 'Tokens today', (t.prompt_tokens || 0) + (t.completion_tokens || 0), b.limits.tokens_per_day, null,
+        mt ? (mt.prompt_tokens || 0) + (mt.completion_tokens || 0) : null);
+      if (b.limits.tokens_per_week && b.week) meter(left, 'Tokens this week', b.week.tokens || 0, b.limits.tokens_per_week, null,
+        m ? ((m.week || {}).tokens || 0) : null);
+      meter(left, 'In flight now', b.inflight || 0, b.limits.max_inflight, 'requests', m ? (m.inflight || 0) : null);
       add(left, el('p', 'soft lb-api-limits', num(b.limits.tokens_per_minute) + ' tokens/min · ' +
         num(b.limits.max_tokens_per_request || d.max_tokens_per_request) + ' max_tokens per request · ' +
-        num(t.requests) + ' requests today' + (t.rejected ? ' · ' + num(t.rejected) + ' rate-limited' : '')));
+        (m ? 'you ' + num(mt.requests) + ' of the team\'s ' + num(t.requests) + ' requests today'
+           : num(t.requests) + ' requests today') + (t.rejected ? ' · ' + num(t.rejected) + ' rate-limited' : '')));
+      if (m) add(left, el('p', 'soft lb-api-limits lb-api-younote', 'The limits apply to the whole team\'s use (grey); your share is in black.'));
       var resets = [];
       if (b.day_resets_at) resets.push('day resets ' + whenShort(b.day_resets_at));
       if (b.limits.tokens_per_week && b.week && b.week.resets_at) resets.push('week resets ' + whenShort(b.week.resets_at));
@@ -174,24 +207,35 @@
         num((t.prompt_tokens || 0) + (t.completion_tokens || 0)) + ' tokens today · ' + num(b.inflight || 0) + ' in flight'));
     }
     var right = add(cols, el('div', 'lb-api-col'));
-    add(right, el('h3', 'lb-api-h', 'Last 14 days (requests)'));
-    var hist = add(right, el('div', 'lb-api-hist'));
+    add(right, el('h3', 'lb-api-h', m ? 'Last 14 days (requests: you in black, team in grey)' : 'Last 14 days (requests)'));
+    var hist = add(right, el('div', 'lb-api-hist' + (m ? ' is-you' : '')));
     var max = Math.max.apply(null, [1].concat((b.days || []).map(function (x) { return x.requests; })));
-    (b.days || []).forEach(function (x) {
-      var bar = add(hist, el('div', 'lb-api-hist-bar' + (x.rejected ? ' has-rejected' : '')));
+    (b.days || []).forEach(function (x, i) {
+      var cell = add(hist, el('div', 'lb-api-hist-cell'));
+      var bar = add(cell, el('div', 'lb-api-hist-bar' + (x.rejected ? ' has-rejected' : '') + (m ? ' is-dim' : '')));
       bar.style.height = Math.max(2, Math.round(100 * x.requests / max)) + '%';
-      bar.title = x.day + ': ' + num(x.requests) + ' requests, ' + num(x.prompt_tokens + x.completion_tokens) + ' tokens' +
+      var title = x.day + ': ' + num(x.requests) + ' requests, ' + num(x.prompt_tokens + x.completion_tokens) + ' tokens' +
         (x.rejected ? ', ' + num(x.rejected) + ' rate-limited' : '');
+      if (m) {
+        var y = (m.days || [])[i] || { requests: 0, prompt_tokens: 0, completion_tokens: 0 };
+        var own = add(cell, el('div', 'lb-api-hist-mine'));
+        own.style.height = Math.max(y.requests ? 2 : 0, Math.round(100 * y.requests / max)) + '%';
+        title = x.day + ': you ' + num(y.requests) + ' of ' + num(x.requests) + ' requests, ' +
+          num(y.prompt_tokens + y.completion_tokens) + ' of ' + num(x.prompt_tokens + x.completion_tokens) + ' tokens';
+      }
+      cell.title = title;
     });
-    if (b.recent && b.recent.length) {
+    var recent = m ? (m.recent || []) : (b.recent || []);
+    if (recent.length) {
       var det = add(parent, el('details', 'lb-api-recent'));
-      add(det, el('summary', null, 'Recent requests'));
+      if (state.openRecent) det.open = true;
+      add(det, el('summary', null, m ? 'Your recent requests' : 'Recent requests'));
       var table = add(det, el('table'));
       var hr = add(add(table, el('thead')), el('tr'));
       (withUser ? ['time', 'who', 'model', 'status', 'prompt', 'completion', 'ms'] : ['time', 'model', 'status', 'prompt', 'completion', 'ms'])
         .forEach(function (h) { add(hr, el('th', null, h)); });
       var tb = add(table, el('tbody'));
-      b.recent.forEach(function (r) {
+      recent.forEach(function (r) {
         var tr = add(tb, el('tr'));
         add(tr, el('td', null, when(r.ts)));
         if (withUser) add(tr, el('td', null, /^team:/.test(r.hf_user || '') ? 'team key' : (r.hf_user || '')));
@@ -202,8 +246,14 @@
         add(tr, el('td', 'num', num(r.completion_tokens)));
         add(tr, el('td', 'num', r.latency_ms == null ? '' : num(r.latency_ms)));
       });
-      det.addEventListener('toggle', fit);
+      det.addEventListener('toggle', function () { state.openRecent = det.open; fit(); });
     }
+  }
+
+  // Re-draw the sections from the data already loaded (after the Team / You switch)
+  function rerender() {
+    var panel = root.firstChild;
+    if (panel && state.data) renderData(panel.querySelector('.lb-api-body'), state.data);
   }
 
   function renderSnippetBlock(parent, d) {
