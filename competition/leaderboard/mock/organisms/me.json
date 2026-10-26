@@ -16,16 +16,16 @@
       "budget": "team:example-team",
       "limits": {
         "tokens_per_minute": 20000,
-        "tokens_per_day": 30000,
+        "tokens_per_day": 10000,
         "max_inflight": 4,
         "max_tokens_per_request": 1024,
-        "tokens_per_week": 100000
+        "tokens_per_week": 50000
       },
       "today": {
         "day": "2026-10-26",
         "requests": 9,
         "prompt_tokens": 225,
-        "completion_tokens": 8100,
+        "completion_tokens": 2900,
         "rejected": 0
       },
       "inflight": 1,
@@ -258,12 +258,12 @@
         }
       ],
       "week": {
-        "tokens": 41200,
+        "tokens": 21400,
         "resets_at": 1793291227.431277,
         "starts": "2026-10-22"
       },
       "day_resets_at": 1793053627.431277,
-      "quota_timezone": "UTC",
+      "quota_timezone": "Etc/GMT+12",
       "key": {
         "api_key": "org-mockKEY0123456789abcdefghijklmnopqrstuv",
         "key_prefix": "org-mockKEY0",
@@ -275,11 +275,11 @@
           "day": "2026-10-26",
           "requests": 4,
           "prompt_tokens": 100,
-          "completion_tokens": 2900,
+          "completion_tokens": 1100,
           "rejected": 0
         },
         "week": {
-          "tokens": 12800
+          "tokens": 6800
         },
         "days": [
           {
@@ -440,7 +440,8 @@
             "reason": null
           }
         ]
-      }
+      },
+      "quota_timezone_label": "AoE (UTC-12)"
     }
   ]
 }

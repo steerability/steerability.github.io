@@ -201,7 +201,8 @@
       var resets = [];
       if (b.day_resets_at) resets.push('day resets ' + whenShort(b.day_resets_at));
       if (b.limits.tokens_per_week && b.week && b.week.resets_at) resets.push('week resets ' + whenShort(b.week.resets_at));
-      if (resets.length) add(left, el('p', 'soft lb-api-limits', resets.join(' · ') + (b.quota_timezone ? ' (' + b.quota_timezone + ' midnight)' : '')));
+      var tz = b.quota_timezone_label || b.quota_timezone;
+      if (resets.length) add(left, el('p', 'soft lb-api-limits', resets.join(' · ') + (tz ? ' (midnight ' + tz + ')' : '')));
     } else {
       add(left, el('p', 'soft lb-api-limits', num(t.requests) + ' requests · ' +
         num((t.prompt_tokens || 0) + (t.completion_tokens || 0)) + ' tokens today · ' + num(b.inflight || 0) + ' in flight'));
