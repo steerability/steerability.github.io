@@ -3,11 +3,11 @@
    ------------------------------------------------------------
    The "Model organisms API" panel in the leaderboard pop-up: a
    collapsible block below the board for signed-in people. One section
-   per team (a Hugging Face organization they belong to): the team's
-   shared API key, the person's own key on the team's budget, the
-   team's rate limits, today's usage, a 14-day history and the team's
-   recent requests (with who made each). Organizers get a personal
-   section instead.
+   per team (a Hugging Face organization they belong to): the person's
+   own API key, which counts against the team's shared budget, the
+   team's rate limits, today's and this week's usage, a 14-day history
+   and the team's recent requests (with who made each). Organizers get
+   a personal section instead.
 
    Data: GET <CONFIG.organismsApi>/api/me with the session's Hugging
    Face access token (the gateway verifies it with Hugging Face and
@@ -62,7 +62,7 @@
   }
 
   /* ---------- data ---------- */
-  // rotate: null, or {team: <org>|null, which: 'team'|'member'} (team null = the personal key)
+  // rotate: null, or {team: <org>|null} (team null = the personal key)
   function load(session, rotate) {
     if (mockSession(session)) {
       return getJSON('mock/organisms/me.json', { cache: 'no-cache' }).then(function (r) {
@@ -70,7 +70,7 @@
         if (rotate) {
           var fresh = { api_key: 'org-mockNewKey_' + Math.random().toString(36).slice(2, 10), key_prefix: 'org-mockNew', created: Date.now() / 1000, fresh: true };
           if (!rotate.team && r.body.personal) r.body.personal.key = fresh;
-          r.body.teams.forEach(function (t) { if (t.org === rotate.team) t[rotate.which === 'team' ? 'team_key' : 'member_key'] = fresh; });
+          r.body.teams.forEach(function (t) { if (t.org === rotate.team) t.key = fresh; });
         }
         return { status: 200, body: r.body };
       });
@@ -80,7 +80,7 @@
     var url = api + '/api/me';
     if (rotate) {
       url += '/key';
-      if (rotate.team) url += '?' + new URLSearchParams({ team: rotate.team, which: rotate.which }).toString();
+      if (rotate.team) url += '?' + new URLSearchParams({ team: rotate.team }).toString();
     }
     return getJSON(url, { method: rotate ? 'POST' : 'GET', cache: 'no-store',
                           headers: { Authorization: 'Bearer ' + session.accessToken } });
@@ -139,9 +139,7 @@
       btn.type = 'button';
       btn.title = 'Revoke this key and get a new one';
       btn.addEventListener('click', function () {
-        if (state.busy || !window.confirm(rotate.which === 'team'
-          ? 'Revoke the team\'s shared key and mint a new one? Everyone on the team using the old key stops working.'
-          : 'Revoke this key and mint a new one? Anything using the old key stops working.')) return;
+        if (state.busy || !window.confirm('Revoke this key and mint a new one? Anything using the old key stops working.')) return;
         refresh(rotate);
       });
     }
@@ -228,11 +226,8 @@
     if (t.role) add(h, el('span', 'lb-tag', t.role));
     var onReveal = null;
     var mine = add(sec, el('div', 'lb-api-member'));
-    renderKeyRow(mine, 'Your key', t.member_key, { team: t.org, which: 'member' }, function (k) { if (onReveal) onReveal(k); },
-      'yours alone; counts against the team\'s budget');
-    var shared = add(sec, el('div', 'lb-api-shared'));
-    renderKeyRow(shared, 'Team key', t.team_key, t.can_rotate_team_key ? { team: t.org, which: 'team' } : null, null,
-      'shared by the whole team');
+    renderKeyRow(mine, 'Your key', t.key, { team: t.org }, function (k) { if (onReveal) onReveal(k); },
+      'yours alone; usage counts against the team\'s shared budget');
     renderBudget(sec, d, t, true);
     onReveal = renderSnippetBlock(sec, d);
   }
@@ -242,7 +237,7 @@
     add(add(sec, el('h3', 'lb-api-team-h')), el('span', null, d.admin ? 'Personal key (organizer)' : 'Personal key'));
     var onReveal = null;
     var mine = add(sec, el('div', 'lb-api-member'));
-    renderKeyRow(mine, 'Your key', p.key, { team: null, which: 'member' }, function (k) { if (onReveal) onReveal(k); });
+    renderKeyRow(mine, 'Your key', p.key, { team: null }, function (k) { if (onReveal) onReveal(k); });
     renderBudget(sec, d, p, false);
     onReveal = renderSnippetBlock(sec, d);
   }
@@ -258,7 +253,7 @@
     (d.teams || []).forEach(function (t) { renderTeam(body, d, t); });
     if (d.personal) renderPersonal(body, d, d.personal);
     if (!(d.teams || []).length && !d.personal) add(body, el('p', 'soft', 'No team found for this account.'));
-    if ((d.teams || []).some(function (t) { return t.team_key && t.team_key.fresh; }) || (d.personal && d.personal.key && d.personal.key.fresh)) {
+    if ((d.teams || []).some(function (t) { return t.key && t.key.fresh; }) || (d.personal && d.personal.key && d.personal.key.fresh)) {
       add(body, el('p', 'soft lb-api-note', 'Newly minted keys stay available here while you are signed in.'));
     }
     fit();

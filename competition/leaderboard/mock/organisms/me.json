@@ -14,19 +14,6 @@
       "name": "Example Team",
       "role": "write",
       "budget": "team:example-team",
-      "team_key": {
-        "api_key": "org-mockTEAMkey0123456789abcdefghijklmnopq",
-        "key_prefix": "org-mockTEAM",
-        "created": 1792599495.6977808,
-        "fresh": false
-      },
-      "member_key": {
-        "api_key": "org-mockKEY0123456789abcdefghijklmnopqrstuv",
-        "key_prefix": "org-mockKEY0",
-        "created": 1792772295.6977808,
-        "fresh": false
-      },
-      "can_rotate_team_key": true,
       "limits": {
         "tokens_per_minute": 20000,
         "tokens_per_day": 30000,
@@ -276,7 +263,13 @@
         "starts": "2026-10-22"
       },
       "day_resets_at": 1793053627.431277,
-      "quota_timezone": "UTC"
+      "quota_timezone": "UTC",
+      "key": {
+        "api_key": "org-mockKEY0123456789abcdefghijklmnopqrstuv",
+        "key_prefix": "org-mockKEY0",
+        "created": 1792772295.6977808,
+        "fresh": false
+      }
     }
   ]
 }

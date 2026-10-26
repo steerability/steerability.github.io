@@ -189,7 +189,7 @@ with sync_playwright() as p:
             fresh = {"api_key": "org-rotatedKEY0123456789abcdefghijklmnopqrst", "key_prefix": "org-rotated", "created": 0, "fresh": True}
             for t in body["teams"]:
                 if t["org"] == q.get("team"):
-                    t["team_key" if q.get("which") == "team" else "member_key"] = fresh
+                    t["key"] = fresh
         else:
             route.fulfill(status=404, headers=cors, content_type="application/json", body='{"detail":"not found"}'); return
         route.fulfill(status=200, headers=cors, content_type="application/json", body=json.dumps(body))
@@ -1384,8 +1384,8 @@ with sync_playwright() as p:
     pg.wait_for_selector(".lb-api-member .lb-api-key")
     check(pg.locator(".lb-api-team").count() == 1 and "Example Team" in pg.inner_text(".lb-api-team-h"),
           "organisms (mock): one section, the team's")
-    check(pg.inner_text(".lb-api-member .lb-api-key") == "org-mock…stuv" and pg.inner_text(".lb-api-shared .lb-api-key") == "org-mock…nopq",
-          "organisms (mock): the member's and the team's keys, masked")
+    check(pg.inner_text(".lb-api-member .lb-api-key") == "org-mock…stuv" and pg.locator(".lb-api-key").count() == 1,
+          "organisms (mock): the person's key, masked, and no other")
     pg.click(".lb-api-member .link-btn:has-text('Show')")
     check(pg.inner_text(".lb-api-member .lb-api-key").startswith("org-mockKEY0123456789"), "organisms (mock): Show reveals it")
     check(pg.locator(".lb-api-meter").count() == 3 and pg.locator(".lb-api-hist-bar").count() == 14,
@@ -1415,12 +1415,8 @@ with sync_playwright() as p:
     pg.once("dialog", lambda d: d.accept())
     pg.click(".lb-api-member .lb-api-rotate")
     pg.wait_for_function("document.querySelector('.lb-api-member .lb-api-key') && document.querySelector('.lb-api-member .lb-api-key').textContent === 'org-rota…qrst'")
-    check(organisms["rotate"] == 1 and organisms["rotated"] == {"team": "example-team", "which": "member"},
-          "organisms: Rotate posts /api/me/key?team=example-team&which=member (after confirming) and shows the new key")
-    pg.once("dialog", lambda d: d.accept())
-    pg.click(".lb-api-shared .lb-api-rotate")
-    pg.wait_for_function("document.querySelector('.lb-api-shared .lb-api-key') && document.querySelector('.lb-api-shared .lb-api-key').textContent === 'org-rota…qrst'")
-    check(organisms["rotated"] == {"team": "example-team", "which": "team"}, "organisms: the team key rotates with which=team")
+    check(organisms["rotate"] == 1 and organisms["rotated"] == {"team": "example-team"},
+          "organisms: Rotate posts /api/me/key?team=example-team (after confirming) and shows the new key")
     for answer, text in (("401", "no longer accepted"), ("403", "not enabled"), ("refused", "didn't answer")):
         organisms["answer"] = answer
         pg.evaluate("SCOrganismsApi.refresh()")
