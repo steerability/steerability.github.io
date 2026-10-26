@@ -28,10 +28,11 @@
       },
       "can_rotate_team_key": true,
       "limits": {
-        "tokens_per_minute": 60000,
-        "tokens_per_day": 1500000,
-        "max_inflight": 12,
-        "max_tokens_per_request": 1024
+        "tokens_per_minute": 20000,
+        "tokens_per_day": 30000,
+        "max_inflight": 8,
+        "max_tokens_per_request": 1024,
+        "tokens_per_week": 100000
       },
       "today": {
         "day": "2026-10-26",
@@ -268,7 +269,14 @@
           "latency_ms": 1860,
           "reason": null
         }
-      ]
+      ],
+      "week": {
+        "tokens": 41200,
+        "resets_at": 1793291227.431277,
+        "starts": "2026-10-22"
+      },
+      "day_resets_at": 1793053627.431277,
+      "quota_timezone": "UTC"
     }
   ]
 }

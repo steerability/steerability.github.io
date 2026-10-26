@@ -50,6 +50,9 @@
   function num(n) { return (n || 0).toLocaleString(); }
   function pct(a, b) { return b ? Math.min(100, Math.round(100 * a / b)) : 0; }
   function when(ts) { return new Date(ts * 1000).toLocaleString(); }
+  function whenShort(ts) {
+    return new Date(ts * 1000).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
   function maskKey(k) { return k ? k.slice(0, 8) + '…' + k.slice(-4) : ''; }
 
   function getJSON(url, init) {
@@ -162,10 +165,15 @@
     var t = b.today || {};
     if (b.limits) {
       meter(left, 'Tokens today', (t.prompt_tokens || 0) + (t.completion_tokens || 0), b.limits.tokens_per_day);
+      if (b.limits.tokens_per_week && b.week) meter(left, 'Tokens this week', b.week.tokens || 0, b.limits.tokens_per_week);
       meter(left, 'In flight now', b.inflight || 0, b.limits.max_inflight, 'requests');
       add(left, el('p', 'soft lb-api-limits', num(b.limits.tokens_per_minute) + ' tokens/min · ' +
         num(b.limits.max_tokens_per_request || d.max_tokens_per_request) + ' max_tokens per request · ' +
         num(t.requests) + ' requests today' + (t.rejected ? ' · ' + num(t.rejected) + ' rate-limited' : '')));
+      var resets = [];
+      if (b.day_resets_at) resets.push('day resets ' + whenShort(b.day_resets_at));
+      if (b.limits.tokens_per_week && b.week && b.week.resets_at) resets.push('week resets ' + whenShort(b.week.resets_at));
+      if (resets.length) add(left, el('p', 'soft lb-api-limits', resets.join(' · ') + (b.quota_timezone ? ' (' + b.quota_timezone + ' midnight)' : '')));
     } else {
       add(left, el('p', 'soft lb-api-limits', num(t.requests) + ' requests · ' +
         num((t.prompt_tokens || 0) + (t.completion_tokens || 0)) + ' tokens today · ' + num(b.inflight || 0) + ' in flight'));

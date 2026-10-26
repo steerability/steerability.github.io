@@ -1388,8 +1388,10 @@ with sync_playwright() as p:
           "organisms (mock): the member's and the team's keys, masked")
     pg.click(".lb-api-member .link-btn:has-text('Show')")
     check(pg.inner_text(".lb-api-member .lb-api-key").startswith("org-mockKEY0123456789"), "organisms (mock): Show reveals it")
-    check(pg.locator(".lb-api-meter").count() == 2 and pg.locator(".lb-api-hist-bar").count() == 14,
-          "organisms (mock): two meters and fourteen bars for the team's budget")
+    check(pg.locator(".lb-api-meter").count() == 3 and pg.locator(".lb-api-hist-bar").count() == 14,
+          "organisms (mock): three meters (day, week, in flight) and fourteen bars for the team's budget")
+    check("week resets" in pg.inner_text(".lb-api-team") and "100,000" in pg.inner_text(".lb-api-team"),
+          "organisms (mock): the weekly quota and its reset are shown")
     pg.click(".lb-api-recent > summary")
     check(pg.locator(".lb-api-recent tbody tr").count() == 9 and "grace" in pg.inner_text(".lb-api-recent tbody"),
           "organisms (mock): the team's recent requests, with who made them")
