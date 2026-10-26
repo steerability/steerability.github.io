@@ -1,8 +1,8 @@
 /* ============================================================
    The Steerability Challenge — organisms-api.js
    ------------------------------------------------------------
-   The "Model organisms API" panel in the leaderboard pop-up: a
-   collapsible block below the board for signed-in people. One section
+   The "Model organisms API" section in the leaderboard pop-up, below
+   the board, for signed-in people. One section
    per team (a Hugging Face organization they belong to): the person's
    own API key, which counts against the team's shared budget, the
    team's rate limits, today's and this week's usage, a 14-day history
@@ -24,7 +24,6 @@
 (function () {
   'use strict';
 
-  var OPEN_KEY = 'sc:api-open';   // localStorage: '1' while the panel is expanded
   var RETRY_MS = 1500;
   var root = document.getElementById('lb-api');
   if (!root) return;
@@ -37,8 +36,6 @@
   // The fixture stands in for a mock session only (its token is not real); a real session always asks the gateway
   function mockSession(session) { return !!(session && session.mock); }
   function fit() { var l = window.SCLogin; if (l && l.fitWindow) setTimeout(l.fitWindow, 0); }
-  function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
 
   function el(tag, className, content) {
     var e = document.createElement(tag);
@@ -285,20 +282,14 @@
   function render(session) {
     clear();
     state.session = session;
-    var panel = add(root, el('details', 'lb-api'));
+    var panel = add(root, el('section', 'lb-api'));
     panel.id = 'lb-api-panel';
-    if (storageGet(OPEN_KEY) === '1') panel.open = true;
-    var sum = add(panel, el('summary'));
-    add(sum, el('span', 'lb-api-title', 'Model organisms API'));
-    add(sum, el('span', 'soft', 'your key, usage and rate limits'));
-    if (mockSession(session)) add(sum, el('span', 'lb-tag', 'mock data'));
+    var head = add(panel, el('div', 'lb-api-head'));
+    add(head, el('h2', null, 'Model organisms API'));
+    add(head, el('span', 'soft', 'your key, usage and rate limits'));
+    if (mockSession(session)) add(head, el('span', 'lb-tag', 'mock data'));
     add(panel, el('div', 'lb-api-body'));
-    panel.addEventListener('toggle', function () {
-      storageSet(OPEN_KEY, panel.open ? '1' : '0');
-      if (panel.open && !state.data && !state.busy) refresh(null);
-      fit();
-    });
-    if (panel.open) refresh(null);
+    refresh(null);
   }
 
   function clear() {

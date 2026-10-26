@@ -177,8 +177,10 @@ with sync_playwright() as p:
         if organisms["answer"] == "refused":
             route.abort("connectionrefused"); return
         if organisms["answer"] in ("401", "403"):
+            detail = ("This Hugging Face account is not a member of a team organization; the organisms API is for registered teams."
+                      if organisms["answer"] == "403" else "Hugging Face did not accept the token; sign in again")
             route.fulfill(status=int(organisms["answer"]), headers=cors, content_type="application/json",
-                          body=json.dumps({"detail": "nope"})); return
+                          body=json.dumps({"detail": detail})); return
         body = fixture("organisms/me")
         if url.path == "/api/me" and request.method == "GET":
             organisms["me"].append(auth)
@@ -1371,17 +1373,17 @@ with sync_playwright() as p:
     check("organizer" in pg.inner_text("#lb-who"), "dark: the pop-up page itself still works (nothing links to it yet)")
     dark.close()
 
-    # ---- 19. the model-organisms API panel (organisms-api.js): collapsed under the who line; opened, it asks the
-    # organisms gateway for /api/me with the session's bearer token and shows the key (masked, Show reveals it), the
-    # meters, the 14-day bars and the recent requests; Rotate posts /api/me/key; the errors have their messages; it goes
-    # with the session. In mock mode it reads the fixture and never asks the gateway.
+    # ---- 19. the model-organisms API section (organisms-api.js) below the board: it asks the organisms gateway for
+    # /api/me with the session's bearer token and shows the person's key (masked, Show reveals it), the meters, the
+    # 14-day bars and the recent requests; Rotate posts /api/me/key; the errors have their messages; it goes with the
+    # session. A mock session reads the fixture and never asks the gateway.
+    organisms["me"] = []   # earlier steps' sessions rendered the section too (it loads as soon as a session shows)
     oc = new_context()
     pg = oc.new_page()
     pg.goto(f"{LB}?mock=participant")
-    pg.wait_for_selector("#lb-api-panel")
-    check(not pg.locator("#lb-api-panel").evaluate("e => e.open"), "organisms: the panel starts collapsed")
-    pg.click("#lb-api-panel > summary")
     pg.wait_for_selector(".lb-api-member .lb-api-key")
+    check(pg.inner_text("#lb-api-panel h2") == "Model organisms API" and "mock data" in pg.inner_text(".lb-api-head"),
+          "organisms: a headed section below the board, tagged 'mock data' for a mock session")
     check(pg.locator(".lb-api-team").count() == 1 and "Example Team" in pg.inner_text(".lb-api-team-h"),
           "organisms (mock): one section, the team's")
     check(pg.inner_text(".lb-api-member .lb-api-key") == "org-mock…stuv" and pg.locator(".lb-api-key").count() == 1,
@@ -1406,7 +1408,7 @@ with sync_playwright() as p:
     pg = oc.new_page()
     pg.goto(f"{LB}?mock=off")
     pg.wait_for_selector("#hf-login")
-    pg.evaluate("localStorage.setItem('sc:api-open', '1')")
+    organisms["me"] = []
     pg.click("#hf-login")
     pg.wait_for_selector(".lb-api-member .lb-api-key", timeout=15000)
     check(len(organisms["me"]) == 1 and organisms["me"][0] == "Bearer hf_oauth_mock_token",
@@ -1417,7 +1419,7 @@ with sync_playwright() as p:
     pg.wait_for_function("document.querySelector('.lb-api-member .lb-api-key') && document.querySelector('.lb-api-member .lb-api-key').textContent === 'org-rota…qrst'")
     check(organisms["rotate"] == 1 and organisms["rotated"] == {"team": "example-team"},
           "organisms: Rotate posts /api/me/key?team=example-team (after confirming) and shows the new key")
-    for answer, text in (("401", "no longer accepted"), ("403", "not enabled"), ("refused", "didn't answer")):
+    for answer, text in (("401", "no longer accepted"), ("403", "team organization"), ("refused", "didn't answer")):
         organisms["answer"] = answer
         pg.evaluate("SCOrganismsApi.refresh()")
         pg.wait_for_function(f"document.querySelector('.lb-api-body').textContent.includes({json.dumps(text)})", timeout=15000)
