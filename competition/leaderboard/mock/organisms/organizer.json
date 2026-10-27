@@ -1,0 +1,170 @@
+{
+  "hf_user": "steerability-challenge-evaluator",
+  "admin": true,
+  "key_retrievable": true,
+  "base_url": "https://organisms.api.ndif.us/v1",
+  "models": [
+    "lying-qwen"
+  ],
+  "max_tokens_per_request": 1024,
+  "personal": {
+    "budget": "user:steerability-challenge-evaluator",
+    "limits": null,
+    "today": {
+      "day": "2026-10-26",
+      "requests": 3,
+      "prompt_tokens": 120,
+      "completion_tokens": 370,
+      "rejected": 0
+    },
+    "inflight": 0,
+    "days": [
+      {
+        "day": "2026-10-13",
+        "requests": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-14",
+        "requests": 2,
+        "prompt_tokens": 80,
+        "completion_tokens": 246,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-15",
+        "requests": 5,
+        "prompt_tokens": 200,
+        "completion_tokens": 615,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-16",
+        "requests": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-17",
+        "requests": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-18",
+        "requests": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-19",
+        "requests": 7,
+        "prompt_tokens": 280,
+        "completion_tokens": 861,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-20",
+        "requests": 1,
+        "prompt_tokens": 40,
+        "completion_tokens": 123,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-21",
+        "requests": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-22",
+        "requests": 4,
+        "prompt_tokens": 160,
+        "completion_tokens": 492,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-23",
+        "requests": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-24",
+        "requests": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-25",
+        "requests": 6,
+        "prompt_tokens": 240,
+        "completion_tokens": 738,
+        "rejected": 0
+      },
+      {
+        "day": "2026-10-26",
+        "requests": 3,
+        "prompt_tokens": 120,
+        "completion_tokens": 370,
+        "rejected": 0
+      }
+    ],
+    "recent": [
+      {
+        "id": 30,
+        "ts": 1793031075.6977808,
+        "hf_user": "steerability-challenge-evaluator",
+        "model": "lying-qwen",
+        "endpoint": "chat",
+        "status": 200,
+        "stream": false,
+        "prompt_tokens": 40,
+        "completion_tokens": 140,
+        "latency_ms": 1310,
+        "reason": null
+      },
+      {
+        "id": 29,
+        "ts": 1793030655.6977808,
+        "hf_user": "steerability-challenge-evaluator",
+        "model": "lying-qwen",
+        "endpoint": "chat",
+        "status": 200,
+        "stream": false,
+        "prompt_tokens": 40,
+        "completion_tokens": 110,
+        "latency_ms": 980,
+        "reason": null
+      },
+      {
+        "id": 28,
+        "ts": 1793030235.6977808,
+        "hf_user": "steerability-challenge-evaluator",
+        "model": "lying-qwen",
+        "endpoint": "chat",
+        "status": 200,
+        "stream": false,
+        "prompt_tokens": 40,
+        "completion_tokens": 120,
+        "latency_ms": 1120,
+        "reason": null
+      }
+    ],
+    "key": {
+      "api_key": "org-mockADMIN0123456789abcdefghijklmnopqr",
+      "key_prefix": "org-mockADM",
+      "created": 1792772295.6977808,
+      "fresh": false
+    }
+  },
+  "teams": []
+}

@@ -1,0 +1,4 @@
+{
+  "mock_status": 403,
+  "detail": "This Hugging Face account is not a member of a team organization; the organisms API is for registered teams."
+}

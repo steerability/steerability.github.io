@@ -488,3 +488,63 @@ pre .c{ color:#8A8C96; font-style:italic; }
   html{ scroll-behavior:auto; }
   *,*::before,*::after{ transition:none !important; }
 }
+
+/* The model-organisms API section in the pop-up (organisms-api.js), below the board: a heading line like the
+   Leaderboard's, then a hairline box. Mono for the key, the endpoint and numbers; meters for today's and this
+   week's use against the limits; 14 thin bars */
+.lb-api{ margin:2.25rem 0 0; }
+.lb-api-head{ display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .8rem; margin:0 0 .8rem; }
+.lb-api-head h2{ margin:0; }
+.lb-api-body{ border:1px solid var(--line); padding:.2rem .9rem .9rem; }
+.lb-api-body p{ margin:.7rem 0 0; }
+.lb-api-row, .lb-api-keyrow{ display:flex; flex-wrap:wrap; align-items:center; gap:.3rem .7rem; margin-top:.6rem; }
+.lb-api-label{ font-family:var(--font-mono); font-size:.75rem; color:var(--soft); min-width:5rem; }
+.lb-api-key, .lb-api-row code{ font-family:var(--font-mono); font-size:.85rem; background:var(--lb-shade); padding:.15em .45em; }
+.lb-api-keyrow .link-btn{ font-size:.85rem; }
+.lb-api-note{ font-size:.9rem; }
+.lb-api-cols{ display:grid; grid-template-columns:1fr 1fr; gap:1rem 2rem; margin-top:1rem; }
+@media (max-width:640px){ .lb-api-cols{ grid-template-columns:1fr; } }
+.lb-api-col{ min-width:0; }
+.lb-api-h{ display:flex; align-items:center; gap:.6rem; font-size:.75rem; font-family:var(--font-mono); font-weight:400; color:var(--soft); margin:0 0 .5rem; text-transform:none; }
+.lb-api-meter{ margin:.45rem 0; }
+.lb-api-meter-head{ display:flex; justify-content:space-between; font-size:.85rem; gap:1rem; }
+.lb-api-meter-val{ display:inline-flex; gap:.8em; font-family:var(--font-mono); font-size:.78rem; white-space:nowrap; }   /* the "you" view's pair is spaced, not punctuated */
+/* The figures under the meters: the meter rows' shape without the bar */
+.lb-api-facts{ margin-top:.8rem; }
+.lb-api-fact{ display:flex; justify-content:space-between; align-items:baseline; gap:1rem; font-size:.85rem; padding:.12rem 0; }
+.lb-api-cols > .lb-api-col:last-child{ display:flex; flex-direction:column; }   /* so its last rows can sit at the bottom ... */
+.lb-api-periods{ margin-top:auto; padding-top:.8rem; }   /* ... level with the figures at the left */
+.lb-api-bar{ position:relative; height:6px; background:var(--lb-shade); border:1px solid var(--line); margin-top:.25rem; }
+.lb-api-bar-fill{ height:100%; background:var(--ink); }
+.lb-api-bar-fill.is-high{ background:#B3261E; }
+.lb-api-bar-fill.is-dim{ background:#C9CBD3; }           /* the "you" view: the team's use, dimmed */
+.lb-api-bar-fill.is-dim.is-high{ background:#E3B0AB; }
+.lb-api-bar-mine{ position:absolute; left:0; top:0; height:100%; background:var(--ink); }   /* your share, in ink */
+.lb-api-switch{ margin-left:auto; display:inline-flex; border:1px solid var(--line); }
+.lb-api-switch-btn{ font:inherit; font-size:.75rem; font-family:var(--font-mono); padding:.1em .6em; background:none; border:0; color:var(--soft); cursor:pointer; }
+.lb-api-switch-btn + .lb-api-switch-btn{ border-left:1px solid var(--line); }
+.lb-api-switch-btn.is-on{ background:var(--ink); color:#fff; cursor:default; }
+.lb-api-switch-btn:not(.is-on):hover{ color:var(--accent); }
+/* The 14-day history: a short strip beside the meters, read at a glance; each bar takes the middle of its day's slot,
+   with air either side, and a day with no requests is a hairline mark. The reset times sit under its axis */
+.lb-api-hist{ display:flex; align-items:flex-end; height:72px; border-bottom:1px solid var(--line); padding-bottom:1px; }
+.lb-api-hist-cell{ flex:1; position:relative; height:100%; display:flex; align-items:flex-end; }
+.lb-api-hist-bar{ width:58%; margin-inline:auto; background:var(--ink); min-height:2px; }
+.lb-api-hist-bar.has-rejected{ background:#B3261E; }
+.lb-api-hist-bar.is-dim{ background:#C9CBD3; }
+.lb-api-hist-bar.is-dim.has-rejected{ background:#E3B0AB; }
+.lb-api-hist-bar.is-zero, .lb-api-hist-bar.is-dim.is-zero{ background:var(--line); }
+.lb-api-hist-mine{ position:absolute; left:21%; right:21%; bottom:0; background:var(--ink); }
+.lb-api-hist-axis{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:.72rem; color:var(--soft); margin-top:.3rem; }
+.lb-api-recent, .lb-api-snippet{ margin-top:1rem; }
+.lb-api-recent{ overflow-x:auto; }   /* a narrow window scrolls the table inside the panel */
+.lb-api-recent > summary, .lb-api-snippet > summary{ cursor:pointer; font-size:.85rem; color:var(--soft); }
+.lb-api-recent table{ width:100%; border-collapse:collapse; font-size:.8rem; margin-top:.4rem; }
+.lb-api-recent th, .lb-api-recent td{ text-align:left; padding:.25rem .5rem; border-bottom:1px solid var(--line); font-family:var(--font-mono); font-weight:400; white-space:nowrap; }
+.lb-api-recent th{ color:var(--soft); font-size:.72rem; }
+.lb-api-recent td.num, .lb-api-recent th.num{ text-align:right; }
+.lb-api-recent td.is-warn{ color:#9A6700; } .lb-api-recent td.is-bad{ color:#B3261E; }
+.lb-api-snippet pre{ margin:.5rem 0 0; font-size:.78rem; overflow-x:auto; }
+.lb-api-team{ border-top:1px solid var(--line); margin-top:1rem; padding-top:.6rem; }
+.lb-api-team:first-of-type{ border-top:0; }
+.lb-api-team-h{ display:flex; flex-wrap:wrap; align-items:baseline; gap:.4rem .6rem; font-size:1rem; font-weight:600; margin:.4rem 0 .2rem; }

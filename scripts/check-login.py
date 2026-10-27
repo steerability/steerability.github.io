@@ -27,6 +27,7 @@ LB = BASE + "leaderboard/"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tmp", "shots")
 CLIENT_ID = "test-client-id-123"
 API = "https://results-api.invalid"   # CONFIG.api as the check serves hf-login.js: a fake origin, routed below
+ORG_API = "https://organisms-api.invalid"   # CONFIG.organismsApi likewise: the organisms gateway, answered from the fixture
 MOCK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "competition", "leaderboard", "mock")
 
 os.makedirs(OUT, exist_ok=True)
@@ -96,6 +97,7 @@ with sync_playwright() as p:
                 if n != 1:
                     failures.append("CONFIG.pendingProgress not found in hf-login.js")
             body, n = re.subn(r"api: (null|'[^']*')", f"api: '{API}'", body, count=1)
+            body = re.sub(r"organismsApi: (null|'[^']*')", f"organismsApi: '{ORG_API}'", body, count=1)
             if n != 1:   # never serve the committed CONFIG.api: the pop-up would call the real results server
                 failures.append("CONFIG.api not found in hf-login.js")
                 route.abort()
@@ -161,6 +163,41 @@ with sync_playwright() as p:
             return {**RUNS, "pending": {**RUNS["pending"], "pulled": False, "pull_finished": None, "n_pulled": None,
                                         "intake_done": False, "phase": "upcoming"}}
         return {**RUNS, "pending": phased(RUNS["pending"])} if api["pending"] == "pulled" else {**RUNS, "pending": None}
+
+    # The fake organisms gateway (organisms-api.js): /api/me answers from the organisms-me fixture, with the bearer
+    # token it was asked with recorded; POST /api/me/key answers the same with a new key. organisms["answer"] can be
+    # "401" / "403" / "refused" to test the panel's messages. The real gateway is never called.
+    organisms = {"answer": None, "me": [], "rotate": 0}
+    def organisms_endpoint(route, request):
+        url = urlparse(request.url)
+        cors = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization"}
+        if request.method == "OPTIONS":
+            route.fulfill(status=204, headers=cors); return
+        auth = request.headers.get("authorization", "")
+        if organisms["answer"] == "refused":
+            route.abort("connectionrefused"); return
+        if organisms["answer"] in ("401", "403"):
+            detail = ("This Hugging Face account is not a member of a team organization; the organisms API is for registered teams."
+                      if organisms["answer"] == "403" else "Hugging Face did not accept the token; sign in again")
+            route.fulfill(status=int(organisms["answer"]), headers=cors, content_type="application/json",
+                          body=json.dumps({"detail": detail})); return
+        body = fixture("organisms/me")
+        if url.path == "/api/me" and request.method == "GET":
+            organisms["me"].append(auth)
+        elif url.path == "/api/me/key" and request.method == "POST":
+            organisms["rotate"] += 1
+            q = {k: v[0] for k, v in parse_qs(url.query).items()}
+            organisms["rotated"] = q
+            fresh = {"api_key": "org-rotatedKEY0123456789abcdefghijklmnopqrst", "key_prefix": "org-rotated", "created": 0, "fresh": True}
+            for t in body["teams"]:
+                if t["org"] == q.get("team"):
+                    t["key"] = fresh
+        else:
+            route.fulfill(status=404, headers=cors, content_type="application/json", body='{"detail":"not found"}'); return
+        route.fulfill(status=200, headers=cors, content_type="application/json", body=json.dumps(body))
+    def refuse_organisms(route, request):
+        captured.setdefault("organisms", []).append(request.url)
+        route.abort("connectionrefused")
 
     def api_endpoint(route, request):
         url = urlparse(request.url)
@@ -268,6 +305,8 @@ with sync_playwright() as p:
         ctx.route("https://huggingface.co/oauth/token", token_endpoint)
         ctx.route("https://huggingface.co/oauth/userinfo", userinfo_endpoint)
         ctx.route(API + "/**", api_endpoint)
+        ctx.route(ORG_API + "/**", organisms_endpoint)
+        ctx.route(re.compile(r"^https?://organisms\.api\.ndif\.us(/|$)"), refuse_organisms)
         ctx.route(re.compile(r"^https?://[^/]*\.hf\.space(/|$)"), refuse_space)
         ctx.route(BASE, page_guard)
         ctx.route(re.compile(r"/mock/board\.[^/]+\.json$"), mock_board_guard)
@@ -356,8 +395,8 @@ with sync_playwright() as p:
     check(win.is_visible("#lb-weeks") and win.inner_text("#lb-week") == "Week 2" and win.is_enabled("#lb-later") and win.is_enabled("#lb-earlier"),
           "pop-up: the picker reads 'Week 2', ← enabled, → enabled (a week is being evaluated after it)")
     check(win.is_hidden("#lb-caption") and win.locator(".lb-status").count() == 0
-          and win.locator("#lb-public ~ :not(.lb-detail-standalone):not(#lb-caption)").count() == 0,
-          "pop-up: nothing under a published board but the blocks (the pending week's line is hidden), no status block above it")
+          and win.locator("#lb-public ~ :not(.lb-detail-standalone):not(#lb-caption):not(#lb-api)").count() == 0,
+          "pop-up: nothing under a published board but the blocks and the organisms panel (the pending week's line is hidden), no status block above it")
     arrow, a_s = win.locator("#lb-earlier"), win.locator("#lb-earlier").evaluate("e => getComputedStyle(e)")
     check(all(a_s[k] == rs[k] for k in ("backgroundColor", "color", "fontFamily", "fontWeight", "boxShadow", "borderTopColor"))
           and arrow.inner_text() == "←" and win.inner_text("#lb-later") == "→",
@@ -1334,12 +1373,109 @@ with sync_playwright() as p:
     check("organizer" in pg.inner_text("#lb-who"), "dark: the pop-up page itself still works (nothing links to it yet)")
     dark.close()
 
+    # ---- 19. the model-organisms API section (organisms-api.js) below the board: it asks the organisms gateway for
+    # /api/me with the session's bearer token and shows the person's key (masked, Show reveals it), the meters, the
+    # 14-day bars and the recent requests; Rotate posts /api/me/key; the errors have their messages; it goes with the
+    # session. A mock session reads the fixture and never asks the gateway.
+    organisms["me"] = []   # earlier steps' sessions rendered the section too (it loads as soon as a session shows)
+    oc = new_context()
+    pg = oc.new_page()
+    pg.goto(f"{LB}?mock=participant")
+    pg.wait_for_selector(".lb-api-member .lb-api-key")
+    check(pg.inner_text("#lb-api-panel h2") == "Model organisms API" and "mock data" in pg.inner_text(".lb-api-head"),
+          "organisms: a headed section below the board, tagged 'mock data' for a mock session")
+    check(pg.locator(".lb-api-team").count() == 1 and "Example Team" in pg.inner_text(".lb-api-team-h"),
+          "organisms (mock): one section, the team's")
+    check(pg.inner_text(".lb-api-member .lb-api-key") == "org-mock…stuv" and pg.locator(".lb-api-key").count() == 1,
+          "organisms (mock): the person's key, masked, and no other")
+    pg.click(".lb-api-member .link-btn:has-text('Show')")
+    check(pg.inner_text(".lb-api-member .lb-api-key").startswith("org-mockKEY0123456789"), "organisms (mock): Show reveals it")
+    check(pg.locator(".lb-api-meter").count() == 3 and pg.locator(".lb-api-hist-bar").count() == 14,
+          "organisms (mock): three meters (day, week, in flight) and fourteen bars for the team's budget")
+    check("Week resets" in pg.inner_text(".lb-api-periods") and "50,000" in pg.inner_text(".lb-api-team"),
+          "organisms (mock): the weekly quota and its reset are shown")
+    pg.click(".lb-api-recent > summary")
+    check(pg.locator(".lb-api-recent tbody tr").count() == 9 and "grace" in pg.inner_text(".lb-api-recent tbody"),
+          "organisms (mock): the team's recent requests, with who made them")
+    check(pg.eval_on_selector_all(".lb-api-recent thead th.num", "hs => hs.map(h => h.textContent)") == ["prompt", "completion", "ms"],
+          "organisms (mock): the number columns' headers are right-aligned like their values")
+    pg.set_viewport_size({"width": 390, "height": 900})
+    check(pg.evaluate("(() => { const p = document.getElementById('lb-api-panel').getBoundingClientRect();"
+                      " const t = document.querySelector('.lb-api-recent table').getBoundingClientRect();"
+                      " const d = document.querySelector('.lb-api-recent');"
+                      " return t.width > d.clientWidth && d.getBoundingClientRect().right <= p.right; })()"),
+          "organisms (mock): on a narrow screen the recent requests scroll inside the panel")
+    pg.set_viewport_size({"width": 1280, "height": 900})
+    # the Team / You switch: your share in ink inside the team's dimmed use, your requests only; remembered
+    pg.click(".lb-api-snippet > summary")
+    pg.click(".lb-api-switch-btn:has-text('You')")
+    pg.wait_for_selector(".lb-api-bar-mine")
+    check(pg.evaluate("document.querySelector('.lb-api-snippet').open")
+          and pg.inner_text(".lb-api-member .lb-api-key").startswith("org-mockKEY0123456789")
+          and "org-mockKEY0123456789" in pg.inner_text(".lb-api-snippet pre"),
+          "organisms (mock): the switch keeps the example open and the revealed key in it")
+    check(pg.locator(".lb-api-bar-fill.is-dim").count() == 3 and pg.locator(".lb-api-bar-mine").count() == 3
+          and pg.locator(".lb-api-hist-mine").count() == 14 and "you 1,200" in pg.inner_text(".lb-api-meter")
+          and "team 3,125 / 10,000" in pg.inner_text(".lb-api-meter"),
+          "organisms (mock): 'You' dims the team's meters and bars and draws your share, with both numbers")
+    check(pg.locator(".lb-api-recent tbody tr").count() == 4 and "grace" not in pg.inner_text(".lb-api-recent tbody")
+          and pg.inner_text(".lb-api-recent > summary") == "Your recent requests",
+          "organisms (mock): 'You' lists your requests only")
+    pg.reload()
+    pg.wait_for_selector(".lb-api-bar-mine")
+    check(pg.locator(".lb-api-switch-btn.is-on").inner_text() == "You", "organisms (mock): the view is remembered")
+    pg.click(".lb-api-switch-btn:has-text('Team')")
+    pg.wait_for_function("!document.querySelector('.lb-api-bar-mine')")
+    check(pg.locator(".lb-api-bar-fill.is-dim").count() == 0, "organisms (mock): back to the team view")
+    check(not organisms["me"], "organisms (mock): the gateway was not asked")
+    shot(pg, "19-organisms-mock", "#lb-api", "#lb-api")
+    pg.click("#hf-logout")
+    pg.wait_for_selector("#hf-login")
+    check(pg.locator("#lb-api-panel").count() == 0, "organisms: the panel goes with the session")
+    # the other mock sessions read their own fixtures: the organizer's personal key, the 403 of an account without a team
+    pg.goto(f"{LB}?mock=organizer")
+    pg.wait_for_selector(".lb-api-personal .lb-api-key")
+    check(pg.locator(".lb-api-team").count() == 1 and "Personal key (organizer)" in pg.inner_text(".lb-api-team-h")
+          and "no rate limits" in pg.inner_text(".lb-api-personal") and pg.locator(".lb-api-meter").count() == 0
+          and pg.locator(".lb-api-hist-bar").count() == 14,
+          "organisms (mock organizer): the personal section, without limits or meters, and the 14-day bars")
+    pg.goto(f"{LB}?mock=noteam")
+    pg.wait_for_function("document.querySelector('.lb-api-body') && document.querySelector('.lb-api-body').textContent.includes('team organization')")
+    check(pg.locator(".lb-api-body .lb-error").count() == 1 and pg.locator(".lb-api-team").count() == 0,
+          "organisms (mock noteam): the 403 message, and no team's key or usage")
+    check(not organisms["me"], "organisms (mock): the gateway was not asked for the other sessions either")
+    oc.close()
+    # signed in for real (the fake endpoints): the gateway is asked with the token, Rotate posts, errors have copy
+    oc = new_context()
+    pg = oc.new_page()
+    pg.goto(f"{LB}?mock=off")
+    pg.wait_for_selector("#hf-login")
+    organisms["me"] = []
+    pg.click("#hf-login")
+    pg.wait_for_selector(".lb-api-member .lb-api-key", timeout=15000)
+    check(len(organisms["me"]) == 1 and organisms["me"][0] == "Bearer hf_oauth_mock_token",
+          "organisms: /api/me asked once, with the session's bearer token")
+    check(pg.inner_text(".lb-api-member .lb-api-key") == "org-mock…stuv", "organisms: the member's key from the gateway, masked")
+    pg.once("dialog", lambda d: d.accept())
+    pg.click(".lb-api-member .lb-api-rotate")
+    pg.wait_for_function("document.querySelector('.lb-api-member .lb-api-key') && document.querySelector('.lb-api-member .lb-api-key').textContent === 'org-rota…qrst'")
+    check(organisms["rotate"] == 1 and organisms["rotated"] == {"team": "example-team"},
+          "organisms: Rotate posts /api/me/key?team=example-team (after confirming) and shows the new key")
+    for answer, text in (("401", "no longer accepted"), ("403", "team organization"), ("refused", "didn't answer")):
+        organisms["answer"] = answer
+        pg.evaluate("SCOrganismsApi.refresh()")
+        pg.wait_for_function(f"document.querySelector('.lb-api-body').textContent.includes({json.dumps(text)})", timeout=15000)
+        check(True, f"organisms: {answer} shows its message")
+    organisms["answer"] = None
+    oc.close()
+    check(not captured.get("organisms"), f"the real organisms gateway was never called ({captured.get('organisms')})")
+
     check(not captured["space"], f"the real results server was never called ({captured['space']})")
     check(not captured["page"], f"the pop-up never asked for the competition page ({captured['page']})")
     # the 400 from step 6; the 401, 404, 503s and refused connections of step 15; and mock mode's 404 for a week without a
     # fixture, are deliberate
     noise = [e for e in console_errors if "mailerlite" not in e.lower() and "net::ERR_FAILED" not in e and "fonts" not in e.lower()
-             and "400" not in e and "status of 401" not in e and "status of 404" not in e and "status of 503" not in e
+             and "400" not in e and "status of 401" not in e and "status of 403" not in e and "status of 404" not in e and "status of 503" not in e
              and "ERR_CONNECTION_REFUSED" not in e]
     check(not noise, f"no unexpected console errors: {noise}")
     browser.close()
