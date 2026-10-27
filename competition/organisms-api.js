@@ -29,7 +29,8 @@
   var root = document.getElementById('lb-api');
   if (!root) return;
 
-  var state = { session: null, data: null, shown: false, busy: false, view: 'team' };
+  // openRecent, openSnippet and revealed (a section's Show, by org) carry through the Team / You switch's re-render
+  var state = { session: null, data: null, shown: false, busy: false, view: 'team', revealed: {} };
   try { if (localStorage.getItem(VIEW_KEY) === 'you') state.view = 'you'; } catch (e) { /* ignore */ }
   function setView(v) { state.view = v; try { localStorage.setItem(VIEW_KEY, v); } catch (e) { /* ignore */ } }
 
@@ -141,20 +142,24 @@
     }
   }
 
+  // The key a section has revealed (Show), or null
+  function shownKey(id, k) { return state.revealed[id] && k && k.api_key ? k.api_key : null; }
+
   // One key line: label, the key (masked; Show reveals it), Copy, Rotate. `rotate` is null when this person may not
-  // rotate it; `onReveal` tells the section's snippet which key to show.
-  function renderKeyRow(parent, label, k, rotate, onReveal, note) {
+  // rotate it; `onReveal` tells the section's snippet which key to show; `id` names the section in state.revealed.
+  function renderKeyRow(parent, label, k, rotate, onReveal, id) {
     var row = add(parent, el('div', 'lb-api-keyrow'));
     add(row, el('span', 'lb-api-label', label));
     if (!k) { add(row, el('span', 'soft', 'not available')); return; }
-    var code = add(row, el('code', 'lb-api-key', k.api_key ? maskKey(k.api_key) : 'not available'));
+    var revealed = !!shownKey(id, k);
+    var code = add(row, el('code', 'lb-api-key', k.api_key ? (revealed ? k.api_key : maskKey(k.api_key)) : 'not available'));
     code.title = k.api_key ? (k.fresh ? 'New key' : 'Created ' + when(k.created)) : '';
-    var revealed = false;
     if (k.api_key) {
-      var show = add(row, el('button', 'link-btn', 'Show'));
+      var show = add(row, el('button', 'link-btn', revealed ? 'Hide' : 'Show'));
       show.type = 'button';
       show.addEventListener('click', function () {
         revealed = !revealed;
+        state.revealed[id] = revealed;
         code.textContent = revealed ? k.api_key : maskKey(k.api_key);
         show.textContent = revealed ? 'Hide' : 'Show';
         if (onReveal) onReveal(revealed ? k.api_key : null);
@@ -177,7 +182,6 @@
       });
     }
     if (k.fresh) add(row, el('span', 'lb-tag', 'new'));
-    if (note) add(row, el('span', 'soft lb-api-keynote', note));
   }
 
   function snippetText(d, key) {
@@ -290,11 +294,12 @@
     if (panel && state.data) renderData(panel.querySelector('.lb-api-body'), state.data);
   }
 
-  function renderSnippetBlock(parent, d) {
+  function renderSnippetBlock(parent, d, key) {
     var snip = add(parent, el('details', 'lb-api-snippet'));
+    if (state.openSnippet) snip.open = true;
     add(snip, el('summary', null, 'Example (Python, OpenAI SDK)'));
-    var pre = add(snip, el('pre', null, snippetText(d, null)));
-    snip.addEventListener('toggle', fit);
+    var pre = add(snip, el('pre', null, snippetText(d, key)));
+    snip.addEventListener('toggle', function () { state.openSnippet = snip.open; fit(); });
     return function (key) { pre.textContent = snippetText(d, key); };
   }
 
@@ -307,9 +312,9 @@
     if (t.role) add(h, el('span', 'lb-tag', t.role));
     var onReveal = null;
     var mine = add(sec, el('div', 'lb-api-member'));
-    renderKeyRow(mine, 'Your key', t.key, { team: t.org }, function (k) { if (onReveal) onReveal(k); });
+    renderKeyRow(mine, 'Your key', t.key, { team: t.org }, function (k) { if (onReveal) onReveal(k); }, t.org);
     renderBudget(sec, d, t, true);
-    onReveal = renderSnippetBlock(sec, d);
+    onReveal = renderSnippetBlock(sec, d, shownKey(t.org, t.key));
   }
 
   function renderPersonal(body, d, p) {
@@ -317,9 +322,9 @@
     add(add(sec, el('h3', 'lb-api-team-h')), el('span', null, d.admin ? 'Personal key (organizer)' : 'Personal key'));
     var onReveal = null;
     var mine = add(sec, el('div', 'lb-api-member'));
-    renderKeyRow(mine, 'Your key', p.key, { team: null }, function (k) { if (onReveal) onReveal(k); });
+    renderKeyRow(mine, 'Your key', p.key, { team: null }, function (k) { if (onReveal) onReveal(k); }, ':personal');
     renderBudget(sec, d, p, false);
-    onReveal = renderSnippetBlock(sec, d);
+    onReveal = renderSnippetBlock(sec, d, shownKey(':personal', p.key));
   }
 
   function renderData(body, d) {
@@ -344,6 +349,7 @@
     var body = panel.querySelector('.lb-api-body');
     var s = state.session;
     state.busy = true;
+    state.revealed = {};
     message(body, rotate ? 'Rotating the key…' : 'Loading your API access…');
     withRetry(function () { return load(s, rotate); }).then(function (r) {
       state.busy = false;
@@ -376,7 +382,7 @@
 
   function clear() {
     root.textContent = '';
-    state.session = null; state.data = null; state.busy = false;
+    state.session = null; state.data = null; state.busy = false; state.revealed = {};
   }
 
   window.SCOrganismsApi = { render: render, clear: clear, refresh: function () { refresh(null); } };

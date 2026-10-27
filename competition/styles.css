@@ -525,7 +525,6 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-api-switch-btn + .lb-api-switch-btn{ border-left:1px solid var(--line); }
 .lb-api-switch-btn.is-on{ background:var(--ink); color:#fff; cursor:default; }
 .lb-api-switch-btn:not(.is-on):hover{ color:var(--accent); }
-.lb-api-limits{ font-size:.85rem; }
 /* The 14-day history: a short strip beside the meters, read at a glance; each bar takes the middle of its day's slot,
    with air either side, and a day with no requests is a hairline mark. The reset times sit under its axis */
 .lb-api-hist{ display:flex; align-items:flex-end; height:72px; border-bottom:1px solid var(--line); padding-bottom:1px; }

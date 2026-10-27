@@ -1407,8 +1407,13 @@ with sync_playwright() as p:
           "organisms (mock): on a narrow screen the recent requests scroll inside the panel")
     pg.set_viewport_size({"width": 1280, "height": 900})
     # the Team / You switch: your share in ink inside the team's dimmed use, your requests only; remembered
+    pg.click(".lb-api-snippet > summary")
     pg.click(".lb-api-switch-btn:has-text('You')")
     pg.wait_for_selector(".lb-api-bar-mine")
+    check(pg.evaluate("document.querySelector('.lb-api-snippet').open")
+          and pg.inner_text(".lb-api-member .lb-api-key").startswith("org-mockKEY0123456789")
+          and "org-mockKEY0123456789" in pg.inner_text(".lb-api-snippet pre"),
+          "organisms (mock): the switch keeps the example open and the revealed key in it")
     check(pg.locator(".lb-api-bar-fill.is-dim").count() == 3 and pg.locator(".lb-api-bar-mine").count() == 3
           and pg.locator(".lb-api-hist-mine").count() == 14 and "you 1,200" in pg.inner_text(".lb-api-meter")
           and "team 3,125 / 10,000" in pg.inner_text(".lb-api-meter"),
