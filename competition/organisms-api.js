@@ -51,7 +51,7 @@
   function pct(a, b) { return b ? Math.min(100, Math.round(100 * a / b)) : 0; }
   function when(ts) { return new Date(ts * 1000).toLocaleString(); }
   function whenShort(ts) {
-    return new Date(ts * 1000).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return new Date(ts * 1000).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
   }
   function maskKey(k) { return k ? k.slice(0, 8) + '…' + k.slice(-4) : ''; }
 
@@ -98,6 +98,24 @@
     fit();
   }
 
+  // The "you" view's pair of figures: the person's own in ink, the team's in soft, spaced apart (no separator)
+  function youTeam(parent, mine, team) {
+    add(parent, el('strong', null, 'you ' + mine));
+    add(parent, el('span', 'soft', 'team ' + team));
+  }
+  // One figure under the meters, in the meters' own shape: a label at the left, the mono value at the right.
+  // `value` is a string, or {you, team} for the "you" view's pair.
+  function fact(parent, label, value) {
+    var row = add(parent, el('div', 'lb-api-fact'));
+    add(row, el('span', null, label));
+    var val = add(row, el('span', 'lb-api-meter-val'));
+    if (typeof value === 'string') val.textContent = value; else youTeam(val, value.you, value.team);
+  }
+  function dayLabel(day) {   // "2026-10-13" -> "Oct 13", as a calendar date (not shifted by the viewer's zone)
+    var p = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day || '');
+    return p ? new Date(+p[1], +p[2] - 1, +p[3]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : (day || '');
+  }
+
   // A meter of the budget's use against its limit. With `mine` (the "you" view) the budget's fill is dimmed and the
   // person's own share drawn in ink inside it, so the real limit stays visible and the bar keeps its scale.
   function meter(parent, label, used, max, unit, mine) {
@@ -106,10 +124,7 @@
     add(head, el('span', null, label));
     var val = add(head, el('span', 'lb-api-meter-val'));
     if (mine == null) val.textContent = num(used) + ' / ' + num(max) + (unit ? ' ' + unit : '');
-    else {
-      add(val, el('strong', null, 'you ' + num(mine)));
-      add(val, el('span', 'soft', ' · team ' + num(used) + ' / ' + num(max) + (unit ? ' ' + unit : '')));
-    }
+    else youTeam(val, num(mine), num(used) + ' / ' + num(max) + (unit ? ' ' + unit : ''));
     var bar = add(row, el('div', 'lb-api-bar'));
     var fill = add(bar, el('div', 'lb-api-bar-fill' + (pct(used, max) >= 90 ? ' is-high' : '') + (mine == null ? '' : ' is-dim')));
     fill.style.width = pct(used, max) + '%';
@@ -193,27 +208,25 @@
       if (b.limits.tokens_per_week && b.week) meter(left, 'Tokens this week', b.week.tokens || 0, b.limits.tokens_per_week, null,
         m ? ((m.week || {}).tokens || 0) : null);
       meter(left, 'In flight now', b.inflight || 0, b.limits.max_inflight, 'requests', m ? (m.inflight || 0) : null);
-      add(left, el('p', 'soft lb-api-limits', num(b.limits.max_tokens_per_request || d.max_tokens_per_request) +
-        ' max_tokens per request · ' +
-        (m ? 'you ' + num(mt.requests) + ' of the team\'s ' + num(t.requests) + ' requests today'
-           : num(t.requests) + ' requests today') + (t.rejected ? ' · ' + num(t.rejected) + ' rate-limited' : '')));
-      if (m) add(left, el('p', 'soft lb-api-limits lb-api-younote', 'The limits apply to the whole team\'s use (grey); your share is in black.'));
-      var resets = [];
-      if (b.day_resets_at) resets.push('day resets ' + whenShort(b.day_resets_at));
-      if (b.limits.tokens_per_week && b.week && b.week.resets_at) resets.push('week resets ' + whenShort(b.week.resets_at));
-      var tz = b.quota_timezone_label || b.quota_timezone;
-      if (resets.length) add(left, el('p', 'soft lb-api-limits', resets.join(' · ') + (tz ? ' (midnight ' + tz + ')' : '')));
+      // Today's other figures continue the meters' rows: a label at the left, the value at the right
+      var facts = add(left, el('div', 'lb-api-facts'));
+      fact(facts, 'max_tokens per request', num(b.limits.max_tokens_per_request || d.max_tokens_per_request));
+      fact(facts, 'Requests today', m ? { you: num(mt.requests), team: num(t.requests) } : num(t.requests));
+      if (t.rejected || (mt && mt.rejected)) fact(facts, 'Rate-limited today', m ? { you: num(mt.rejected), team: num(t.rejected) } : num(t.rejected));
     } else {
-      add(left, el('p', 'soft lb-api-limits', num(t.requests) + ' requests · ' +
-        num((t.prompt_tokens || 0) + (t.completion_tokens || 0)) + ' tokens today · ' + num(b.inflight || 0) + ' in flight'));
+      var admin = add(left, el('div', 'lb-api-facts'));
+      fact(admin, 'Requests today', num(t.requests));
+      fact(admin, 'Tokens today', num((t.prompt_tokens || 0) + (t.completion_tokens || 0)));
+      fact(admin, 'In flight now', num(b.inflight || 0));
     }
     var right = add(cols, el('div', 'lb-api-col'));
+    var days = b.days || [];
     add(right, el('h3', 'lb-api-h', m ? 'Last 14 days (requests: you in black, team in grey)' : 'Last 14 days (requests)'));
+    var max = Math.max.apply(null, [1].concat(days.map(function (x) { return x.requests; })));
     var hist = add(right, el('div', 'lb-api-hist' + (m ? ' is-you' : '')));
-    var max = Math.max.apply(null, [1].concat((b.days || []).map(function (x) { return x.requests; })));
-    (b.days || []).forEach(function (x, i) {
+    days.forEach(function (x, i) {
       var cell = add(hist, el('div', 'lb-api-hist-cell'));
-      var bar = add(cell, el('div', 'lb-api-hist-bar' + (x.rejected ? ' has-rejected' : '') + (m ? ' is-dim' : '')));
+      var bar = add(cell, el('div', 'lb-api-hist-bar' + (x.rejected ? ' has-rejected' : '') + (m ? ' is-dim' : '') + (x.requests ? '' : ' is-zero')));
       bar.style.height = Math.max(2, Math.round(100 * x.requests / max)) + '%';
       var title = x.day + ': ' + num(x.requests) + ' requests, ' + num(x.prompt_tokens + x.completion_tokens) + ' tokens' +
         (x.rejected ? ', ' + num(x.rejected) + ' rate-limited' : '');
@@ -226,6 +239,19 @@
       }
       cell.title = title;
     });
+    if (days.length) {   // the axis: the first and the last day, under the baseline
+      var axis = add(right, el('div', 'lb-api-hist-axis'));
+      add(axis, el('span', null, dayLabel(days[0].day)));
+      if (days.length > 1) add(axis, el('span', null, dayLabel(days[days.length - 1].day)));
+    }
+    // When the periods turn, in the viewer's own zone (named after each time), as the bottom rows of the column so
+    // they line up with the figures at the left
+    var weekResets = b.limits && b.limits.tokens_per_week && b.week && b.week.resets_at;
+    if (b.limits && (b.day_resets_at || weekResets)) {
+      var periods = add(right, el('div', 'lb-api-facts lb-api-periods'));
+      if (b.day_resets_at) fact(periods, 'Day resets', whenShort(b.day_resets_at));
+      if (weekResets) fact(periods, 'Week resets', whenShort(b.week.resets_at));
+    }
     var recent = m ? (m.recent || []) : (b.recent || []);
     if (recent.length) {
       var det = add(parent, el('details', 'lb-api-recent'));
@@ -274,8 +300,7 @@
     if (t.role) add(h, el('span', 'lb-tag', t.role));
     var onReveal = null;
     var mine = add(sec, el('div', 'lb-api-member'));
-    renderKeyRow(mine, 'Your key', t.key, { team: t.org }, function (k) { if (onReveal) onReveal(k); },
-      'yours alone; usage counts against the team\'s shared budget');
+    renderKeyRow(mine, 'Your key', t.key, { team: t.org }, function (k) { if (onReveal) onReveal(k); });
     renderBudget(sec, d, t, true);
     onReveal = renderSnippetBlock(sec, d);
   }
@@ -337,7 +362,6 @@
     panel.id = 'lb-api-panel';
     var head = add(panel, el('div', 'lb-api-head'));
     add(head, el('h2', null, 'Model organisms API'));
-    add(head, el('span', 'soft', 'your key, usage and rate limits'));
     if (mockSession(session)) add(head, el('span', 'lb-tag', 'mock data'));
     add(panel, el('div', 'lb-api-body'));
     refresh(null);
