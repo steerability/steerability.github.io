@@ -24,7 +24,7 @@
                          them is not shown here). On the week being
                          evaluated its top-level run block carries the
                          phase and intake_done as well. A team file
-                         (schema 2, 3 or 4) is made by the organizers' harness
+                         (schema 2, 3, 4 or 5) is made by the organizers' harness
                          and contains only what a team may see about
                          its own submission; this script renders what
                          it gets. Its entry.record is the pull and the
@@ -95,7 +95,7 @@
 (function () {
   'use strict';
 
-  var SCHEMAS = [2, 3, 4];     // the team-file schemas this script reads: 3 adds in_delta to the families, 4 more guard kinds
+  var SCHEMAS = [2, 3, 4, 5];  // the team-file schemas this script reads: 3 adds in_delta to the families, 4 more guard kinds
   var RETRY_MS = 20000;        // a results server waking from sleep gets one retry after this long
   var LABEL_MAX = 80;          // participant-authored names are cut to this many characters
   var MESSAGE_MAX = 300;       // ... and the record's lines to this many
