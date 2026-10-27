@@ -13,8 +13,8 @@
    Face access token (the gateway verifies it with Hugging Face and
    mints a key on the first visit); POST /api/me/key rotates the key.
    A mock session (?mock=participant etc., hf-login.js) reads
-   leaderboard/mock/organisms/me.json instead and says so in the
-   header; a real sign-in always asks the gateway, even while the
+   leaderboard/mock/organisms/<kind>.json instead (me.json when the
+   kind has none) and says so in the header; a real sign-in always asks the gateway, even while the
    board is in mock mode, so real usage is never confused with the
    fixture's.
 
@@ -65,12 +65,19 @@
   // rotate: null, or {team: <org>|null} (team null = the personal key)
   function load(session, rotate) {
     if (mockSession(session)) {
-      return getJSON('mock/organisms/me.json', { cache: 'no-cache' }).then(function (r) {
+      // One fixture per session kind (organizer.json, noteam.json), like the results fixtures; the participant
+      // sessions, and a kind without one, read me.json
+      var me = function () { return getJSON('mock/organisms/me.json', { cache: 'no-cache' }); };
+      var kind = session.mock;
+      return (/^participant/.test(kind) ? me() : getJSON('mock/organisms/' + encodeURIComponent(kind) + '.json', { cache: 'no-cache' }).then(function (r) {
+        return r.status === 404 ? me() : r;
+      })).then(function (r) {
+        if (r.body && r.body.mock_status) return { status: r.body.mock_status, body: r.body };   // a fixture can play an error
         if (r.status !== 200 || !r.body) throw new Error('fixture missing');
         if (rotate) {
           var fresh = { api_key: 'org-mockNewKey_' + Math.random().toString(36).slice(2, 10), key_prefix: 'org-mockNew', created: Date.now() / 1000, fresh: true };
           if (!rotate.team && r.body.personal) r.body.personal.key = fresh;
-          r.body.teams.forEach(function (t) { if (t.org === rotate.team) t.key = fresh; });
+          (r.body.teams || []).forEach(function (t) { if (t.org === rotate.team) t.key = fresh; });
         }
         return { status: 200, body: r.body };
       });
@@ -260,7 +267,7 @@
       var table = add(det, el('table'));
       var hr = add(add(table, el('thead')), el('tr'));
       (withUser ? ['time', 'who', 'model', 'status', 'prompt', 'completion', 'ms'] : ['time', 'model', 'status', 'prompt', 'completion', 'ms'])
-        .forEach(function (h) { add(hr, el('th', null, h)); });
+        .forEach(function (h) { add(hr, el('th', /^(prompt|completion|ms)$/.test(h) ? 'num' : null, h)); });
       var tb = add(table, el('tbody'));
       recent.forEach(function (r) {
         var tr = add(tb, el('tr'));

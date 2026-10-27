@@ -1392,12 +1392,20 @@ with sync_playwright() as p:
     check(pg.inner_text(".lb-api-member .lb-api-key").startswith("org-mockKEY0123456789"), "organisms (mock): Show reveals it")
     check(pg.locator(".lb-api-meter").count() == 3 and pg.locator(".lb-api-hist-bar").count() == 14,
           "organisms (mock): three meters (day, week, in flight) and fourteen bars for the team's budget")
-    check("week resets" in pg.inner_text(".lb-api-team") and "50,000" in pg.inner_text(".lb-api-team")
-          and "midnight AoE" in pg.inner_text(".lb-api-team"),
-          "organisms (mock): the weekly quota, its reset and the quota timezone are shown")
+    check("Week resets" in pg.inner_text(".lb-api-periods") and "50,000" in pg.inner_text(".lb-api-team"),
+          "organisms (mock): the weekly quota and its reset are shown")
     pg.click(".lb-api-recent > summary")
     check(pg.locator(".lb-api-recent tbody tr").count() == 9 and "grace" in pg.inner_text(".lb-api-recent tbody"),
           "organisms (mock): the team's recent requests, with who made them")
+    check(pg.eval_on_selector_all(".lb-api-recent thead th.num", "hs => hs.map(h => h.textContent)") == ["prompt", "completion", "ms"],
+          "organisms (mock): the number columns' headers are right-aligned like their values")
+    pg.set_viewport_size({"width": 390, "height": 900})
+    check(pg.evaluate("(() => { const p = document.getElementById('lb-api-panel').getBoundingClientRect();"
+                      " const t = document.querySelector('.lb-api-recent table').getBoundingClientRect();"
+                      " const d = document.querySelector('.lb-api-recent');"
+                      " return t.width > d.clientWidth && d.getBoundingClientRect().right <= p.right; })()"),
+          "organisms (mock): on a narrow screen the recent requests scroll inside the panel")
+    pg.set_viewport_size({"width": 1280, "height": 900})
     # the Team / You switch: your share in ink inside the team's dimmed use, your requests only; remembered
     pg.click(".lb-api-switch-btn:has-text('You')")
     pg.wait_for_selector(".lb-api-bar-mine")
@@ -1419,6 +1427,18 @@ with sync_playwright() as p:
     pg.click("#hf-logout")
     pg.wait_for_selector("#hf-login")
     check(pg.locator("#lb-api-panel").count() == 0, "organisms: the panel goes with the session")
+    # the other mock sessions read their own fixtures: the organizer's personal key, the 403 of an account without a team
+    pg.goto(f"{LB}?mock=organizer")
+    pg.wait_for_selector(".lb-api-personal .lb-api-key")
+    check(pg.locator(".lb-api-team").count() == 1 and "Personal key (organizer)" in pg.inner_text(".lb-api-team-h")
+          and "no rate limits" in pg.inner_text(".lb-api-personal") and pg.locator(".lb-api-meter").count() == 0
+          and pg.locator(".lb-api-hist-bar").count() == 14,
+          "organisms (mock organizer): the personal section, without limits or meters, and the 14-day bars")
+    pg.goto(f"{LB}?mock=noteam")
+    pg.wait_for_function("document.querySelector('.lb-api-body') && document.querySelector('.lb-api-body').textContent.includes('team organization')")
+    check(pg.locator(".lb-api-body .lb-error").count() == 1 and pg.locator(".lb-api-team").count() == 0,
+          "organisms (mock noteam): the 403 message, and no team's key or usage")
+    check(not organisms["me"], "organisms (mock): the gateway was not asked for the other sessions either")
     oc.close()
     # signed in for real (the fake endpoints): the gateway is asked with the token, Rotate posts, errors have copy
     oc = new_context()

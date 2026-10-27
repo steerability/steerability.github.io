@@ -538,9 +538,10 @@ pre .c{ color:#8A8C96; font-style:italic; }
 .lb-api-hist-mine{ position:absolute; left:21%; right:21%; bottom:0; background:var(--ink); }
 .lb-api-hist-axis{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:.72rem; color:var(--soft); margin-top:.3rem; }
 .lb-api-recent, .lb-api-snippet{ margin-top:1rem; }
+.lb-api-recent{ overflow-x:auto; }   /* a narrow window scrolls the table inside the panel */
 .lb-api-recent > summary, .lb-api-snippet > summary{ cursor:pointer; font-size:.85rem; color:var(--soft); }
 .lb-api-recent table{ width:100%; border-collapse:collapse; font-size:.8rem; margin-top:.4rem; }
-.lb-api-recent th, .lb-api-recent td{ text-align:left; padding:.25rem .5rem; border-bottom:1px solid var(--line); font-family:var(--font-mono); font-weight:400; }
+.lb-api-recent th, .lb-api-recent td{ text-align:left; padding:.25rem .5rem; border-bottom:1px solid var(--line); font-family:var(--font-mono); font-weight:400; white-space:nowrap; }
 .lb-api-recent th{ color:var(--soft); font-size:.72rem; }
 .lb-api-recent td.num, .lb-api-recent th.num{ text-align:right; }
 .lb-api-recent td.is-warn{ color:#9A6700; } .lb-api-recent td.is-bad{ color:#B3261E; }
