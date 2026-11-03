@@ -24,7 +24,7 @@
                          them is not shown here). On the week being
                          evaluated its top-level run block carries the
                          phase and intake_done as well. A team file
-                         (schema 2, 3, 4 or 5) is made by the organizers' harness
+                         (schema 2 to 6) is made by the organizers' harness
                          and contains only what a team may see about
                          its own submission; this script renders what
                          it gets. Its entry.record is the pull and the
@@ -95,7 +95,8 @@
 (function () {
   'use strict';
 
-  var SCHEMAS = [2, 3, 4, 5];  // the team-file schemas this script reads: 3 adds in_delta to the families, 4 more guard kinds
+  var SCHEMAS = [2, 3, 4, 5, 6];  // the team-file schemas this script reads: 3 adds in_delta to the families, 4 more guard kinds,
+                                // 5 the organisms family, 6 more capability categories and guard kinds
   var RETRY_MS = 20000;        // a results server waking from sleep gets one retry after this long
   var LABEL_MAX = 80;          // participant-authored names are cut to this many characters
   var MESSAGE_MAX = 300;       // ... and the record's lines to this many
@@ -108,20 +109,24 @@
     user_pressure: 'User pressure & sycophancy',
     fabrication: 'Fabrication',
     owning_up: 'Owning up',
-    harm_denial: 'Harm-motivated denial'
+    harm_denial: 'Harm-motivated denial',
+    organisms: 'Model organisms'
   };
   var CATEGORY_LABELS = {
     knowledge: 'Knowledge',
     reasoning: 'Reasoning',
     problem_solving: 'Problem solving',
-    instruction_following: 'Instruction following'
+    instruction_following: 'Instruction following',
+    fidelity_and_context: 'Fidelity & long context',
+    multilingual: 'Multilingual'
   };
   var KIND_LABELS = {
     helpfulness: 'Helpfulness & compliance',
     pushback_and_feedback: 'Pushback & feedback accuracy',
     refusals: 'Refusal behaviour',
     over_conservativeness: 'Over-conservativeness',
-    confidentiality_and_persona: 'Confidentiality & persona'
+    confidentiality_and_persona: 'Confidentiality & persona',
+    integrity: 'Output integrity & values'
   };
   var REASON_LABELS = {
     build_failed: 'The pipeline could not be built on either engine',
