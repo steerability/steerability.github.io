@@ -34,6 +34,19 @@
      Each answer is kept for the session, so stepping back to a week
      is instant.
 
+   Baselines
+     The /me answer of a published week may carry baselines: one file
+     per baseline of the board, keyed by the arm's name (which is the
+     row's team), the same for every signed-in viewer. A baseline file
+     is a team file's board and card without the pull: {schema, run,
+     arm, board, method_card}, with board.models per model as in a
+     team file, board.families, S, ci, and no rank, track or history.
+     Its row of the board becomes clickable like a team's, and its
+     drawer holds the results, the breakdown, a run line per model and
+     the method card. Rows without a file stay plain, and an answer
+     without the key (an older API, the week being evaluated) has
+     none.
+
    The team's row
      Each submission row of the board carries data-org: the first 12
      hex characters of the SHA-256 of the team's organization handle,
@@ -97,6 +110,7 @@
 
   var SCHEMAS = [2, 3, 4, 5, 6];  // the team-file schemas this script reads: 3 adds in_delta to the families, 4 more guard kinds,
                                 // 5 the organisms family, 6 more capability categories and guard kinds
+  var BASELINE_SCHEMAS = [1];     // the baseline-file schemas this script reads
   var RETRY_MS = 20000;        // a results server waking from sleep gets one retry after this long
   var LABEL_MAX = 80;          // participant-authored names are cut to this many characters
   var MESSAGE_MAX = 300;       // ... and the record's lines to this many
@@ -568,6 +582,7 @@
       if (stale()) return;
       return runningSection(view).then(function () {
       items.forEach(function (it, i) { if (supported(it.team)) attachDetail(it.team, it.org, hashes[i]); });
+      attachBaselines(view);
       missing.forEach(function (org) {
         attachNote(org, org, 'No entry for this organization in ' + label + ". The next intake is on the competition page's countdown.");
       });
@@ -708,9 +723,9 @@
     return section('record', box, true);
   }
 
-  // The method card as the team submitted it: the file's text, nothing rendered.
+  // The method card as the team submitted it (a baseline's as the organizers wrote it): the file's text, nothing rendered.
   function cardSection(team) {
-    var card = team.entry.method_card;
+    var card = isObj(team.entry) ? team.entry.method_card : team.method_card;
     if (!isObj(card) || typeof card.text !== 'string') return null;
     var box = el('div', 'lb-card', card.text);
     if (card.truncated === true) add(box, el('span', 'lb-cut', '[the card is longer; it was cut here]'));
@@ -735,6 +750,34 @@
     if (board && isObj(board.models)) add(d, resultsTable(team));
     if (board) add(d, breakdown(team));
     return add(d, recordSection(team), cardSection(team));
+  }
+
+  /* ---------- baselines: the same drawer from a baseline file (see the header comment) ---------- */
+
+  function supportedBaseline(b) {
+    return isObj(b) && BASELINE_SCHEMAS.indexOf(b.schema) !== -1 && typeof b.arm === 'string' && isObj(b.run)
+      && isObj(b.board) && isObj(b.board.models);
+  }
+  // The record of a baseline: no pull or intake, only the run's line per model.
+  function baselineRecord(b) {
+    var box = el('div', 'lb-record');
+    modelsOf(b).forEach(function (m, i) { add(box, line(i ? '' : 'run', diagnostics(b, m))); });
+    if (!box.childNodes.length) add(box, line('', '—'));
+    return section('record', box, true);
+  }
+  function baselineDrawer(b) {
+    return add(el('div', 'lb-drawer'), resultsTable(b), breakdown(b), baselineRecord(b), cardSection(b));
+  }
+  // Each baseline row whose arm has a file gets the drawer; the rest stay as they are. Ids carry the arm's name, which
+  // the harness keeps to [a-z0-9_]; any other name gets no drawer rather than an id built from it.
+  function attachBaselines(view) {
+    var files = isObj(view.baselines) ? view.baselines : {};
+    document.querySelectorAll('#lb-public .leaderboard > table > tbody > tr.lb-baseline').forEach(function (row) {
+      var cell = row.querySelector('.lb-team'), arm = cell ? cell.textContent.trim() : '';
+      var b = Object.prototype.hasOwnProperty.call(files, arm) ? files[arm] : null;
+      if (!/^[a-z0-9_]+$/.test(arm) || !supportedBaseline(b) || b.arm !== arm) return;
+      expandRow(row, cell, 'lb-detail-baseline-' + arm, baselineDrawer(b));
+    });
   }
 
   /* ---------- the week being evaluated ---------- */
@@ -918,7 +961,11 @@
       placeBlock(block);
       return;
     }
-    // The name becomes the button that carries the ARIA state; the row itself is the click target (see onBoardClick)
+    expandRow(row, cell, id, make(team));
+  }
+
+  // The name becomes the button that carries the ARIA state; the row itself is the click target (see onBoardClick)
+  function expandRow(row, cell, id, content) {
     var button = el('button', 'lb-expand', cell.textContent.trim());
     button.type = 'button';
     button.setAttribute('aria-expanded', 'false');
@@ -928,7 +975,7 @@
     row.classList.add('lb-expandable');
     var td = el('td');
     td.colSpan = row.cells.length || 6;
-    var detail = add(el('tr', 'lb-detail'), add(td, make(team)));
+    var detail = add(el('tr', 'lb-detail'), add(td, content));
     detail.id = id;
     detail.hidden = true;
     row.parentNode.insertBefore(detail, row.nextSibling);

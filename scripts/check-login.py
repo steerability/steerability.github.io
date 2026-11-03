@@ -335,10 +335,10 @@ with sync_playwright() as p:
     check(btn.inner_text() == "Sign in with Hugging Face", "page: sign-in button shown")
     check(page.inner_text("#hf-open-note") == "to see your team's private results", "page: soft phrase next to it")
     check(page.locator("#lb-who, #lb-private-content").count() == 0, "page: no who line or private view on the competition page")
-    reg = page.locator("a.btn", has_text="Register")
-    bs, rs = btn.evaluate("e => getComputedStyle(e)"), reg.evaluate("e => getComputedStyle(e)")
+    ref = page.locator("#signup-form button.btn")   # an enabled .btn on the page (Register is disabled once registration closes)
+    bs, rs = btn.evaluate("e => getComputedStyle(e)"), ref.evaluate("e => getComputedStyle(e)")
     for prop in ("backgroundColor", "color", "fontFamily", "fontSize", "fontWeight", "boxShadow", "borderTopColor", "paddingLeft"):
-        check(bs[prop] == rs[prop], f"button style matches Register: {prop} = {bs[prop]!r}")
+        check(bs[prop] == rs[prop], f"button style matches the page's other buttons: {prop} = {bs[prop]!r}")
     shot(page, "01-page-signed-out", top="#leaderboard", pad=40)
 
     # ---- 2. the button opens the pop-up, which goes straight to huggingface.co and back, signed in
@@ -374,8 +374,9 @@ with sync_playwright() as p:
     check(captured["me"] and captured["me"][-1] == "Bearer hf_oauth_mock_token" and captured["me_runs"][-1] == "week_02",
           "results API: /me?run=week_02 asked with the session's bearer token (the fake Space, never the real one)")
     check(captured["healthz"] >= 1, "results API: woken with /healthz on the way to huggingface.co")
-    check(win.locator("#lb-public .lb-expand").count() == 2 and win.inner_text("#lb-private-content") == "",
-          "pop-up: organizer view rendered from the results API: the team rows are expandable, nothing above the board")
+    check(win.locator("#lb-public tr:not(.lb-baseline) .lb-expand").count() == 2 and win.locator("#lb-public tr.lb-baseline .lb-expand").count() == 2
+          and win.inner_text("#lb-private-content") == "",
+          "pop-up: organizer view rendered from the results API: the team rows and the baselines with a file are expandable, nothing above the board")
     sess = local(win, "sc:hf-session")
     check(sess["user"]["username"] == "steerability-challenge-evaluator" and sess["accessToken"] == "hf_oauth_mock_token",
           "pop-up: session stored (localStorage)")
@@ -443,8 +444,8 @@ with sync_playwright() as p:
 
     # ---- 4. sign out in the pop-up; the competition page's button follows
     win.wait_for_selector("#lb-detail-example-missing")
-    check(win.locator("#lb-public .lb-expand").count() == 2 and win.locator(".lb-detail-standalone").count() == 2,
-          "organizer: two expandable rows and two blocks under the table")
+    check(win.locator("#lb-public tr:not(.lb-baseline) .lb-expand").count() == 2 and win.locator(".lb-detail-standalone").count() == 2,
+          "organizer: two expandable team rows and two blocks under the table")
     win.click("#hf-logout")
     win.wait_for_selector("#hf-login:visible")
     check(local(win, "sc:hf-session") is None, "sign out: session removed")
@@ -697,8 +698,8 @@ with sync_playwright() as p:
     check(ex.evaluate("e => getComputedStyle(e, '::before').content") in ("none", "normal", '""')
           and ex.evaluate("e => getComputedStyle(e).color") == "rgb(31, 59, 211)",
           "participant: no caret before the name; the name is in the accent colour")
-    check(pv.locator(".lb-expand").count() == 1 and pv.locator(".lb-detail-standalone").count() == 0,
-          "participant: no other row is expandable, and no block under the table")
+    check(pv.locator("#lb-public tr[data-org].lb-expandable").count() == 1 and pv.locator(".lb-detail-standalone").count() == 0,
+          "participant: no other team's row is expandable, and no block under the table")
     detail = pv.locator("#lb-detail-example-team")
     check(detail.evaluate("e => e.tagName === 'TR' && e.hidden && e.previousElementSibling.getAttribute('data-org')") == EXAMPLE_HASH
           and detail.evaluate("e => e.cells.length === 1 && e.cells[0].colSpan") == 6,
@@ -768,7 +769,8 @@ with sync_playwright() as p:
           and card.locator(".lb-card b, .lb-card h1").count() == 0,
           "method card: the fixture's text verbatim in a box, nothing rendered as markdown")
     order = detail.locator(".lb-drawer > *").evaluate_all("ns => ns.map(n => n.className)")
-    check(order == ["lb-models", "lb-sec", "lb-sec lb-boxed", "lb-sec lb-boxed"], f"drawer: results, breakdown, record, method card and nothing else ({order})")
+    check(order == ["lb-sec lb-track", "lb-models", "lb-sec", "lb-sec lb-boxed", "lb-sec lb-boxed"],
+          f"drawer: track, results, breakdown, record, method card and nothing else ({order})")
     pv.wait_for_function("b => window.__resizes[window.__resizes.length - 1] !== b", arg=before)
     after = pv.evaluate("window.__resizes[window.__resizes.length - 1]")
     check(after > before, f"participant: the window grew with the drawer ({before}px -> {after}px)")
@@ -779,6 +781,51 @@ with sync_playwright() as p:
     ex.focus()
     pv.keyboard.press("Enter")
     check(detail.is_visible() and ex.get_attribute("aria-expanded") == "true", "participant: Enter on the focused name toggles it once")
+
+    # ---- 12a. baselines: each baseline with a file in the answer opens like a team's row; one without stays plain
+    B = fixture("participant")["baselines"]
+    brow = pv.locator("#lb-public tr.lb-baseline", has=pv.locator("td.lb-team", has_text="honesty_few_shot"))
+    bex = brow.locator(".lb-expand")
+    check(brow.evaluate("e => e.classList.contains('lb-expandable') && getComputedStyle(e).cursor === 'pointer'")
+          and bex.inner_text() == "honesty_few_shot" and bex.get_attribute("aria-controls") == "lb-detail-baseline-honesty_few_shot"
+          and brow.get_attribute("data-org") is None and brow.locator("td.lb-rank").inner_text() == "–",
+          "baseline: a baseline with a file is expandable, its name the button, still unranked and without data-org")
+    plain = pv.locator("#lb-public tr.lb-baseline", has=pv.locator("td.lb-team", has_text="honesty_sft"))
+    check(plain.locator(".lb-expand").count() == 0 and not plain.evaluate("e => e.classList.contains('lb-expandable')")
+          and pv.locator("#lb-public tr.lb-baseline.lb-expandable").count() == 2,
+          "baseline: one without a file stays plain; two of the three are expandable")
+    brow.locator("td.lb-score").first.click()
+    bd = pv.locator("#lb-detail-baseline-honesty_few_shot")
+    check(bd.is_visible() and bex.get_attribute("aria-expanded") == "true" and detail.is_hidden()
+          and ex.get_attribute("aria-expanded") == "false",
+          "baseline: a click opens its drawer and closes the participant's own (one drawer at a time)")
+    border = bd.locator(".lb-drawer > *").evaluate_all("ns => ns.map(n => n.className)")
+    check(border == ["lb-models", "lb-sec", "lb-sec lb-boxed", "lb-sec lb-boxed"],
+          f"baseline: results, breakdown, record, method card, and no track line ({border})")
+    bgemma = bd.locator(".lb-models tbody tr:not(.lb-overall)").first.locator("td").all_inner_texts()
+    bover = bd.locator(".lb-models tr.lb-overall td").all_inner_texts()
+    check(bgemma == ["", "gemma-4-31B-it", "[+0.08, +0.22]", "+0.151", "+0.372", "0.010", "0.061"]
+          and bover == ["", "overall", "[+0.09, +0.19]", "+0.138", "", "", ""],
+          f"baseline: a model's row and the overall row from the file ({bgemma}, {bover})")
+    bgroups = bd.locator(".lb-group")
+    check(rows_of(bgroups.nth(0)) == [["Instructed deception", "+0.40"], ["Incentives & sandbagging", "+0.32"], ["User pressure & sycophancy", "+0.30"]]
+          and ["Knowledge", "0.01"] in rows_of(bgroups.nth(1)) and ["Refusal behaviour", "0.07"] in rows_of(bgroups.nth(2)),
+          "baseline: the breakdown by family, category and kind")
+    blines = bd.locator(".lb-line").evaluate_all(LINES)
+    check([l[0] for l in blines] == ["run", "", ""] and blines[0][1] == "gemma-4-31B-it  declines 6% (reference 5%)  truncated 1% (1%)"
+          and "judge failures 1" in blines[1][1],
+          f"baseline: the record is the run's line per model, with no pull or intake ({blines})")
+    check(bd.locator(".lb-card").evaluate("e => e.firstChild.textContent") == B["honesty_few_shot"]["method_card"]["text"],
+          "baseline: the method card's text verbatim")
+    pv.locator("#lb-public tr.lb-baseline", has=pv.locator("td.lb-team", has_text="honest_persona")).click()
+    check(pv.locator("#lb-public tr.lb-detail:not([hidden])").count() == 1
+          and pv.locator("#lb-detail-baseline-honest_persona").is_visible() and bd.is_hidden()
+          and "truncated 3% (1%), above the reference" in pv.locator("#lb-detail-baseline-honest_persona").inner_text(),
+          "baseline: another baseline's row swaps the drawer; its flags read as a team's")
+    pv.screenshot(path=f"{OUT}/06b-drawer-baseline.png", full_page=True)
+    pv.locator("#lb-public tr.lb-baseline.is-open").click()
+    ex.click()
+    check(detail.is_visible(), "participant: back to the own drawer")
 
     # ---- 12b. the week picker: ← loads Week 1 (the example team at rank 6), → comes back with the drawer closed
     pv.click("#lb-earlier")
@@ -1057,10 +1104,11 @@ with sync_playwright() as p:
     oc = new_context()
     op = oc.new_page()
     private_view(op, "organizer", wait="#lb-detail-example-missing")
-    exp = op.locator("#lb-public tr.lb-expandable")
+    exp = op.locator("#lb-public tr.lb-expandable:not(.lb-baseline)")
     names = exp.locator(".lb-expand").all_inner_texts()
-    check(exp.count() == 2 and sorted(names) == ["Example Team", "Second Example"] and op.locator("#lb-public .lb-baseline.lb-expandable").count() == 0,
-          f"organizer: exactly the two submission rows with a team file are expandable ({names})")
+    bnames = op.locator("#lb-public tr.lb-baseline.lb-expandable .lb-expand").all_inner_texts()
+    check(exp.count() == 2 and sorted(names) == ["Example Team", "Second Example"] and sorted(bnames) == ["honest_persona", "honesty_few_shot"],
+          f"organizer: exactly the two submission rows with a team file and the two baselines with a file are expandable ({names}, {bnames})")
     check(op.inner_text("#lb-private-content") == "" and op.locator(".lb-status, .lb-run-status").count() == 0,
           "organizer: nothing above the board (no status block)")
     exp.nth(0).click()
@@ -1201,7 +1249,7 @@ with sync_playwright() as p:
     dm = ep.locator("#lb-detail-example-team")
     check(ep.locator("main b, main img").count() == 0 and ["card", "<b>bold</b> card"] in dm.locator(".lb-line").evaluate_all(LINES)
           and dm.locator(".lb-card").inner_text().startswith("<b>bold</b> card")
-          and ep.locator("#lb-public tbody tr").first.locator(".lb-team").inner_text() == "<b>bold</b> team",
+          and ep.locator("#lb-public tbody tr:not(.lb-running)").first.locator(".lb-team").inner_text() == "<b>bold</b> team",
           "API strings are text, never markup (a record line, the method card, a team's name on the board)")
     api["markup"] = False
     api["me"] = "organizer"
@@ -1246,7 +1294,8 @@ with sync_playwright() as p:
         "pending", "pulled", "n_pulled", "intake_done", "phase", "evaluation",       # the week being evaluated
         "rank", "S", "ci", "delta", "r_side", "r_guard", "backend", "declines", "arm", "reference", "flag",
         "judge", "failed", "refused", "flags", "unscored", "reason", "families", "g", "side_effects", "guards",
-        "delta_comparable", "S_comparable", "in_delta", "running"}
+        "delta_comparable", "S_comparable", "in_delta", "running", "track_position",
+        "baselines"}                                                                 # the baseline files (arm, board, method_card above)
     MAPS = {   # maps whose keys are data: what they may be
         "families": {"instructed_deception", "incentives_and_sandbagging", "user_pressure", "fabrication", "owning_up", "harm_denial"},
         "side_effects": {"knowledge", "reasoning", "problem_solving", "instruction_following"},
@@ -1281,6 +1330,12 @@ with sync_playwright() as p:
             problems.append(f"{where}: {node!r} is not a {key} code")
         if not isinstance(node, dict):
             return
+        if key == "baselines":   # keyed by the arm's name, which the file repeats
+            for k, v in node.items():
+                if not re.fullmatch(r"[a-z0-9_]+", k) or not isinstance(v, dict) or v.get("arm") != k:
+                    problems.append(f"{where}.{k}: the key is not the baseline file's arm")
+                walk(v, None, models, f"{where}.{k}")
+            return
         if key in ("models", "engines", "teams", "evaluation") or key in MAPS:   # (a participant's teams is a list, not a map)
             allowed = models if key in ("models", "engines", "evaluation") else MAPS.get(key)
             for k, v in node.items():
@@ -1297,8 +1352,11 @@ with sync_playwright() as p:
         if key == "entry":
             if "late" in node or not isinstance(node.get("record"), list):
                 problems.append(f"{where}: an entry has no 'late' and always a record")
-        if key is None and "schema" in node and "entry" in node and not pending_file and node["schema"] not in (2, 3, 4):
+        if key is None and "schema" in node and "entry" in node and not pending_file and node["schema"] not in (2, 3, 4, 5, 6):
             problems.append(f"{where}: a team file of schema {node['schema']!r}")
+        if key is None and "schema" in node and "arm" in node and "entry" not in node:   # a baseline file
+            if node["schema"] != 1 or set(node) != {"schema", "run", "arm", "board", "method_card"}:
+                problems.append(f"{where}: a baseline file of schema {node['schema']!r} with keys {sorted(node)}")
         if key is None and "evaluation" in node and "board" in node:
             problems.append(f"{where}: a pending file with a board")
         for k, v in node.items():
