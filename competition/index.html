@@ -76,7 +76,7 @@
 
   <div class="box glance">
     <dl>
-      <div><dt>close</dt><dd>Nov 23, 2026 AoE</dd></div>
+      <div><dt>close</dt><dd>Nov 30, 2026 AoE</dd></div>
       <div><dt>platform</dt><dd>Steerability + Hugging Face</dd></div>
       <div><dt>awards</dt><dd>$40k+ (for 🥇🥈🥉 place / track)</dd></div>
       <div><dt>workshop</dt><dd>NeurIPS 2026 (Paris)</dd></div>
@@ -196,7 +196,7 @@
   <div class="intake">
     <div>
       <p>Next intake:</p>
-      <p class="intake-when" id="intake-when">Oct 5, 2026 AoE</p>
+      <p class="intake-when" id="intake-when">Nov 23, 2026 AoE</p>
     </div>
     <div class="countdown" id="intake-countdown" role="timer">
       <span class="cd-unit"><span class="cd-num" data-unit="days">--</span><span class="cd-lbl">days</span></span>
@@ -313,13 +313,13 @@
 
   <script>
   (function() {
-    // Intakes close at the end of each Sunday AoE (UTC-12), starting Oct 4:
-    // the first is Oct 5 12:00 UTC, then every 7 days after that.
-    var FIRST = Date.UTC(2026, 9, 5, 12);
-    // The Oct 4 intake was extended by 24 hours to Oct 5 AoE (Oct 6 12:00 UTC);
-    // the weekly Sunday schedule resumes after it.
-    var EXTENDED = Date.UTC(2026, 9, 6, 12);
-    var WEEK = 7 * 24 * 60 * 60 * 1000;
+    // Intakes close at the end of the given day AoE (UTC-12), i.e. 12:00 UTC the
+    // next day. The weekly Sunday schedule (from Oct 4) was reset: the next intake
+    // is Nov 23 AoE and the final intake is Nov 30 AoE.
+    var INTAKES = [
+      Date.UTC(2026, 10, 24, 12),  // Nov 23 AoE
+      Date.UTC(2026, 11, 1, 12)    // Nov 30 AoE (final)
+    ];
     var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
     var nums = {};
@@ -330,10 +330,9 @@
 
     function render() {
       var now = Date.now();
-      var next = now < EXTENDED ? EXTENDED
-        : FIRST + (Math.floor((now - FIRST) / WEEK) + 1) * WEEK;
+      var next = INTAKES.find(function(t) { return t > now; }) || INTAKES[INTAKES.length - 1];
       // Round up, so the final second reads 00:00:00:01 and the counter resets
-      // to 07:00:00:00 at the intake itself rather than lingering on zero
+      // to the next intake's full count at the intake itself rather than lingering on zero
       var secs = Math.ceil((next - now) / 1000);
       nums.days.textContent    = pad(Math.floor(secs / 86400));
       nums.hours.textContent   = pad(Math.floor(secs / 3600) % 24);
@@ -370,7 +369,7 @@
     <dd>We welcome participation from students, researchers, industry teams and hobbyists anywhere in the world. Anyone may enter and appear in the results. Cash prizes can only be paid where this is permitted under EU and US sanctions law and where we are able to make a bank transfer to the winner; if a winner cannot be paid, the prize passes to the next eligible entry.</dd>
 
     <dt>Is there a registration deadline?</dt>
-    <dd>Yes, registration closes Nov 1 AoE. The final submission deadline is Nov 23 AoE.</dd>
+    <dd>Yes, registration closes Nov 1 AoE. The final submission deadline is Nov 30 AoE.</dd>
 
     <dt>Which model will I be steering?</dt>
     <dd>Given that we are scoring the performance of the steering pipeline, rather than the performance of a steered model, we will be running steering on the set of models specified in the <a href="steerability-challenge-guide.pdf">competition guide</a>.</dd>
